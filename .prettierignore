@@ -1,0 +1,6 @@
+frontend/.next
+frontend/node_modules
+backend/target
+docker/monitoring/grafana/data
+mysql-data
+redis-data

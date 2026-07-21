@@ -1,0 +1,33 @@
+{
+  "name": "healthcare-hms",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "prepare": "husky",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": ".\\backend\\mvnw.cmd -f backend/pom.xml spring-boot:run",
+    "lint": "npm run lint:frontend",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "build": "concurrently \"npm run build:frontend\" \"npm run build:backend\"",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": ".\\backend\\mvnw.cmd -f backend/pom.xml clean package -DskipTests",
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "npm --prefix frontend run start",
+    "start:backend": "java -jar backend/target/hms-backend-0.0.1-SNAPSHOT.jar",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down --remove-orphans"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
+    "concurrently": "^9.2.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.6.2"
+  }
+}
