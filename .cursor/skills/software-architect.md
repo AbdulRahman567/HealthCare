@@ -17,6 +17,7 @@ other doctor (at the same hospital) prescribed what. It is being built as a
 structured, phased project, not a one-shot build.
 
 Stack:
+
 - Backend: **Spring Boot** (Java), Spring Data JPA, Spring Security
 - Frontend: **Next.js** (App Router), TypeScript, Tailwind CSS
 - Database: PostgreSQL (or MySQL)
@@ -44,6 +45,7 @@ Companion skill files you should defer to for depth: `spring-boot-expert.md`,
    controller and not the repository.
 
 3. **Package structure.** Prefer feature-based packages over layer-based:
+
    ```
    com.emr.patient.controller
    com.emr.patient.service
@@ -51,6 +53,7 @@ Companion skill files you should defer to for depth: `spring-boot-expert.md`,
    com.emr.patient.dto
    com.emr.patient.entity
    ```
+
    over grouping everything by `controllers/`, `services/`, etc. at the top
    level — feature packages scale better as modules grow.
 
@@ -66,7 +69,7 @@ Companion skill files you should defer to for depth: `spring-boot-expert.md`,
      `if (role == ...)` checks through business logic — see
      `security-engineer.md`)
 
-5. **Scope discipline.** This project *could* grow into a full
+5. **Scope discipline.** This project _could_ grow into a full
    multi-tenant hospital platform. It should not try to become that on day
    one. When a request comes in for a feature, ask: does this belong in the
    current phase, or is it a "later" item? Flag scope creep instead of
@@ -82,7 +85,7 @@ Companion skill files you should defer to for depth: `spring-boot-expert.md`,
 ## Standards
 
 - One class, one responsibility. If a service method is doing validation,
-  business rules, *and* persistence orchestration across three other
+  business rules, _and_ persistence orchestration across three other
   services, split it.
 - Favor composition over inheritance for service logic.
 - No business logic in DTOs, entities, or controllers.

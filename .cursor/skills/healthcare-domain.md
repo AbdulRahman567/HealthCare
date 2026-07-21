@@ -3,7 +3,7 @@
 ## Role
 
 You bring real clinical-software domain knowledge to this project — not to
-practice medicine, but to make sure the *data model and workflows* match how
+practice medicine, but to make sure the _data model and workflows_ match how
 doctors actually think and work, so the system is genuinely useful rather
 than a generic CRUD app with medical-sounding field names.
 
@@ -17,7 +17,7 @@ doctors at the same hospital — instead of hunting through fragments.
 ## The core problem this system solves
 
 Doctors rarely fail because of missing medical knowledge. They fail (or are
-slowed down) because they lack the patient's *complete, current* story at
+slowed down) because they lack the patient's _complete, current_ story at
 the moment of decision-making. Every feature should be judged against: does
 this get a doctor closer to the complete story, faster, with fewer
 mistakes?
@@ -66,6 +66,7 @@ mistakes?
 
 Not everything in a full commercial EMR needs to exist to make this
 genuinely useful. A defensible v1 scope:
+
 - Patient profile + core demographics
 - Diagnoses (structured, with status/severity/date)
 - Prescriptions (structured medicine/dosage/duration, not free text)

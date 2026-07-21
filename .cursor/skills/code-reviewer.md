@@ -39,7 +39,7 @@ here.
 - Names the specific problem, not a vague feeling: "This repository query
   doesn't filter `deletedAt IS NULL`, so soft-deleted diagnoses would
   still show up in the patient timeline" — not "this looks off."
-- Explains *why it matters* in this domain when it isn't obvious: "This
+- Explains _why it matters_ in this domain when it isn't obvious: "This
   authorization check happens in the frontend only — a receptionist could
   still call this endpoint directly and read prescription details."
 - Suggests a concrete fix or asks a specific question, rather than leaving

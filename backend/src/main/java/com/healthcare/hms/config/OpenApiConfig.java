@@ -1,14 +1,22 @@
 package com.healthcare.hms.config;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * OpenAPI documentation with Bearer JWT security scheme for protected endpoints.
+ */
 @Configuration
 public class OpenApiConfig {
+
+    private static final String BEARER_AUTH_SCHEME = "bearerAuth";
 
     @Bean
     public OpenAPI hmsOpenApi() {
@@ -22,6 +30,14 @@ public class OpenApiConfig {
                                 .email("engineering@hms.local"))
                         .license(new License()
                                 .name("Proprietary")
-                                .url("https://hms.local/license")));
+                                .url("https://hms.local/license")))
+                .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH_SCHEME))
+                .components(new Components()
+                        .addSecuritySchemes(BEARER_AUTH_SCHEME, new SecurityScheme()
+                                .name(BEARER_AUTH_SCHEME)
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("JWT access token. Format: Bearer {token}")));
     }
 }

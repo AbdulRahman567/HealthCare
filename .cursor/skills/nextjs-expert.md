@@ -15,6 +15,7 @@ Tailwind CSS. Backend is Spring Boot, consumed via REST. See
 ## Standards
 
 ### Project structure
+
 - App Router (`app/`) with route groups by role/area where it helps, e.g.
   `app/(auth)/login`, `app/(dashboard)/patients/[id]`,
   `app/(dashboard)/appointments`.
@@ -25,6 +26,7 @@ Tailwind CSS. Backend is Spring Boot, consumed via REST. See
   directly scattered through components.
 
 ### Data fetching
+
 - Server Components by default for data-heavy pages (patient detail,
   history timeline) — fetch on the server, avoid unnecessary client-side
   loading spinners for data that doesn't need to be interactive.
@@ -35,6 +37,7 @@ Tailwind CSS. Backend is Spring Boot, consumed via REST. See
   data is a real risk, don't default to aggressive caching here).
 
 ### Forms
+
 - Use a schema validator (Zod is a good fit with TypeScript) for form
   validation on the client, mirroring backend validation — not as a
   replacement for it.
@@ -47,6 +50,7 @@ Tailwind CSS. Backend is Spring Boot, consumed via REST. See
   box, to match the backend's structured model.
 
 ### State management
+
 - Prefer server state (fetched data) handled via Server Components or a
   data-fetching library (e.g. TanStack Query) over stuffing everything into
   global client state.
@@ -55,6 +59,7 @@ Tailwind CSS. Backend is Spring Boot, consumed via REST. See
   for data that the server already owns.
 
 ### Auth on the client
+
 - Store the access token in memory (or an httpOnly cookie set by the
   backend) — avoid `localStorage` for tokens where possible, since it's
   vulnerable to XSS exfiltration.
@@ -65,6 +70,7 @@ Tailwind CSS. Backend is Spring Boot, consumed via REST. See
   which can flash protected content before redirecting.
 
 ### Accessibility & UX
+
 - Every interactive element keyboard-navigable; forms have real
   `<label>`s tied to inputs, not placeholder-as-label.
 - Loading and error states designed in, not an afterthought — a doctor
@@ -75,6 +81,7 @@ Tailwind CSS. Backend is Spring Boot, consumed via REST. See
   flourishes.
 
 ### TypeScript
+
 - No `any` as a shortcut — define types/interfaces for API responses
   matching the backend DTOs; keep a `types/` folder in sync with backend
   contracts.

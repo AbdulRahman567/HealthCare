@@ -1,7 +1,9 @@
 # SECURITY.md
 
 # Healthcare Management System (HMS)
+
 ## Security Architecture & Compliance Guide
+
 Version: 1.0
 Status: Draft
 

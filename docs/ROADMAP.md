@@ -1,6 +1,7 @@
 # ROADMAP.md
 
 # Healthcare Management System (HMS) SaaS
+
 ## Product Development Roadmap
 
 **Version:** 1.0  
@@ -396,13 +397,13 @@ The following modules are planned after the MVP:
 
 # Release Milestones
 
-| Release | Scope |
-|----------|-------|
-| MVP | Authentication, Multi-Tenancy, Patient Management, Appointments, Visits, Medical Records, Prescriptions |
-| v1.1 | Laboratory, Imaging, Notifications, Dashboards |
-| v1.2 | Audit, Performance Optimization, Advanced Reporting |
-| v2.0 | Billing, Pharmacy, Inventory, Insurance |
-| v3.0 | AI Features, Telemedicine, Mobile Applications |
+| Release | Scope                                                                                                   |
+| ------- | ------------------------------------------------------------------------------------------------------- |
+| MVP     | Authentication, Multi-Tenancy, Patient Management, Appointments, Visits, Medical Records, Prescriptions |
+| v1.1    | Laboratory, Imaging, Notifications, Dashboards                                                          |
+| v1.2    | Audit, Performance Optimization, Advanced Reporting                                                     |
+| v2.0    | Billing, Pharmacy, Inventory, Insurance                                                                 |
+| v3.0    | AI Features, Telemedicine, Mobile Applications                                                          |
 
 ---
 

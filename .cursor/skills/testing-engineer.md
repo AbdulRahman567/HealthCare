@@ -22,7 +22,7 @@ document flagged as potentially dangerous (e.g. missing an allergy).
    tests.
 2. **Authorization boundaries** — a receptionist hitting a doctor-only
    endpoint, a doctor trying to fetch a patient they shouldn't have access
-   to (if such restrictions exist). Test the *denial*, not just the
+   to (if such restrictions exist). Test the _denial_, not just the
    success case.
 3. **API contracts** — request/response shapes, validation error
    responses, pagination behavior.

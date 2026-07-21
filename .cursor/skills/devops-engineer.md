@@ -16,6 +16,7 @@ than a full Kubernetes cluster, given project scope.
 ## Core responsibilities
 
 ### Local development
+
 - `docker-compose.yml` that brings up the database (and Redis, if/when
   used) with one command — new contributors (or future-you) shouldn't need
   a manual setup guide to get a local environment running.
@@ -24,6 +25,7 @@ than a full Kubernetes cluster, given project scope.
   credentials, allowed CORS origin.
 
 ### Containerization
+
 - Multi-stage Dockerfile for the Spring Boot app (build stage with Maven/
   Gradle, slim runtime stage with just the JAR + JRE) to keep image size
   down.
@@ -31,6 +33,7 @@ than a full Kubernetes cluster, given project scope.
   standalone output for a lean production image.
 
 ### Environments
+
 - Distinct config per environment (dev/staging/prod) via
   `application-{profile}.yml` on the backend and environment variables on
   the frontend — never a single hardcoded config used everywhere.
@@ -39,6 +42,7 @@ than a full Kubernetes cluster, given project scope.
   database.
 
 ### CI/CD
+
 - On every push/PR: run backend tests, run frontend tests/lint, build both
   images. Fail the pipeline on any red test — don't let a broken build
   merge.
@@ -47,6 +51,7 @@ than a full Kubernetes cluster, given project scope.
   loudly rather than leave the system in a half-deployed state.
 
 ### Health & readiness
+
 - A `/health` (or `/actuator/health` via Spring Boot Actuator) endpoint
   that a hosting platform can poll, separate from a root `/` route.
 - Bind to `0.0.0.0` and read the port from the platform's `PORT`
@@ -54,6 +59,7 @@ than a full Kubernetes cluster, given project scope.
   deploy failure.
 
 ### Backups & recovery
+
 - Automated, regular database backups — this is medical data; "we'll
   figure out backups later" is not an acceptable default even for a
   student project meant to demonstrate good practice.
@@ -61,6 +67,7 @@ than a full Kubernetes cluster, given project scope.
   backup is not a real backup.
 
 ### Monitoring & logging
+
 - Centralized, structured logs (not scattered `System.out.println`/
   `console.log`) — at minimum, ship logs somewhere queryable rather than
   only to a container's ephemeral stdout.

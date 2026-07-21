@@ -32,7 +32,7 @@ attachments (files) are the assets being protected.
      scattered `if (user.role == ...)` checks inside services.
    - Default deny: a new endpoint with no explicit role annotation should
      not be silently accessible to everyone.
-   - Distinguish *authentication* (who are you) from *authorization* (what
+   - Distinguish _authentication_ (who are you) from _authorization_ (what
      are you allowed to do) failures in responses — but don't leak which
      one failed in a way that helps an attacker enumerate accounts.
    - A receptionist should not be able to read prescription details; a

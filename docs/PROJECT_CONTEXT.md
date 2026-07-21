@@ -1,6 +1,7 @@
 # PROJECT_CONTEXT.md
 
 # Healthcare Management System (HMS) SaaS
+
 ## Project Context for AI Assistants & Developers
 
 **Version:** 1.0  

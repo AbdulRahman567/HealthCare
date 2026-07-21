@@ -1,6 +1,7 @@
 # ARCHITECTURE.md
 
 # Healthcare Management System (HMS) SaaS
+
 ## Software Architecture Document
 
 **Version:** 1.0  
@@ -538,4 +539,7 @@ The system shall support:
 - Cloud Native
 - Scalable Infrastructure
 - Maintainable Codebase
+
+```
+
 ```

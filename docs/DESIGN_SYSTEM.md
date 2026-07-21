@@ -1,6 +1,7 @@
 # DESIGN_SYSTEM.md
 
 # Healthcare Management System (HMS) SaaS
+
 ## Design System & UI Guidelines
 
 **Version:** 1.0  

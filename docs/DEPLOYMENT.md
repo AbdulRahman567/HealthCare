@@ -1,7 +1,9 @@
 # DEPLOYMENT.md
 
 # Healthcare Management System (HMS)
+
 ## Deployment, Infrastructure & DevOps Guide
+
 Version: 1.0
 Status: Draft
 

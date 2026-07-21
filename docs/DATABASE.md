@@ -1,7 +1,9 @@
 # DATABASE.md
 
 # Healthcare Management System (HMS)
+
 ## Enterprise Database Design
+
 Version: 1.0
 Status: Draft
 Author: Engineering Team
@@ -27,13 +29,13 @@ Goals:
 
 # 2. Database Technology
 
-| Component | Technology |
-|-----------|------------|
-| Database | MySQL 8.x |
-| ORM | Spring Data JPA + Hibernate |
-| Migration | Flyway |
-| Cache | Redis |
-| Search | MySQL Full Text (Future: Elasticsearch) |
+| Component | Technology                              |
+| --------- | --------------------------------------- |
+| Database  | MySQL 8.x                               |
+| ORM       | Spring Data JPA + Hibernate             |
+| Migration | Flyway                                  |
+| Cache     | Redis                                   |
+| Search    | MySQL Full Text (Future: Elasticsearch) |
 
 ---
 

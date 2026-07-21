@@ -1,6 +1,6 @@
 # Healthcare Management System (HMS)
 
-Enterprise-grade, production-ready Healthcare Management System monorepo.
+Enterprise-grade Healthcare Management System monorepo (auth/foundation phase complete; clinical modules phased per ROADMAP).
 
 ## Tech Stack
 
@@ -15,7 +15,7 @@ frontend/                # Next.js App Router frontend
 backend/                 # Spring Boot backend
 docker/                  # Nginx and monitoring configuration
 docs/                    # Project source-of-truth documents
-.github/workflows/       # CI workflow folder skeleton
+.github/workflows/       # CI workflows (skeleton — add pipelines before production)
 docker-compose.yml       # Local multi-service orchestration
 ```
 
@@ -34,6 +34,8 @@ Copy and configure environment files:
 - Root: `.env.example`
 - Frontend: `frontend/.env.example`
 - Backend: `backend/.env.example`
+
+For Docker builds, `NEXT_PUBLIC_*` values are passed as **build args** (Next.js inlines them at build time). JWT secrets must be overridden for any shared/staging environment; set `JWT_ALLOW_INSECURE_SECRETS=false` in production.
 
 ## Development
 
@@ -74,12 +76,14 @@ npm run docker:down
 
 ## Current Scope
 
-This repository currently contains only project foundation (Phase 0 / Foundation stage):
+Implemented (Phases 1–2 foundation + authentication):
 
-- Monorepo setup
-- Frontend baseline setup
-- Backend baseline setup
-- Infrastructure and observability setup
-- Engineering quality tooling setup
+- Monorepo, Docker, Flyway, Actuator, OpenAPI
+- JWT access tokens + opaque refresh tokens (rotation + reuse detection)
+- Hospital registration + initial admin onboarding (tenant stays `PENDING` until admin email verification)
+- Login / logout / refresh / profile
+- Password reset + email verification flows
+- RBAC scaffolding (roles/permissions seeded; clinical modules not yet exposed)
+- Protected frontend routes (`/app`)
 
-No authentication, patient, appointment, or business modules are implemented in this phase.
+Not yet implemented (later ROADMAP phases): patient, appointment, visit, prescription, laboratory, billing, and other clinical modules.

@@ -17,8 +17,9 @@ Boot code within that structure.
 ## Standards
 
 ### Structure & naming
+
 - Feature-based packages: `com.emr.<feature>.controller/service/repository/
-  dto/entity/mapper`
+dto/entity/mapper`
 - `PatientController`, `PatientService` (interface) +
   `PatientServiceImpl` (or a single `PatientService` class if the project
   doesn't need interface/impl separation — pick one convention and stay
@@ -28,6 +29,7 @@ Boot code within that structure.
   once fields diverge.
 
 ### Controllers
+
 - Thin. A controller method should: validate input (via `@Valid`), call
   one service method, map the result to a response DTO, return it.
 - No business logic, no direct repository calls, no manual try/catch for
@@ -37,6 +39,7 @@ Boot code within that structure.
   read/update), pagination via `Pageable` for list endpoints.
 
 ### Services
+
 - Business logic and orchestration live here. A service can call other
   services, but should not reach into another module's repository directly.
 - Use `@Transactional` deliberately — on the service method that defines a
@@ -46,6 +49,7 @@ Boot code within that structure.
   right HTTP status.
 
 ### Repositories
+
 - Spring Data JPA interfaces; derive simple queries from method names
   (`findByPatientIdAndDeletedAtIsNull`), drop to `@Query` for anything
   complex rather than fighting method-name-derivation into something
@@ -54,6 +58,7 @@ Boot code within that structure.
   (`deletedAt IS NULL`) unless explicitly querying history.
 
 ### Entities
+
 - JPA entities are not DTOs — never return them directly from a
   controller (see `software-architect.md`).
 - Use `@CreatedDate`/`@LastModifiedDate` (via
@@ -65,6 +70,7 @@ Boot code within that structure.
   query) rather than triggering N+1 queries.
 
 ### DTOs & validation
+
 - Bean Validation annotations on every request DTO
   (`@NotNull`, `@Size`, `@Email`, custom validators for domain rules like
   dosage ranges).
@@ -73,12 +79,14 @@ Boot code within that structure.
   multiple services.
 
 ### Exception handling
+
 - One global `@ControllerAdvice` mapping domain exceptions to HTTP status
-  + a consistent error body shape: `{ status, message, timestamp, path }`
-  (or similar) — every error response should look the same regardless of
-  which module threw it.
+  - a consistent error body shape: `{ status, message, timestamp, path }`
+    (or similar) — every error response should look the same regardless of
+    which module threw it.
 
 ### Configuration
+
 - `application.yml` per environment (`application-dev.yml`,
   `application-prod.yml`), secrets via environment variables, never
   hardcoded in the committed config.
@@ -86,6 +94,7 @@ Boot code within that structure.
   defaults instead of hardcoding magic numbers in code.
 
 ### API documentation
+
 - Swagger/OpenAPI (springdoc-openapi) annotated on controllers — every
   endpoint should be discoverable and documented as it's built, not
   retrofitted at the end.

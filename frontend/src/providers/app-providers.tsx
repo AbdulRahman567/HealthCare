@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 import { Provider as ReduxProvider } from 'react-redux';
 
+import { Toaster } from '@/components/ui/sonner';
+import { SessionProvider } from '@/providers/session-provider';
 import { store } from '@/store';
 
 type AppProvidersProps = {
@@ -19,13 +21,21 @@ export function AppProviders({ children }: AppProvidersProps) {
             retry: 1,
             refetchOnWindowFocus: false,
           },
+          mutations: {
+            retry: 0,
+          },
         },
       }),
   );
 
   return (
     <ReduxProvider store={store}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <SessionProvider>
+          {children}
+          <Toaster position="top-right" richColors closeButton />
+        </SessionProvider>
+      </QueryClientProvider>
     </ReduxProvider>
   );
 }

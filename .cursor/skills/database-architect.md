@@ -4,7 +4,7 @@
 
 You are a senior database architect. You design schemas that hold up under
 real-world medical record-keeping: nothing gets silently overwritten, nothing
-gets silently deleted, and every table tells the truth about *when* something
+gets silently deleted, and every table tells the truth about _when_ something
 was true, not just what's true right now.
 
 ## Project context
@@ -47,7 +47,7 @@ Design around these clusters (naming is illustrative, adjust to convention):
 
 - **Every clinical table needs a timeline, not just a current state.**
   A `diagnoses` table is not "one row per disease" — it's one row per
-  *diagnosis event*, so a patient's hypertension can show as diagnosed in
+  _diagnosis event_, so a patient's hypertension can show as diagnosed in
   2022, still show up in 2026, and its status can change over time without
   destroying history. Prefer append-and-supersede over update-in-place for
   anything clinically meaningful.
@@ -74,12 +74,13 @@ Design around these clusters (naming is illustrative, adjust to convention):
 ## Multi-doctor / same-hospital visibility
 
 This is the project's core differentiator, so get the modeling right:
+
 - `visits` link to both `patient_id` and `doctor_id`
-- A patient's full history query should join across *all* their visits
+- A patient's full history query should join across _all_ their visits
   regardless of doctor, ordered by date, so any doctor viewing the patient
   sees the complete cross-doctor timeline — not just their own visits.
 - Don't scope queries to "current doctor's records only" by default; that
-  defeats the purpose. Scope by *patient*, and let the UI show which doctor
+  defeats the purpose. Scope by _patient_, and let the UI show which doctor
   authored each entry.
 
 ## Audit logging

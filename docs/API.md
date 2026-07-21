@@ -1,7 +1,9 @@
 # API.md
 
 # Healthcare Management System (HMS)
+
 ## REST API Documentation
+
 Version: 1.0
 Status: Draft
 
@@ -50,24 +52,24 @@ X-Tenant-ID: tenant_uuid
 Success
 
 {
-  "success": true,
-  "message": "Patient created successfully",
-  "data": {},
-  "timestamp": "2026-07-21T12:30:00Z"
+"success": true,
+"message": "Patient created successfully",
+"data": {},
+"timestamp": "2026-07-21T12:30:00Z"
 }
 
 Error
 
 {
-  "success": false,
-  "message": "Validation Failed",
-  "errors": [
-    {
-      "field": "email",
-      "message": "Email already exists"
-    }
-  ],
-  "timestamp": "2026-07-21T12:30:00Z"
+"success": false,
+"message": "Validation Failed",
+"errors": [
+{
+"field": "email",
+"message": "Email already exists"
+}
+],
+"timestamp": "2026-07-21T12:30:00Z"
 }
 
 ---
@@ -745,11 +747,11 @@ GET /patients?page=1&size=20
 Response
 
 {
-  "page": 1,
-  "size": 20,
-  "totalPages": 25,
-  "totalItems": 500,
-  "data": []
+"page": 1,
+"size": 20,
+"totalPages": 25,
+"totalItems": 500,
+"data": []
 }
 
 ---

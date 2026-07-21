@@ -48,7 +48,7 @@ error formats), SECURITY.md, TESTING.md, DEPLOYMENT.md.
   reality.
 - **Decisions get written down, not just made.** If a choice was debated
   (e.g. Postgres vs. MySQL, a module boundary, a library choice), the
-  *why* belongs in ARCHITECTURE.md or PROJECT_CONTEXT.md — future
+  _why_ belongs in ARCHITECTURE.md or PROJECT_CONTEXT.md — future
   decisions get made faster when past reasoning is visible.
 - **ROADMAP.md tracks phases honestly.** Mark what's actually done vs. in
   progress vs. deferred. A roadmap that says everything is "done" when
