@@ -76,9 +76,56 @@ Error
 
 # 3. Authentication APIs
 
-POST
+## Hospital Registration (Phase 2.5)
 
-/auth/register
+`POST /api/v1/hospitals/register` (public)
+
+Atomically creates:
+
+1. Tenant (`PENDING`)
+2. Default hospital profile (`code=DEFAULT`, `is_default=true`)
+3. Default tenant roles with permission grants
+4. Initial hospital administrator (email verification required)
+
+Compatibility alias: `POST /api/v1/auth/register/hospital` (same payload).
+
+Hospital department management is Phase 3+ and not exposed here.
+
+## Hospital Settings (Phase 2.6)
+
+Tenant-scoped settings for the current tenant's default hospital. Requires
+`Authorization: Bearer <token>` and `X-Tenant-ID`. Client-supplied hospital ids
+are not accepted — isolation comes from `TenantContextHolder` + Hibernate
+`tenantFilter`.
+
+`GET /api/v1/hospitals/settings` — permission `HOSPITAL_READ`
+
+`PUT /api/v1/hospitals/settings` — permission `HOSPITAL_WRITE`
+
+Supports:
+
+- Hospital profile (name, description, code/status read-only)
+- Logo URL
+- Timezone (IANA)
+- Currency (ISO 4217)
+- Language (BCP 47)
+- Contact information (email, phone, secondary phone, website)
+- Address (line, city, state/province, country, postal code)
+- Working hours (per weekday open/close `HH:mm`, or closed)
+
+Updates are audited (`AuditAction.UPDATE` on entity `HOSPITAL`).
+
+## Tenant Security Notes (Phase 2.7)
+
+- Public auth paths ignore `X-Tenant-ID` (no unauthenticated tenant enumeration).
+- Conflicting duplicate `X-Tenant-ID` values are rejected.
+- JWT principal tenant identity, roles, and permissions are loaded from the database; claim/DB drift fails closed.
+- Platform tenant bypass (and header binding with null principal tenant) requires `SUPER_ADMIN`.
+- `POST /api/v1/auth/register/admin` returns **410 Gone** (legacy onboarding disabled).
+
+---
+
+# 3.1 Session & Profile APIs
 
 POST
 

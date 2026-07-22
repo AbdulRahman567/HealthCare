@@ -52,17 +52,27 @@ export type RefreshTokenPayload = {
 
 export type SubscriptionPlan = 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE';
 
-export type TenantStatus = 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
+export type TenantStatus = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
+
+export type HospitalStatus = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
 
 export type HospitalRegistrationResponse = {
   tenantId: string;
-  name: string;
-  slug: string;
-  email: string;
-  phone: string | null;
-  address: string | null;
+  tenantSlug: string;
+  tenantStatus: TenantStatus;
+  hospitalId: string;
+  hospitalName: string;
+  hospitalCode: string;
+  hospitalStatus: HospitalStatus;
+  defaultHospital: boolean;
+  hospitalEmail: string;
+  hospitalPhone: string | null;
+  hospitalAddress: string | null;
   subscriptionPlan: SubscriptionPlan;
-  status: TenantStatus;
+  adminUserId: string;
+  adminEmail: string;
+  adminEmailVerified: boolean;
+  provisionedRoles: string[];
   createdAt: string;
 };
 
@@ -73,10 +83,15 @@ export type LoginPayload = {
 
 export type RegisterHospitalPayload = {
   hospitalName: string;
-  email: string;
-  phone?: string;
-  address?: string;
+  hospitalEmail: string;
+  hospitalPhone?: string;
+  hospitalAddress?: string;
   subscriptionPlan?: SubscriptionPlan;
+  adminFirstName: string;
+  adminLastName: string;
+  adminEmail: string;
+  adminPassword: string;
+  adminPhone?: string;
 };
 
 export type ForgotPasswordPayload = {

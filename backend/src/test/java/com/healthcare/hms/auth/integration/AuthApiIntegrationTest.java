@@ -15,14 +15,13 @@ import com.healthcare.hms.auth.dto.request.ChangePasswordRequest;
 import com.healthcare.hms.auth.dto.request.ForgotPasswordRequest;
 import com.healthcare.hms.auth.dto.request.LoginRequest;
 import com.healthcare.hms.auth.dto.request.RefreshTokenRequest;
-import com.healthcare.hms.auth.dto.request.RegisterAdminRequest;
-import com.healthcare.hms.auth.dto.request.RegisterHospitalRequest;
 import com.healthcare.hms.auth.dto.request.ResetPasswordRequest;
 import com.healthcare.hms.auth.dto.request.UpdateProfileRequest;
 import com.healthcare.hms.auth.dto.request.VerifyEmailRequest;
 import com.healthcare.hms.auth.service.EmailVerificationService;
 import com.healthcare.hms.auth.service.PasswordResetService;
-import com.healthcare.hms.hospitals.enums.SubscriptionPlan;
+import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
+import com.healthcare.hms.tenant.enums.SubscriptionPlan;
 import com.healthcare.hms.support.AbstractMySqlIntegrationTest;
 import com.healthcare.hms.users.entity.User;
 import com.healthcare.hms.users.repository.UserRepository;
@@ -64,49 +63,52 @@ class AuthApiIntegrationTest extends AbstractMySqlIntegrationTest {
     private UserRepository userRepository;
 
     @Test
-    @DisplayName("POST /register/hospital returns 201 and persists the tenant")
+    @DisplayName("POST /register/hospital atomically creates tenant, hospital, roles, and admin")
     void registerHospital_success_returns201WithTenant() throws Exception {
-        final String email = uniqueEmail("hospital");
-        final RegisterHospitalRequest request = new RegisterHospitalRequest(
+        final String hospitalEmail = uniqueEmail("hospital");
+        final String adminEmail = uniqueEmail("admin");
+        final HospitalRegistrationRequest request = new HospitalRegistrationRequest(
                 "Test Hospital " + UUID.randomUUID(),
-                email,
+                hospitalEmail,
                 "+1-555-0100",
                 "123 Main St, Testville",
-                SubscriptionPlan.BASIC
+                SubscriptionPlan.BASIC,
+                "Jane",
+                "Admin",
+                adminEmail,
+                STRONG_PASSWORD,
+                "+1-555-0101"
         );
 
         postJson(BASE + "/register/hospital", request)
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Hospital registered successfully"))
                 .andExpect(jsonPath("$.data.tenantId").exists())
-                .andExpect(jsonPath("$.data.email").value(email))
-                .andExpect(jsonPath("$.data.slug").isNotEmpty())
-                .andExpect(jsonPath("$.data.status").value("PENDING"))
+                .andExpect(jsonPath("$.data.hospitalId").exists())
+                .andExpect(jsonPath("$.data.hospitalEmail").value(hospitalEmail))
+                .andExpect(jsonPath("$.data.tenantSlug").isNotEmpty())
+                .andExpect(jsonPath("$.data.tenantStatus").value("PENDING"))
+                .andExpect(jsonPath("$.data.hospitalStatus").value("PENDING"))
+                .andExpect(jsonPath("$.data.defaultHospital").value(true))
+                .andExpect(jsonPath("$.data.adminEmail").value(adminEmail))
+                .andExpect(jsonPath("$.data.adminEmailVerified").value(false))
+                .andExpect(jsonPath("$.data.provisionedRoles", hasItem("HOSPITAL_ADMIN")))
                 .andExpect(jsonPath("$.data.subscriptionPlan").value("BASIC"));
     }
 
     @Test
-    @DisplayName("POST /register/admin returns 201 with a profile payload, not tokens")
-    void registerAdmin_success_returns201WithProfileOnly() throws Exception {
-        final UUID tenantId = registerHospital(uniqueEmail("hospital-for-admin"));
-        final String adminEmail = uniqueEmail("admin");
-        final RegisterAdminRequest request = new RegisterAdminRequest(
-                tenantId, "Jane", "Admin", adminEmail, STRONG_PASSWORD, "+1-555-0101"
+    @DisplayName("POST /register/admin returns 410 because legacy onboarding is disabled")
+    void registerAdmin_disabled_returns410() throws Exception {
+        final AdminAccount admin = registerUnverifiedAdmin(uniqueEmail("pending"));
+        final var request = new com.healthcare.hms.auth.dto.request.RegisterAdminRequest(
+                admin.tenantId(), "Other", "Admin", uniqueEmail("other-admin"), STRONG_PASSWORD, null
         );
 
         postJson(BASE + "/register/admin", request)
-                .andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.email").value(adminEmail))
-                .andExpect(jsonPath("$.data.tenantId").value(tenantId.toString()))
-                .andExpect(jsonPath("$.data.emailVerified").value(false))
-                .andExpect(jsonPath("$.data.status").value("ACTIVE"))
-                .andExpect(jsonPath("$.data.roles", hasItem("HOSPITAL_ADMIN")))
-                .andExpect(jsonPath("$.data.accessToken").doesNotExist())
-                .andExpect(jsonPath("$.data.refreshToken").doesNotExist());
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorCode").value("ENDPOINT_DISABLED"));
     }
 
     @Test
@@ -340,32 +342,31 @@ class AuthApiIntegrationTest extends AbstractMySqlIntegrationTest {
     }
 
     private UUID registerHospital(final String emailPrefix) throws Exception {
-        final RegisterHospitalRequest request = new RegisterHospitalRequest(
+        return registerUnverifiedAdmin(emailPrefix).tenantId();
+    }
+
+    private AdminAccount registerUnverifiedAdmin(final String emailPrefix) throws Exception {
+        final String hospitalEmail = uniqueEmail(emailPrefix + "-hospital");
+        final String adminEmail = uniqueEmail(emailPrefix);
+        final HospitalRegistrationRequest request = new HospitalRegistrationRequest(
                 "Test Hospital " + UUID.randomUUID(),
-                uniqueEmail(emailPrefix),
+                hospitalEmail,
                 "+1-555-0100",
                 "123 Main St, Testville",
-                SubscriptionPlan.BASIC
+                SubscriptionPlan.BASIC,
+                "Jane",
+                "Admin",
+                adminEmail,
+                STRONG_PASSWORD,
+                "+1-555-0101"
         );
 
         final MvcResult result = postJson(BASE + "/register/hospital", request)
                 .andExpect(status().isCreated())
                 .andReturn();
 
-        return UUID.fromString(dataOf(result).get("tenantId").asText());
-    }
-
-    private AdminAccount registerUnverifiedAdmin(final String emailPrefix) throws Exception {
-        final UUID tenantId = registerHospital(emailPrefix + "-hospital");
-        final String email = uniqueEmail(emailPrefix);
-        final RegisterAdminRequest request = new RegisterAdminRequest(
-                tenantId, "Jane", "Admin", email, STRONG_PASSWORD, "+1-555-0101"
-        );
-
-        postJson(BASE + "/register/admin", request)
-                .andExpect(status().isCreated());
-
-        return new AdminAccount(tenantId, email, STRONG_PASSWORD, "Jane", "Admin");
+        final UUID tenantId = UUID.fromString(dataOf(result).get("tenantId").asText());
+        return new AdminAccount(tenantId, adminEmail, STRONG_PASSWORD, "Jane", "Admin");
     }
 
     private AdminAccount registerAndVerifyAdmin(final String emailPrefix) throws Exception {

@@ -1,8 +1,6 @@
 package com.healthcare.hms.auth.mapper;
 
-import com.healthcare.hms.auth.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.auth.dto.response.UserProfileResponse;
-import com.healthcare.hms.hospitals.entity.Tenant;
 import com.healthcare.hms.users.entity.Permission;
 import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
@@ -22,9 +20,6 @@ public interface AuthMapper {
     @Mapping(target = "roles", source = "roles", qualifiedByName = "mapRoleTypes")
     @Mapping(target = "permissions", source = "roles", qualifiedByName = "mapPermissions")
     UserProfileResponse toUserProfile(User user);
-
-    @Mapping(target = "tenantId", source = "id")
-    HospitalRegistrationResponse toHospitalRegistration(Tenant tenant);
 
     @Named("mapRoleTypes")
     default Set<String> mapRoleTypes(final Set<Role> roles) {

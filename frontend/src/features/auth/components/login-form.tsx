@@ -85,7 +85,10 @@ export function LoginForm() {
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <Label htmlFor="password">Password</Label>
-          <Link href="/forgot-password" className="text-primary text-xs font-medium hover:underline">
+          <Link
+            href="/forgot-password"
+            className="text-primary text-xs font-medium hover:underline"
+          >
             Forgot password?
           </Link>
         </div>
@@ -98,7 +101,9 @@ export function LoginForm() {
           disabled={isSubmitting}
           {...register('password')}
         />
-        {errors.password ? <p className="text-destructive text-xs">{errors.password.message}</p> : null}
+        {errors.password ? (
+          <p className="text-destructive text-xs">{errors.password.message}</p>
+        ) : null}
       </div>
 
       <Button type="submit" className="h-10 w-full" disabled={isSubmitting}>

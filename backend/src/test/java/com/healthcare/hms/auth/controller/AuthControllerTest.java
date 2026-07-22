@@ -19,22 +19,24 @@ import com.healthcare.hms.auth.dto.request.LoginRequest;
 import com.healthcare.hms.auth.dto.request.LogoutRequest;
 import com.healthcare.hms.auth.dto.request.RefreshTokenRequest;
 import com.healthcare.hms.auth.dto.request.RegisterAdminRequest;
-import com.healthcare.hms.auth.dto.request.RegisterHospitalRequest;
 import com.healthcare.hms.auth.dto.request.ResendVerificationRequest;
 import com.healthcare.hms.auth.dto.request.ResetPasswordRequest;
 import com.healthcare.hms.auth.dto.request.UpdateProfileRequest;
 import com.healthcare.hms.auth.dto.request.VerifyEmailRequest;
 import com.healthcare.hms.auth.dto.response.AuthResponse;
-import com.healthcare.hms.auth.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.auth.dto.response.UserProfileResponse;
 import com.healthcare.hms.auth.service.AuthService;
 import com.healthcare.hms.auth.support.AuthTestData;
-import com.healthcare.hms.hospitals.enums.SubscriptionPlan;
-import com.healthcare.hms.hospitals.enums.TenantStatus;
+import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
+import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
+import com.healthcare.hms.hospitals.enums.HospitalStatus;
+import com.healthcare.hms.tenant.enums.SubscriptionPlan;
+import com.healthcare.hms.tenant.enums.TenantStatus;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.security.resolver.CurrentUserArgumentResolver;
 import com.healthcare.hms.users.enums.UserStatus;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
@@ -95,12 +97,8 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("POST /register/admin returns 201")
-    void registerInitialAdmin() throws Exception {
-        when(authService.registerInitialAdmin(
-                        any(RegisterAdminRequest.class), nullable(String.class), nullable(String.class)))
-                .thenReturn(sampleProfile());
-
+    @DisplayName("POST /register/admin returns 410 Gone")
+    void registerInitialAdmin_disabled() throws Exception {
         mockMvc.perform(post("/api/v1/auth/register/admin")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new RegisterAdminRequest(
@@ -110,33 +108,50 @@ class AuthControllerTest {
                                 "admin@hospital.test",
                                 AuthTestData.STRONG_PASSWORD,
                                 null))))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.email").value("admin@hospital.test"));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.errorCode").value("ENDPOINT_DISABLED"));
     }
 
     @Test
     @DisplayName("POST /register/hospital returns 201")
     void registerHospital() throws Exception {
         when(authService.registerHospital(
-                        any(RegisterHospitalRequest.class), nullable(String.class), nullable(String.class)))
+                        any(HospitalRegistrationRequest.class), nullable(String.class), nullable(String.class)))
                 .thenReturn(new HospitalRegistrationResponse(
                         UUID.randomUUID(),
-                        "Hospital",
                         "hospital",
+                        TenantStatus.PENDING,
+                        UUID.randomUUID(),
+                        "Hospital",
+                        "DEFAULT",
+                        HospitalStatus.PENDING,
+                        true,
                         "h@t.com",
                         null,
                         null,
                         SubscriptionPlan.BASIC,
-                        TenantStatus.PENDING,
+                        UUID.randomUUID(),
+                        "admin@t.com",
+                        false,
+                        List.of("HOSPITAL_ADMIN"),
                         Instant.now()
                 ));
 
         mockMvc.perform(post("/api/v1/auth/register/hospital")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
-                                new RegisterHospitalRequest(
-                                        "Hospital", "h@t.com", null, null, SubscriptionPlan.BASIC))))
+                                new HospitalRegistrationRequest(
+                                        "Hospital",
+                                        "h@t.com",
+                                        null,
+                                        null,
+                                        SubscriptionPlan.BASIC,
+                                        "Jane",
+                                        "Admin",
+                                        "admin@t.com",
+                                        AuthTestData.STRONG_PASSWORD,
+                                        null))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true));
     }

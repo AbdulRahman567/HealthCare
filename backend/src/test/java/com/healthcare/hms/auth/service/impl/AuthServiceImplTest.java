@@ -20,13 +20,11 @@ import com.healthcare.hms.auth.dto.request.ForgotPasswordRequest;
 import com.healthcare.hms.auth.dto.request.LoginRequest;
 import com.healthcare.hms.auth.dto.request.RefreshTokenRequest;
 import com.healthcare.hms.auth.dto.request.RegisterAdminRequest;
-import com.healthcare.hms.auth.dto.request.RegisterHospitalRequest;
 import com.healthcare.hms.auth.dto.request.ResendVerificationRequest;
 import com.healthcare.hms.auth.dto.request.ResetPasswordRequest;
 import com.healthcare.hms.auth.dto.request.UpdateProfileRequest;
 import com.healthcare.hms.auth.dto.request.VerifyEmailRequest;
 import com.healthcare.hms.auth.dto.response.AuthResponse;
-import com.healthcare.hms.auth.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.auth.dto.response.UserProfileResponse;
 import com.healthcare.hms.auth.mapper.AuthMapper;
 import com.healthcare.hms.auth.service.EmailVerificationEmailService;
@@ -36,30 +34,34 @@ import com.healthcare.hms.auth.service.PasswordResetService;
 import com.healthcare.hms.auth.service.RefreshTokenService;
 import com.healthcare.hms.auth.support.AuthTestData;
 import com.healthcare.hms.common.exception.BusinessException;
-import com.healthcare.hms.common.exception.ConflictException;
 import com.healthcare.hms.common.exception.ResourceNotFoundException;
 import com.healthcare.hms.common.exception.auth.AccountNotActiveException;
 import com.healthcare.hms.common.exception.auth.EmailNotVerifiedException;
+import com.healthcare.hms.common.exception.auth.ForbiddenException;
 import com.healthcare.hms.common.exception.auth.InvalidCredentialsException;
-import com.healthcare.hms.hospitals.entity.Tenant;
-import com.healthcare.hms.hospitals.enums.SubscriptionPlan;
-import com.healthcare.hms.hospitals.enums.TenantStatus;
-import com.healthcare.hms.hospitals.repository.TenantRepository;
+import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
+import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
+import com.healthcare.hms.hospitals.enums.HospitalStatus;
+import com.healthcare.hms.hospitals.repository.HospitalRepository;
+import com.healthcare.hms.hospitals.service.HospitalRegistrationService;
+import com.healthcare.hms.tenant.entity.Tenant;
+import com.healthcare.hms.tenant.enums.SubscriptionPlan;
+import com.healthcare.hms.tenant.enums.TenantStatus;
+import com.healthcare.hms.tenant.repository.TenantRepository;
 import com.healthcare.hms.security.jwt.JwtClaims;
 import com.healthcare.hms.security.jwt.JwtProperties;
 import com.healthcare.hms.security.jwt.JwtService;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.security.util.SecurityUtils;
-import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
-import com.healthcare.hms.users.enums.RoleType;
 import com.healthcare.hms.users.enums.UserStatus;
-import com.healthcare.hms.users.repository.RoleRepository;
 import com.healthcare.hms.users.repository.UserRepository;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,9 +83,11 @@ class AuthServiceImplTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private RoleRepository roleRepository;
-    @Mock
     private TenantRepository tenantRepository;
+    @Mock
+    private HospitalRepository hospitalRepository;
+    @Mock
+    private HospitalRegistrationService hospitalRegistrationService;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
@@ -196,129 +200,69 @@ class AuthServiceImplTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("registerHospital creates a pending tenant with a unique slug")
-    void registerHospital_success() {
-        final RegisterHospitalRequest request = new RegisterHospitalRequest(
-                "Test Hospital", "hospital@hospital.test", "+1-555-0100", "123 Main St", SubscriptionPlan.PREMIUM);
-
-        when(tenantRepository.existsByEmailIgnoreCase("hospital@hospital.test")).thenReturn(false);
-        when(tenantRepository.existsBySlugIgnoreCase("test-hospital")).thenReturn(false);
-        when(tenantRepository.save(any(Tenant.class))).thenAnswer(invocation -> {
-            final Tenant tenant = invocation.getArgument(0);
-            tenant.setId(AuthTestData.tenantId());
-            return tenant;
-        });
+    @DisplayName("registerHospital delegates to HospitalRegistrationService")
+    void registerHospital_delegates() {
+        final HospitalRegistrationRequest request = new HospitalRegistrationRequest(
+                "Test Hospital",
+                "hospital@hospital.test",
+                "+1-555-0100",
+                "123 Main St",
+                SubscriptionPlan.PREMIUM,
+                "Jane",
+                "Admin",
+                "admin@hospital.test",
+                AuthTestData.STRONG_PASSWORD,
+                "+1-555-0101"
+        );
         final HospitalRegistrationResponse expected = new HospitalRegistrationResponse(
-                AuthTestData.tenantId(), "Test Hospital", "test-hospital", "hospital@hospital.test",
-                "+1-555-0100", "123 Main St", SubscriptionPlan.PREMIUM, TenantStatus.PENDING, Instant.now());
-        when(authMapper.toHospitalRegistration(any(Tenant.class))).thenReturn(expected);
+                AuthTestData.tenantId(),
+                "test-hospital",
+                TenantStatus.PENDING,
+                UUID.randomUUID(),
+                "Test Hospital",
+                "DEFAULT",
+                HospitalStatus.PENDING,
+                true,
+                "hospital@hospital.test",
+                "+1-555-0100",
+                "123 Main St",
+                SubscriptionPlan.PREMIUM,
+                AuthTestData.userId(),
+                "admin@hospital.test",
+                false,
+                List.of("HOSPITAL_ADMIN"),
+                Instant.now()
+        );
+        when(hospitalRegistrationService.register(request, IP_ADDRESS, USER_AGENT)).thenReturn(expected);
 
         final HospitalRegistrationResponse response = authService.registerHospital(request, IP_ADDRESS, USER_AGENT);
 
         assertThat(response).isSameAs(expected);
-        final ArgumentCaptor<Tenant> captor = ArgumentCaptor.forClass(Tenant.class);
-        verify(tenantRepository).save(captor.capture());
-        final Tenant saved = captor.getValue();
-        assertThat(saved.getSlug()).isEqualTo("test-hospital");
-        assertThat(saved.getStatus()).isEqualTo(TenantStatus.PENDING);
-        assertThat(saved.getSubscriptionPlan()).isEqualTo(SubscriptionPlan.PREMIUM);
-        verify(auditLogService).record(
-                eq(AuthTestData.tenantId()), isNull(), eq("TENANT"), eq(AuthTestData.tenantId().toString()),
-                eq(AuditAction.CREATE), isNull(), anyString(), eq(IP_ADDRESS), eq(USER_AGENT));
-    }
-
-    @Test
-    @DisplayName("registerHospital rejects duplicate hospital email")
-    void registerHospital_duplicateEmail() {
-        final RegisterHospitalRequest request = new RegisterHospitalRequest(
-                "Test Hospital", "hospital@hospital.test", null, null, null);
-        when(tenantRepository.existsByEmailIgnoreCase("hospital@hospital.test")).thenReturn(true);
-
-        assertThatThrownBy(() -> authService.registerHospital(request, IP_ADDRESS, USER_AGENT))
-                .isInstanceOf(ConflictException.class);
-
-        verify(tenantRepository, never()).save(any());
+        verify(hospitalRegistrationService).register(request, IP_ADDRESS, USER_AGENT);
     }
 
     // ------------------------------------------------------------------
-    // registerInitialAdmin
+    // registerInitialAdmin (disabled — Phase 2.7)
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("registerInitialAdmin creates the admin and sends a verification email")
-    void registerInitialAdmin_success() {
-        final Tenant tenant = AuthTestData.activeTenant();
+    @DisplayName("registerInitialAdmin is disabled and rejects all requests")
+    void registerInitialAdmin_disabled() {
         final RegisterAdminRequest request = new RegisterAdminRequest(
-                tenant.getId(), "Jane", "Admin", "new-admin@hospital.test", AuthTestData.STRONG_PASSWORD, "+1-555-0200");
-
-        when(tenantRepository.findById(tenant.getId())).thenReturn(Optional.of(tenant));
-        when(userRepository.countByTenantIdAndRoleType(tenant.getId(), RoleType.HOSPITAL_ADMIN)).thenReturn(0L);
-        when(userRepository.existsByEmailIgnoreCase("new-admin@hospital.test")).thenReturn(false);
-        when(roleRepository.findSystemRoleWithPermissions(RoleType.HOSPITAL_ADMIN))
-                .thenReturn(Optional.of(AuthTestData.hospitalAdminRole()));
-        when(passwordEncoder.encode(AuthTestData.STRONG_PASSWORD)).thenReturn("encoded-hash");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            final User admin = invocation.getArgument(0);
-            admin.setId(AuthTestData.userId());
-            return admin;
-        });
-        when(emailVerificationService.issueVerificationToken(any(User.class), eq(IP_ADDRESS), eq(USER_AGENT)))
-                .thenReturn("raw-verify-token");
-        final UserProfileResponse expectedProfile = sampleProfile(AuthTestData.activeVerifiedUser("encoded-hash"));
-        when(authMapper.toUserProfile(any(User.class))).thenReturn(expectedProfile);
-
-        final UserProfileResponse response = authService.registerInitialAdmin(request, IP_ADDRESS, USER_AGENT);
-
-        assertThat(response).isSameAs(expectedProfile);
-        final ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
-        final User savedAdmin = userCaptor.getValue();
-        assertThat(savedAdmin.getEmail()).isEqualTo("new-admin@hospital.test");
-        assertThat(savedAdmin.getPasswordHash()).isEqualTo("encoded-hash");
-        assertThat(savedAdmin.getStatus()).isEqualTo(UserStatus.ACTIVE);
-        assertThat(savedAdmin.isEmailVerified()).isFalse();
-        assertThat(savedAdmin.getRoles()).extracting(Role::getType).containsExactly(RoleType.HOSPITAL_ADMIN);
-
-        verify(emailVerificationEmailService).sendVerificationLink(savedAdmin, "raw-verify-token");
-        final ArgumentCaptor<AuditAction> actionCaptor = ArgumentCaptor.forClass(AuditAction.class);
-        verify(auditLogService, times(2))
-                .record(any(), any(), any(), any(), actionCaptor.capture(), any(), any(), any(), any());
-        assertThat(actionCaptor.getAllValues())
-                .containsExactly(AuditAction.EMAIL_VERIFICATION_REQUEST, AuditAction.CREATE);
-    }
-
-    @Test
-    @DisplayName("registerInitialAdmin rejects a tenant that already has an admin")
-    void registerInitialAdmin_conflictWhenAdminExists() {
-        final Tenant tenant = AuthTestData.activeTenant();
-        final RegisterAdminRequest request = new RegisterAdminRequest(
-                tenant.getId(), "Jane", "Admin", "dup@hospital.test", AuthTestData.STRONG_PASSWORD, null);
-
-        when(tenantRepository.findById(tenant.getId())).thenReturn(Optional.of(tenant));
-        when(userRepository.countByTenantIdAndRoleType(tenant.getId(), RoleType.HOSPITAL_ADMIN)).thenReturn(1L);
+                AuthTestData.tenantId(),
+                "Jane",
+                "Admin",
+                "new-admin@hospital.test",
+                AuthTestData.STRONG_PASSWORD,
+                null
+        );
 
         assertThatThrownBy(() -> authService.registerInitialAdmin(request, IP_ADDRESS, USER_AGENT))
-                .isInstanceOf(ConflictException.class);
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("disabled");
 
         verify(userRepository, never()).save(any());
-        verify(emailVerificationService, never()).issueVerificationToken(any(), any(), any());
-    }
-
-    @Test
-    @DisplayName("registerInitialAdmin rejects a duplicate email")
-    void registerInitialAdmin_conflictWhenEmailExists() {
-        final Tenant tenant = AuthTestData.activeTenant();
-        final RegisterAdminRequest request = new RegisterAdminRequest(
-                tenant.getId(), "Jane", "Admin", "dup@hospital.test", AuthTestData.STRONG_PASSWORD, null);
-
-        when(tenantRepository.findById(tenant.getId())).thenReturn(Optional.of(tenant));
-        when(userRepository.countByTenantIdAndRoleType(tenant.getId(), RoleType.HOSPITAL_ADMIN)).thenReturn(0L);
-        when(userRepository.existsByEmailIgnoreCase("dup@hospital.test")).thenReturn(true);
-
-        assertThatThrownBy(() -> authService.registerInitialAdmin(request, IP_ADDRESS, USER_AGENT))
-                .isInstanceOf(ConflictException.class);
-
-        verify(userRepository, never()).save(any());
+        verifyNoInteractions(emailVerificationService);
     }
 
     // ------------------------------------------------------------------

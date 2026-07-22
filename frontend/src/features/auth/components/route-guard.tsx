@@ -36,8 +36,7 @@ export function RouteGuard({
   const { status, isAuthenticated, hasRole, hasPermission } = useSession();
 
   const roleAllowed = !roles || roles.length === 0 || hasRole(roles);
-  const permissionAllowed =
-    !permissions || permissions.length === 0 || hasPermission(permissions);
+  const permissionAllowed = !permissions || permissions.length === 0 || hasPermission(permissions);
   const authorized = roleAllowed && permissionAllowed;
 
   useEffect(() => {

@@ -67,6 +67,10 @@ version
 
 # 4. Multi-Tenant Strategy
 
+**Chosen approach: Shared Database + Shared Schema + Tenant ID.**
+
+Full design: [MULTI_TENANCY.md](./MULTI_TENANCY.md).
+
 Every business table includes
 
 tenant_id
@@ -75,13 +79,15 @@ Example
 
 Hospital A
 
-tenant_id = 1
+tenant_id = UUID-A
 
 Hospital B
 
-tenant_id = 2
+tenant_id = UUID-B
 
 Application never exposes records across tenants.
+
+Referential integrity: `tenant_id` FKs point to `tenants(id)` (nullable for platform rows).
 
 ---
 
@@ -137,21 +143,73 @@ uk_license_number
 
 ## Tenant
 
-Stores hospitals.
+Stores hospitals / clinics (tenant aggregate root). Table name: `tenants`.
 
-tenant
+Phase 2.5 also creates a tenant-owned `hospitals` row as the default hospital profile
+(`is_default = true`, code `DEFAULT`). Tenant remains the isolation boundary.
+
+Phase 2.6 extends `hospitals` with operational settings columns (logo, timezone,
+currency, language, contact extras, structured address fields, working_hours JSON)
+exposed via `GET/PUT /api/v1/hospitals/settings`.
 
 Fields
 
-id
-hospital_name
+id (UUID)
+name
+slug
+tenant_type
 email
 phone
 address
-logo
+logo_url
 subscription_plan
 status
 created_at
+updated_at
+created_by
+updated_by
+deleted
+deleted_at
+deleted_by
+version
+
+---
+
+## Hospitals
+
+Tenant-owned operational hospital profile / settings. Table name: `hospitals`.
+
+Fields
+
+id (UUID)
+tenant_id
+name
+code
+email
+phone
+address
+description
+logo_url
+timezone (default UTC)
+currency (ISO 4217, default USD)
+language (BCP 47, default en)
+website
+secondary_phone
+city
+state_province
+country
+postal_code
+working_hours (JSON weekly schedule)
+is_default
+status
+created_at
+updated_at
+created_by
+updated_by
+deleted
+deleted_at
+deleted_by
+version
 
 ---
 

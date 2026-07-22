@@ -45,11 +45,30 @@ function shouldSkipRefresh(url?: string): boolean {
     url.includes('/auth/logout') ||
     url.includes('/auth/refresh-token') ||
     url.includes('/auth/register/') ||
+    url.includes('/hospitals/register') ||
     url.includes('/auth/forgot-password') ||
     url.includes('/auth/reset-password') ||
     url.includes('/auth/verify-email') ||
     url.includes('/auth/resend-verification')
   );
+}
+
+/** Reads tenant_id from an access JWT payload (client-side confirmation header only). */
+function readTenantIdFromAccessToken(token: string): string | null {
+  try {
+    const payloadSegment = token.split('.')[1];
+    if (!payloadSegment) {
+      return null;
+    }
+    const normalized = payloadSegment.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    const payload = JSON.parse(atob(padded)) as { tenant_id?: unknown };
+    return typeof payload.tenant_id === 'string' && payload.tenant_id.length > 0
+      ? payload.tenant_id
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function refreshAccessToken(): Promise<AuthResponse> {
@@ -58,9 +77,12 @@ export async function refreshAccessToken(): Promise<AuthResponse> {
     throw toApiClientError(new Error('No refresh token available'));
   }
 
-  const { data } = await refreshClient.post<ApiSuccessResponse<AuthResponse>>('/auth/refresh-token', {
-    refreshToken,
-  });
+  const { data } = await refreshClient.post<ApiSuccessResponse<AuthResponse>>(
+    '/auth/refresh-token',
+    {
+      refreshToken,
+    },
+  );
 
   authTokenStore.setTokens(data.data.accessToken, data.data.refreshToken);
   return data.data;
@@ -79,6 +101,10 @@ apiClient.interceptors.request.use((config) => {
   const token = authTokenStore.getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    const tenantId = readTenantIdFromAccessToken(token);
+    if (tenantId) {
+      config.headers['X-Tenant-ID'] = tenantId;
+    }
   }
   return config;
 });

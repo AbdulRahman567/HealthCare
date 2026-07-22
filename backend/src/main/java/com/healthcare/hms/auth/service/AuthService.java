@@ -5,14 +5,14 @@ import com.healthcare.hms.auth.dto.request.ForgotPasswordRequest;
 import com.healthcare.hms.auth.dto.request.LoginRequest;
 import com.healthcare.hms.auth.dto.request.RefreshTokenRequest;
 import com.healthcare.hms.auth.dto.request.RegisterAdminRequest;
-import com.healthcare.hms.auth.dto.request.RegisterHospitalRequest;
 import com.healthcare.hms.auth.dto.request.ResendVerificationRequest;
 import com.healthcare.hms.auth.dto.request.ResetPasswordRequest;
 import com.healthcare.hms.auth.dto.request.UpdateProfileRequest;
 import com.healthcare.hms.auth.dto.request.VerifyEmailRequest;
 import com.healthcare.hms.auth.dto.response.AuthResponse;
-import com.healthcare.hms.auth.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.auth.dto.response.UserProfileResponse;
+import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
+import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
 
 /**
  * Authentication and current-user profile operations.
@@ -21,15 +21,19 @@ public interface AuthService {
 
     AuthResponse login(LoginRequest request, String ipAddress, String userAgent);
 
+    /**
+     * Delegates to {@link com.healthcare.hms.hospitals.service.HospitalRegistrationService}
+     * for atomic Phase 2.5 onboarding. Prefer {@code POST /api/v1/hospitals/register}.
+     */
     HospitalRegistrationResponse registerHospital(
-            RegisterHospitalRequest request,
+            HospitalRegistrationRequest request,
             String ipAddress,
             String userAgent
     );
 
     /**
-     * Registers the initial hospital admin and sends a verification email.
-     * Tokens are not issued until the email is verified and the user signs in.
+     * Legacy two-step admin registration — disabled (Phase 2.7).
+     * Prefer atomic {@code POST /api/v1/hospitals/register}.
      */
     UserProfileResponse registerInitialAdmin(
             RegisterAdminRequest request,

@@ -18,6 +18,19 @@ import {
 } from '@/features/auth/validation/register-hospital-schema';
 import { getErrorMessage } from '@/lib/api-error';
 
+const emptyValues: RegisterHospitalFormValues = {
+  hospitalName: '',
+  hospitalEmail: '',
+  hospitalPhone: '',
+  hospitalAddress: '',
+  subscriptionPlan: 'BASIC',
+  adminFirstName: '',
+  adminLastName: '',
+  adminEmail: '',
+  adminPassword: '',
+  adminPhone: '',
+};
+
 export function RegisterHospitalForm() {
   const [registration, setRegistration] = useState<HospitalRegistrationResponse | null>(null);
   const registerMutation = useRegisterHospitalMutation();
@@ -29,13 +42,7 @@ export function RegisterHospitalForm() {
     reset,
   } = useForm<RegisterHospitalFormValues>({
     resolver: zodResolver(registerHospitalSchema),
-    defaultValues: {
-      hospitalName: '',
-      email: '',
-      phone: '',
-      address: '',
-      subscriptionPlan: 'BASIC',
-    },
+    defaultValues: emptyValues,
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -43,19 +50,18 @@ export function RegisterHospitalForm() {
     try {
       const result = await registerMutation.mutateAsync({
         hospitalName: values.hospitalName,
-        email: values.email,
-        phone: values.phone?.trim() ? values.phone.trim() : undefined,
-        address: values.address?.trim() ? values.address.trim() : undefined,
+        hospitalEmail: values.hospitalEmail,
+        hospitalPhone: values.hospitalPhone?.trim() ? values.hospitalPhone.trim() : undefined,
+        hospitalAddress: values.hospitalAddress?.trim() ? values.hospitalAddress.trim() : undefined,
         subscriptionPlan: values.subscriptionPlan,
+        adminFirstName: values.adminFirstName,
+        adminLastName: values.adminLastName,
+        adminEmail: values.adminEmail,
+        adminPassword: values.adminPassword,
+        adminPhone: values.adminPhone?.trim() ? values.adminPhone.trim() : undefined,
       });
       setRegistration(result);
-      reset({
-        hospitalName: '',
-        email: '',
-        phone: '',
-        address: '',
-        subscriptionPlan: 'BASIC',
-      });
+      reset(emptyValues);
       toast.success('Hospital registered successfully');
     } catch (error) {
       toast.error(getErrorMessage(error, 'Unable to register hospital'));
@@ -75,83 +81,162 @@ export function RegisterHospitalForm() {
         <AuthFormMessage
           variant="success"
           title="Hospital registered"
-          description={`Tenant created in PENDING status for ${registration.name}. Tenant ID: ${registration.tenantId}. Next, register the initial hospital admin (API: POST /api/v1/auth/register/admin). The hospital activates after the admin verifies their email.`}
+          description={`Tenant ${registration.tenantSlug} is ${registration.tenantStatus}. Admin ${registration.adminEmail} was created. Check email to verify the account, then sign in.`}
         />
       ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor="hospitalName">Hospital name</Label>
-        <Input
-          id="hospitalName"
-          autoComplete="organization"
-          placeholder="City Care Hospital"
-          aria-invalid={Boolean(errors.hospitalName)}
-          disabled={isSubmitting}
-          {...register('hospitalName')}
-        />
-        {errors.hospitalName ? (
-          <p className="text-destructive text-xs">{errors.hospitalName.message}</p>
-        ) : null}
-      </div>
+      <fieldset className="space-y-5" disabled={isSubmitting}>
+        <legend className="text-sm font-medium">Hospital</legend>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Hospital email</Label>
-        <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          placeholder="contact@citycare.com"
-          aria-invalid={Boolean(errors.email)}
-          disabled={isSubmitting}
-          {...register('email')}
-        />
-        {errors.email ? <p className="text-destructive text-xs">{errors.email.message}</p> : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="hospitalName">Hospital name</Label>
+          <Input
+            id="hospitalName"
+            autoComplete="organization"
+            placeholder="City Care Hospital"
+            aria-invalid={Boolean(errors.hospitalName)}
+            {...register('hospitalName')}
+          />
+          {errors.hospitalName ? (
+            <p className="text-destructive text-xs">{errors.hospitalName.message}</p>
+          ) : null}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="phone">Phone (optional)</Label>
-        <Input
-          id="phone"
-          type="tel"
-          autoComplete="tel"
-          placeholder="+1 555 0100"
-          aria-invalid={Boolean(errors.phone)}
-          disabled={isSubmitting}
-          {...register('phone')}
-        />
-        {errors.phone ? <p className="text-destructive text-xs">{errors.phone.message}</p> : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="hospitalEmail">Hospital email</Label>
+          <Input
+            id="hospitalEmail"
+            type="email"
+            autoComplete="email"
+            placeholder="contact@citycare.com"
+            aria-invalid={Boolean(errors.hospitalEmail)}
+            {...register('hospitalEmail')}
+          />
+          {errors.hospitalEmail ? (
+            <p className="text-destructive text-xs">{errors.hospitalEmail.message}</p>
+          ) : null}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="address">Address (optional)</Label>
-        <Input
-          id="address"
-          autoComplete="street-address"
-          placeholder="120 Medical Center Drive"
-          aria-invalid={Boolean(errors.address)}
-          disabled={isSubmitting}
-          {...register('address')}
-        />
-        {errors.address ? <p className="text-destructive text-xs">{errors.address.message}</p> : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="hospitalPhone">Phone (optional)</Label>
+          <Input
+            id="hospitalPhone"
+            type="tel"
+            autoComplete="tel"
+            placeholder="+1 555 0100"
+            aria-invalid={Boolean(errors.hospitalPhone)}
+            {...register('hospitalPhone')}
+          />
+          {errors.hospitalPhone ? (
+            <p className="text-destructive text-xs">{errors.hospitalPhone.message}</p>
+          ) : null}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="subscriptionPlan">Subscription plan</Label>
-        <select
-          id="subscriptionPlan"
-          className="border-input bg-background h-8 w-full rounded-lg border px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
-          disabled={isSubmitting}
-          {...register('subscriptionPlan')}
-        >
-          <option value="BASIC">Basic</option>
-          <option value="STANDARD">Standard</option>
-          <option value="PREMIUM">Premium</option>
-          <option value="ENTERPRISE">Enterprise</option>
-        </select>
-        {errors.subscriptionPlan ? (
-          <p className="text-destructive text-xs">{errors.subscriptionPlan.message}</p>
-        ) : null}
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="hospitalAddress">Address (optional)</Label>
+          <Input
+            id="hospitalAddress"
+            autoComplete="street-address"
+            placeholder="120 Medical Center Drive"
+            aria-invalid={Boolean(errors.hospitalAddress)}
+            {...register('hospitalAddress')}
+          />
+          {errors.hospitalAddress ? (
+            <p className="text-destructive text-xs">{errors.hospitalAddress.message}</p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="subscriptionPlan">Subscription plan</Label>
+          <select
+            id="subscriptionPlan"
+            className="border-input bg-background h-8 w-full rounded-lg border px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
+            {...register('subscriptionPlan')}
+          >
+            <option value="BASIC">Basic</option>
+            <option value="STANDARD">Standard</option>
+            <option value="PREMIUM">Premium</option>
+            <option value="ENTERPRISE">Enterprise</option>
+          </select>
+          {errors.subscriptionPlan ? (
+            <p className="text-destructive text-xs">{errors.subscriptionPlan.message}</p>
+          ) : null}
+        </div>
+      </fieldset>
+
+      <fieldset className="space-y-5" disabled={isSubmitting}>
+        <legend className="text-sm font-medium">Initial administrator</legend>
+
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="adminFirstName">First name</Label>
+            <Input
+              id="adminFirstName"
+              autoComplete="given-name"
+              aria-invalid={Boolean(errors.adminFirstName)}
+              {...register('adminFirstName')}
+            />
+            {errors.adminFirstName ? (
+              <p className="text-destructive text-xs">{errors.adminFirstName.message}</p>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="adminLastName">Last name</Label>
+            <Input
+              id="adminLastName"
+              autoComplete="family-name"
+              aria-invalid={Boolean(errors.adminLastName)}
+              {...register('adminLastName')}
+            />
+            {errors.adminLastName ? (
+              <p className="text-destructive text-xs">{errors.adminLastName.message}</p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="adminEmail">Admin email</Label>
+          <Input
+            id="adminEmail"
+            type="email"
+            autoComplete="email"
+            placeholder="admin@citycare.com"
+            aria-invalid={Boolean(errors.adminEmail)}
+            {...register('adminEmail')}
+          />
+          {errors.adminEmail ? (
+            <p className="text-destructive text-xs">{errors.adminEmail.message}</p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="adminPassword">Admin password</Label>
+          <Input
+            id="adminPassword"
+            type="password"
+            autoComplete="new-password"
+            aria-invalid={Boolean(errors.adminPassword)}
+            {...register('adminPassword')}
+          />
+          {errors.adminPassword ? (
+            <p className="text-destructive text-xs">{errors.adminPassword.message}</p>
+          ) : null}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="adminPhone">Admin phone (optional)</Label>
+          <Input
+            id="adminPhone"
+            type="tel"
+            autoComplete="tel"
+            aria-invalid={Boolean(errors.adminPhone)}
+            {...register('adminPhone')}
+          />
+          {errors.adminPhone ? (
+            <p className="text-destructive text-xs">{errors.adminPhone.message}</p>
+          ) : null}
+        </div>
+      </fieldset>
 
       <Button type="submit" className="h-10 w-full" disabled={isSubmitting}>
         {isSubmitting ? (

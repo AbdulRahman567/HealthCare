@@ -48,8 +48,7 @@ type SessionOverrides = {
 
 export function createMockSession(overrides: SessionOverrides = {}) {
   const status = overrides.status ?? 'unauthenticated';
-  const isAuthenticated =
-    overrides.isAuthenticated ?? (status === 'authenticated');
+  const isAuthenticated = overrides.isAuthenticated ?? status === 'authenticated';
 
   return {
     status,

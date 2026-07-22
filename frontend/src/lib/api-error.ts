@@ -16,7 +16,10 @@ export class ApiClientError extends Error {
   }
 }
 
-export function getErrorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
+export function getErrorMessage(
+  error: unknown,
+  fallback = 'Something went wrong. Please try again.',
+): string {
   if (error instanceof ApiClientError) {
     return error.message;
   }

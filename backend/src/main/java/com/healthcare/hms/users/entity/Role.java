@@ -1,6 +1,7 @@
 package com.healthcare.hms.users.entity;
 
 import com.healthcare.hms.common.persistence.TenantAwareEntity;
+import com.healthcare.hms.common.persistence.TenantPersistence;
 import com.healthcare.hms.users.enums.RoleType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +19,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
+import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -34,6 +36,7 @@ import org.hibernate.annotations.SQLRestriction;
         }
 )
 @SQLRestriction("deleted = false")
+@Filter(name = TenantPersistence.FILTER_NAME, condition = TenantPersistence.CONDITION_INCLUDE_PLATFORM_SYSTEM)
 public class Role extends TenantAwareEntity {
 
     @NotBlank

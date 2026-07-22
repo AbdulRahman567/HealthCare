@@ -73,10 +73,25 @@ Implement secure authentication and role-based access control.
 - Laboratory Technician
 - Pharmacist
 
+### Sub-phases
+
+| Sub-phase | Scope                                                                                                   | Status                   |
+| --------- | ------------------------------------------------------------------------------------------------------- | ------------------------ |
+| 2.1       | Multi-tenant foundation (Shared Schema + Tenant ID, tenant aggregate, resolution contracts)             | Done                     |
+| 2.2       | Tenant resolution (`X-Tenant-ID`, TenantContextHolder, HeaderTenantResolver)                            | Done                     |
+| 2.3       | Tenant middleware (`TenantFilter`, validation, exception hierarchy, public bypass, clear-after-request) | Done                     |
+| 2.4       | Tenant-aware persistence (`TenantOwnedEntity`, Hibernate filter, write listener, TX enablement)         | Done                     |
+| 2.5       | Hospital registration (atomic tenant + default hospital + admin + default roles/permissions)            | Done                     |
+| 2.6       | Hospital settings (profile, logo, timezone, currency, language, contact, address, working hours)        | Done                     |
+| 2.7       | Tenant security audit (cross-tenant, spoofing, escalation, leakage hardening)                           | Done                     |
+| 2.8       | Multi-tenant production readiness review (lifecycle, security, compile, fix gaps)                       | Done                     |
+| 2.x       | Remaining auth/RBAC deliverables                                                                        | In progress / prior work |
+
 ### Definition of Done
 
 - Authentication is fully functional.
 - RBAC is enforced across protected resources.
+- Tenant isolation foundation is in place (see [MULTI_TENANCY.md](./MULTI_TENANCY.md)).
 
 ---
 
@@ -92,7 +107,7 @@ Enable multiple hospitals to operate independently on the same platform.
 - Hospital profile
 - Department management
 - Tenant isolation
-- Hospital settings
+- Hospital settings _(delivered in Phase 2.6)_
 - Staff assignment
 
 ### Definition of Done

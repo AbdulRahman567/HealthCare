@@ -32,7 +32,9 @@ export function SessionHome() {
         </div>
         <div className="sm:col-span-2">
           <dt className="text-muted-foreground">Hospital read access</dt>
-          <dd className="mt-1 font-medium">{hasPermission('HOSPITAL_READ') ? 'Granted' : 'Denied'}</dd>
+          <dd className="mt-1 font-medium">
+            {hasPermission('HOSPITAL_READ') ? 'Granted' : 'Denied'}
+          </dd>
         </div>
       </dl>
     </section>

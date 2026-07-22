@@ -112,10 +112,12 @@ describe('LoginForm', () => {
     fillInput(screen.getByLabelText('Password'), 'CorrectPass1!');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
-    await waitFor(() => expect(mockedAuthApi.login).toHaveBeenCalledWith({
-      email: 'ada@hospital.com',
-      password: 'CorrectPass1!',
-    }));
+    await waitFor(() =>
+      expect(mockedAuthApi.login).toHaveBeenCalledWith({
+        email: 'ada@hospital.com',
+        password: 'CorrectPass1!',
+      }),
+    );
     await waitFor(() => expect(signIn).toHaveBeenCalledWith(authResult));
     expect(toast.success).toHaveBeenCalledWith('Signed in successfully');
     expect(mockReplace).toHaveBeenCalledWith('/app');
@@ -157,7 +159,9 @@ describe('LoginForm', () => {
   });
 
   it('ignores an unsafe "next" query param and falls back to /app', async () => {
-    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams('next=https://evil.example.com'));
+    (useSearchParams as jest.Mock).mockReturnValue(
+      new URLSearchParams('next=https://evil.example.com'),
+    );
     mockedAuthApi.login.mockResolvedValueOnce({
       accessToken: 'access-token',
       refreshToken: 'refresh-token',
@@ -223,6 +227,8 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /resend verification email/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /resend verification email/i }),
+    ).not.toBeInTheDocument();
   });
 });

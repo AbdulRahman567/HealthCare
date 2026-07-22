@@ -161,6 +161,11 @@ Stores:
 
 Every hospital acts as an independent tenant.
 
+**Strategy:** Shared Database + Shared Schema + Tenant ID discriminator.
+
+See [MULTI_TENANCY.md](./MULTI_TENANCY.md) for the Phase 2.1 foundation: tenant aggregate,
+lifecycle, identification, resolution contracts, isolation rules, and request lifecycle.
+
 ```
 Tenant A
  ├── Users
@@ -181,7 +186,28 @@ Tenant C
  └── Medical Records
 ```
 
-Each tenant's data remains logically isolated.
+Each tenant's data remains logically isolated via `tenant_id` on every business table.
+Platform Super Admin rows may use `tenant_id = NULL`.
+
+Persistence enforcement (Phase 2.4): tenant-owned entities extend `TenantOwnedEntity`;
+Hibernate `tenantFilter` is enabled on JPA transaction begin from `TenantContextHolder`.
+See [MULTI_TENANCY.md](./MULTI_TENANCY.md) §6.1.
+
+### Request lifecycle (Phase 2.2–2.4)
+
+```
+Request
+  ↓
+Tenant Resolution (X-Tenant-ID)
+  ↓
+Tenant Validation (exists + ACTIVE)
+  ↓
+TenantContextHolder
+  ↓
+Business Layer
+```
+
+HTTP filter: `TenantFilter` (after JWT). See [MULTI_TENANCY.md](./MULTI_TENANCY.md).
 
 ---
 

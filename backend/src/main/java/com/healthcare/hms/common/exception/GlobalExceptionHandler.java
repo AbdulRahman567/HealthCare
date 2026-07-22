@@ -11,6 +11,11 @@ import com.healthcare.hms.common.exception.auth.InvalidCredentialsException;
 import com.healthcare.hms.common.exception.auth.InvalidTokenException;
 import com.healthcare.hms.common.exception.auth.TokenValidationException;
 import com.healthcare.hms.common.exception.auth.UnauthorizedException;
+import com.healthcare.hms.tenant.exception.InvalidTenantIdentifierException;
+import com.healthcare.hms.tenant.exception.TenantMismatchException;
+import com.healthcare.hms.tenant.exception.TenantNotActiveException;
+import com.healthcare.hms.tenant.exception.TenantNotFoundException;
+import com.healthcare.hms.tenant.exception.TenantRequiredException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
@@ -70,6 +75,34 @@ public class GlobalExceptionHandler {
             final HttpServletRequest request
     ) {
         return buildResponse(HttpStatus.FORBIDDEN, exception, request.getRequestURI());
+    }
+
+    @ExceptionHandler({
+            TenantNotActiveException.class,
+            TenantMismatchException.class,
+            TenantRequiredException.class
+    })
+    public ResponseEntity<ApiErrorResponse> handleTenantForbidden(
+            final com.healthcare.hms.tenant.exception.TenantException exception,
+            final HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.FORBIDDEN, exception, request.getRequestURI());
+    }
+
+    @ExceptionHandler(TenantNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleTenantNotFound(
+            final TenantNotFoundException exception,
+            final HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.NOT_FOUND, exception, request.getRequestURI());
+    }
+
+    @ExceptionHandler(InvalidTenantIdentifierException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidTenantIdentifier(
+            final InvalidTenantIdentifierException exception,
+            final HttpServletRequest request
+    ) {
+        return buildResponse(HttpStatus.BAD_REQUEST, exception, request.getRequestURI());
     }
 
     @ExceptionHandler(AuthenticationException.class)

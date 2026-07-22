@@ -6,17 +6,18 @@ import com.healthcare.hms.auth.dto.request.LoginRequest;
 import com.healthcare.hms.auth.dto.request.LogoutRequest;
 import com.healthcare.hms.auth.dto.request.RefreshTokenRequest;
 import com.healthcare.hms.auth.dto.request.RegisterAdminRequest;
-import com.healthcare.hms.auth.dto.request.RegisterHospitalRequest;
 import com.healthcare.hms.auth.dto.request.ResendVerificationRequest;
 import com.healthcare.hms.auth.dto.request.ResetPasswordRequest;
 import com.healthcare.hms.auth.dto.request.UpdateProfileRequest;
 import com.healthcare.hms.auth.dto.request.VerifyEmailRequest;
 import com.healthcare.hms.auth.dto.response.AuthResponse;
-import com.healthcare.hms.auth.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.auth.dto.response.UserProfileResponse;
 import com.healthcare.hms.auth.service.AuthService;
+import com.healthcare.hms.common.api.ApiErrorResponse;
 import com.healthcare.hms.common.api.ApiResponse;
 import com.healthcare.hms.common.web.ClientRequestDetails;
+import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
+import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.security.annotation.CurrentUser;
 import com.healthcare.hms.security.annotation.RequiresPermission;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
@@ -67,9 +68,12 @@ public class AuthController {
     }
 
     @PostMapping("/register/hospital")
-    @Operation(summary = "Register a new hospital tenant")
+    @Operation(
+            summary = "Register a new hospital tenant (compatibility)",
+            description = "Delegates to atomic hospital registration. Prefer POST /api/v1/hospitals/register."
+    )
     public ResponseEntity<ApiResponse<HospitalRegistrationResponse>> registerHospital(
-            @Valid @RequestBody final RegisterHospitalRequest request,
+            @Valid @RequestBody final HospitalRegistrationRequest request,
             final HttpServletRequest httpRequest
     ) {
         final HospitalRegistrationResponse response = authService.registerHospital(
@@ -78,24 +82,29 @@ public class AuthController {
                 ClientRequestDetails.resolveUserAgent(httpRequest)
         );
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Hospital registered successfully", response));
+                .body(ApiResponse.success(
+                        "Hospital registered successfully. Please verify the administrator email before signing in",
+                        response
+                ));
     }
 
     @PostMapping("/register/admin")
-    @Operation(summary = "Register the initial hospital administrator for a tenant")
-    public ResponseEntity<ApiResponse<UserProfileResponse>> registerInitialAdmin(
+    @Operation(
+            summary = "Legacy initial admin registration (disabled)",
+            description = """
+                    Disabled in Phase 2.7 for tenant security. Prefer atomic
+                    POST /api/v1/hospitals/register which creates tenant + admin together.
+                    """
+    )
+    public ResponseEntity<ApiErrorResponse> registerInitialAdmin(
             @Valid @RequestBody final RegisterAdminRequest request,
             final HttpServletRequest httpRequest
     ) {
-        final UserProfileResponse response = authService.registerInitialAdmin(
-                request,
-                ClientRequestDetails.resolveClientIp(httpRequest),
-                ClientRequestDetails.resolveUserAgent(httpRequest)
-        );
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(
-                        "Initial hospital administrator registered. Please verify your email before signing in",
-                        response
+        return ResponseEntity.status(HttpStatus.GONE)
+                .body(ApiErrorResponse.of(
+                        "Legacy initial-admin registration is disabled. Use POST /api/v1/hospitals/register",
+                        "ENDPOINT_DISABLED",
+                        httpRequest.getRequestURI()
                 ));
     }
 

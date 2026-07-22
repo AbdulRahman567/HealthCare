@@ -33,17 +33,18 @@ class JwtPrincipalValidatorTest {
     private JwtPrincipalValidator validator;
 
     @Test
-    @DisplayName("builds principal for active verified user")
+    @DisplayName("builds principal for active verified user from database roles")
     void validateAndBuildPrincipal_success() {
         final User user = AuthTestData.activeVerifiedUser("hash");
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        user.addRole(AuthTestData.hospitalAdminRole());
+        when(userRepository.findByIdWithRolesAndPermissions(user.getId())).thenReturn(Optional.of(user));
 
         final JwtClaims claims = new JwtClaims(
                 user.getId(),
                 user.getTenantId(),
                 user.getEmail(),
-                Set.of("HOSPITAL_ADMIN"),
-                Set.of("HOSPITAL_READ"),
+                Set.of("STALE_ROLE"),
+                Set.of("STALE_PERMISSION"),
                 0L,
                 JwtTokenType.ACCESS
         );
@@ -51,13 +52,39 @@ class JwtPrincipalValidatorTest {
         final AuthenticatedUser principal = validator.validateAndBuildPrincipal(claims);
 
         assertThat(principal.getUserId()).isEqualTo(user.getId());
+        assertThat(principal.getTenantId()).isEqualTo(user.getTenantId());
         assertThat(principal.getEmail()).isEqualTo(user.getEmail());
+        assertThat(principal.getRoles()).containsExactly("HOSPITAL_ADMIN");
+        assertThat(principal.getPermissions()).contains("HOSPITAL_READ");
+        assertThat(principal.getRoles()).doesNotContain("STALE_ROLE");
+        assertThat(principal.getPermissions()).doesNotContain("STALE_PERMISSION");
+    }
+
+    @Test
+    @DisplayName("claim tenant mismatch against database rejects the token")
+    void tenantClaimMismatch() {
+        final User user = AuthTestData.activeVerifiedUser("hash");
+        when(userRepository.findByIdWithRolesAndPermissions(user.getId())).thenReturn(Optional.of(user));
+
+        final JwtClaims claims = new JwtClaims(
+                user.getId(),
+                java.util.UUID.randomUUID(),
+                user.getEmail(),
+                Set.of("HOSPITAL_ADMIN"),
+                Set.of(),
+                0L,
+                JwtTokenType.ACCESS
+        );
+
+        assertThatThrownBy(() -> validator.validateAndBuildPrincipal(claims))
+                .isInstanceOf(InvalidTokenException.class)
+                .hasMessageContaining("tenant");
     }
 
     @Test
     @DisplayName("missing user throws UnauthorizedException")
     void missingUser() {
-        when(userRepository.findById(AuthTestData.userId())).thenReturn(Optional.empty());
+        when(userRepository.findByIdWithRolesAndPermissions(AuthTestData.userId())).thenReturn(Optional.empty());
 
         final JwtClaims claims = new JwtClaims(
                 AuthTestData.userId(),
@@ -78,7 +105,7 @@ class JwtPrincipalValidatorTest {
     void inactiveAccount() {
         final User user = AuthTestData.activeVerifiedUser("hash");
         user.setStatus(UserStatus.INACTIVE);
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByIdWithRolesAndPermissions(user.getId())).thenReturn(Optional.of(user));
 
         final JwtClaims claims = new JwtClaims(
                 user.getId(),
@@ -99,7 +126,7 @@ class JwtPrincipalValidatorTest {
     void unverifiedEmail() {
         final User user = AuthTestData.activeVerifiedUser("hash");
         user.setEmailVerified(false);
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByIdWithRolesAndPermissions(user.getId())).thenReturn(Optional.of(user));
 
         final JwtClaims claims = new JwtClaims(
                 user.getId(),
@@ -120,7 +147,7 @@ class JwtPrincipalValidatorTest {
     void tokenVersionMismatch() {
         final User user = AuthTestData.activeVerifiedUser("hash");
         user.setTokenVersion(2L);
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByIdWithRolesAndPermissions(user.getId())).thenReturn(Optional.of(user));
 
         final JwtClaims claims = new JwtClaims(
                 user.getId(),

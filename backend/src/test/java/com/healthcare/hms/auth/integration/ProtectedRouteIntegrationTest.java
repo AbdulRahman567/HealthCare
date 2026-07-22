@@ -9,11 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.healthcare.hms.auth.dto.request.LoginRequest;
-import com.healthcare.hms.auth.dto.request.RegisterAdminRequest;
-import com.healthcare.hms.auth.dto.request.RegisterHospitalRequest;
 import com.healthcare.hms.auth.dto.request.VerifyEmailRequest;
 import com.healthcare.hms.auth.service.EmailVerificationService;
-import com.healthcare.hms.hospitals.enums.SubscriptionPlan;
+import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
+import com.healthcare.hms.tenant.enums.SubscriptionPlan;
 import com.healthcare.hms.support.AbstractMySqlIntegrationTest;
 import com.healthcare.hms.users.entity.User;
 import com.healthcare.hms.users.repository.UserRepository;
@@ -124,23 +123,21 @@ class ProtectedRouteIntegrationTest extends AbstractMySqlIntegrationTest {
      * directly-issued verification token, logs in, and returns a valid access token.
      */
     private String registerVerifyAndLogin(final String emailPrefix) throws Exception {
-        final RegisterHospitalRequest hospitalRequest = new RegisterHospitalRequest(
+        final String hospitalEmail = uniqueEmail(emailPrefix + "-hospital");
+        final String email = uniqueEmail(emailPrefix);
+        final HospitalRegistrationRequest hospitalRequest = new HospitalRegistrationRequest(
                 "Test Hospital " + UUID.randomUUID(),
-                uniqueEmail(emailPrefix + "-hospital"),
+                hospitalEmail,
                 "+1-555-0100",
                 "123 Main St, Testville",
-                SubscriptionPlan.BASIC
+                SubscriptionPlan.BASIC,
+                "Jane",
+                "Admin",
+                email,
+                STRONG_PASSWORD,
+                "+1-555-0101"
         );
-        final MvcResult hospitalResult = postJson(BASE + "/register/hospital", hospitalRequest)
-                .andExpect(status().isCreated())
-                .andReturn();
-        final UUID tenantId = UUID.fromString(dataOf(hospitalResult).get("tenantId").asText());
-
-        final String email = uniqueEmail(emailPrefix);
-        final RegisterAdminRequest adminRequest = new RegisterAdminRequest(
-                tenantId, "Jane", "Admin", email, STRONG_PASSWORD, "+1-555-0101"
-        );
-        postJson(BASE + "/register/admin", adminRequest)
+        postJson(BASE + "/register/hospital", hospitalRequest)
                 .andExpect(status().isCreated());
 
         final User user = userRepository.findByEmailIgnoreCase(email)

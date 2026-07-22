@@ -1,7 +1,7 @@
 package com.healthcare.hms.audit.entity;
 
 import com.healthcare.hms.audit.enums.AuditAction;
-import com.healthcare.hms.common.persistence.TenantAwareEntity;
+import com.healthcare.hms.common.persistence.TenantOwnedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,7 +31,7 @@ import org.hibernate.annotations.SQLRestriction;
         }
 )
 @SQLRestriction("deleted = false")
-public class AuditLog extends TenantAwareEntity {
+public class AuditLog extends TenantOwnedEntity {
 
     @Column(name = "user_id", columnDefinition = "CHAR(36)")
     private UUID userId;

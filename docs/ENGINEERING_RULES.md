@@ -129,7 +129,8 @@ src/
 
 ├── auth
 ├── users
-├── hospitals
+├── tenant          # Multi-tenant foundation (Phase 2.1)
+├── hospitals       # Hospital profile / departments (Phase 3+)
 ├── patients
 ├── appointments
 ├── visits

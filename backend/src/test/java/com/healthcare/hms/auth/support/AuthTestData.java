@@ -1,8 +1,9 @@
 package com.healthcare.hms.auth.support;
 
-import com.healthcare.hms.hospitals.entity.Tenant;
-import com.healthcare.hms.hospitals.enums.SubscriptionPlan;
-import com.healthcare.hms.hospitals.enums.TenantStatus;
+import com.healthcare.hms.tenant.entity.Tenant;
+import com.healthcare.hms.tenant.enums.SubscriptionPlan;
+import com.healthcare.hms.tenant.enums.TenantStatus;
+import com.healthcare.hms.tenant.enums.TenantType;
 import com.healthcare.hms.users.entity.Permission;
 import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
@@ -63,6 +64,7 @@ public final class AuthTestData {
         tenant.setId(tenantId());
         tenant.setName("Test Hospital");
         tenant.setSlug("test-hospital");
+        tenant.setTenantType(TenantType.HOSPITAL);
         tenant.setEmail("hospital@hospital.test");
         tenant.setSubscriptionPlan(SubscriptionPlan.BASIC);
         tenant.setStatus(TenantStatus.ACTIVE);

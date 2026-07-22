@@ -4,6 +4,8 @@ import com.healthcare.hms.security.SecurityConstants;
 import com.healthcare.hms.security.handler.RestAccessDeniedHandler;
 import com.healthcare.hms.security.handler.RestAuthenticationEntryPoint;
 import com.healthcare.hms.security.jwt.JwtAuthenticationFilter;
+import com.healthcare.hms.tenant.web.TenantFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -16,21 +18,26 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * Stateless JWT security filter chain for REST APIs.
+ *
+ * <p>Filter order: JWT authentication → tenant middleware → controllers.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final TenantFilter tenantFilter;
     private final RestAuthenticationEntryPoint authenticationEntryPoint;
     private final RestAccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(
             final JwtAuthenticationFilter jwtAuthenticationFilter,
+            final TenantFilter tenantFilter,
             final RestAuthenticationEntryPoint authenticationEntryPoint,
             final RestAccessDeniedHandler accessDeniedHandler
     ) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.tenantFilter = tenantFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
     }
@@ -56,6 +63,27 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(tenantFilter, JwtAuthenticationFilter.class)
                 .build();
+    }
+
+    /**
+     * Prevents servlet-container auto-registration of {@code @Component} security filters.
+     * They must run only inside the Spring Security chain (correct order + OncePerRequest dedupe).
+     */
+    @Bean
+    public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilterRegistration(
+            final JwtAuthenticationFilter filter
+    ) {
+        final FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<TenantFilter> tenantFilterRegistration(final TenantFilter filter) {
+        final FilterRegistrationBean<TenantFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 }

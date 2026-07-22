@@ -7,13 +7,11 @@ import com.healthcare.hms.auth.dto.request.ForgotPasswordRequest;
 import com.healthcare.hms.auth.dto.request.LoginRequest;
 import com.healthcare.hms.auth.dto.request.RefreshTokenRequest;
 import com.healthcare.hms.auth.dto.request.RegisterAdminRequest;
-import com.healthcare.hms.auth.dto.request.RegisterHospitalRequest;
 import com.healthcare.hms.auth.dto.request.ResendVerificationRequest;
 import com.healthcare.hms.auth.dto.request.ResetPasswordRequest;
 import com.healthcare.hms.auth.dto.request.UpdateProfileRequest;
 import com.healthcare.hms.auth.dto.request.VerifyEmailRequest;
 import com.healthcare.hms.auth.dto.response.AuthResponse;
-import com.healthcare.hms.auth.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.auth.dto.response.UserProfileResponse;
 import com.healthcare.hms.auth.mapper.AuthMapper;
 import com.healthcare.hms.auth.service.AuthService;
@@ -24,15 +22,19 @@ import com.healthcare.hms.auth.service.PasswordResetService;
 import com.healthcare.hms.auth.service.RefreshTokenService;
 import com.healthcare.hms.common.email.EmailDeliveryException;
 import com.healthcare.hms.common.exception.BusinessException;
-import com.healthcare.hms.common.exception.ConflictException;
 import com.healthcare.hms.common.exception.ResourceNotFoundException;
 import com.healthcare.hms.common.exception.auth.AccountNotActiveException;
 import com.healthcare.hms.common.exception.auth.EmailNotVerifiedException;
+import com.healthcare.hms.common.exception.auth.ForbiddenException;
 import com.healthcare.hms.common.exception.auth.InvalidCredentialsException;
-import com.healthcare.hms.hospitals.entity.Tenant;
-import com.healthcare.hms.hospitals.enums.SubscriptionPlan;
-import com.healthcare.hms.hospitals.enums.TenantStatus;
-import com.healthcare.hms.hospitals.repository.TenantRepository;
+import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
+import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
+import com.healthcare.hms.hospitals.enums.HospitalStatus;
+import com.healthcare.hms.hospitals.repository.HospitalRepository;
+import com.healthcare.hms.hospitals.service.HospitalRegistrationService;
+import com.healthcare.hms.tenant.entity.Tenant;
+import com.healthcare.hms.tenant.enums.TenantStatus;
+import com.healthcare.hms.tenant.repository.TenantRepository;
 import com.healthcare.hms.security.jwt.JwtClaims;
 import com.healthcare.hms.security.jwt.JwtProperties;
 import com.healthcare.hms.security.jwt.JwtService;
@@ -40,17 +42,12 @@ import com.healthcare.hms.security.jwt.JwtTokenType;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.security.util.SecurityUtils;
 import com.healthcare.hms.users.entity.Permission;
-import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
-import com.healthcare.hms.users.enums.RoleType;
 import com.healthcare.hms.users.enums.UserStatus;
-import com.healthcare.hms.users.repository.RoleRepository;
 import com.healthcare.hms.users.repository.UserRepository;
-import java.text.Normalizer;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +65,12 @@ public class AuthServiceImpl implements AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
     private static final String ENTITY_USER = "USER";
-    private static final String ENTITY_TENANT = "TENANT";
     private static final String TOKEN_TYPE_BEARER = "Bearer";
-    private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-z0-9]+");
-    private static final Pattern MULTI_DASH = Pattern.compile("-{2,}");
 
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final TenantRepository tenantRepository;
+    private final HospitalRepository hospitalRepository;
+    private final HospitalRegistrationService hospitalRegistrationService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
@@ -89,8 +84,9 @@ public class AuthServiceImpl implements AuthService {
 
     public AuthServiceImpl(
             final UserRepository userRepository,
-            final RoleRepository roleRepository,
             final TenantRepository tenantRepository,
+            final HospitalRepository hospitalRepository,
+            final HospitalRegistrationService hospitalRegistrationService,
             final PasswordEncoder passwordEncoder,
             final JwtService jwtService,
             final JwtProperties jwtProperties,
@@ -103,8 +99,9 @@ public class AuthServiceImpl implements AuthService {
             final EmailVerificationEmailService emailVerificationEmailService
     ) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.tenantRepository = tenantRepository;
+        this.hospitalRepository = hospitalRepository;
+        this.hospitalRegistrationService = hospitalRegistrationService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
@@ -164,43 +161,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public HospitalRegistrationResponse registerHospital(
-            final RegisterHospitalRequest request,
+            final HospitalRegistrationRequest request,
             final String ipAddress,
             final String userAgent
     ) {
-        final String email = normalizeEmail(request.email());
-        if (tenantRepository.existsByEmailIgnoreCase(email)) {
-            throw new ConflictException("EMAIL_ALREADY_EXISTS", "Hospital email is already registered");
-        }
-
-        final String slug = generateUniqueSlug(request.hospitalName());
-        final Tenant tenant = new Tenant();
-        tenant.setName(request.hospitalName().trim());
-        tenant.setSlug(slug);
-        tenant.setEmail(email);
-        tenant.setPhone(trimToNull(request.phone()));
-        tenant.setAddress(trimToNull(request.address()));
-        tenant.setSubscriptionPlan(
-                request.subscriptionPlan() == null ? SubscriptionPlan.BASIC : request.subscriptionPlan());
-        // Stay PENDING until the initial hospital admin verifies email — prevents open tenant takeover.
-        tenant.setStatus(TenantStatus.PENDING);
-
-        final Tenant savedTenant = tenantRepository.save(tenant);
-
-        auditLogService.record(
-                savedTenant.getId(),
-                null,
-                ENTITY_TENANT,
-                savedTenant.getId().toString(),
-                AuditAction.CREATE,
-                null,
-                "Hospital registered: " + savedTenant.getName(),
-                ipAddress,
-                userAgent
-        );
-
-        log.info("Hospital tenant registered tenantId={} slug={}", savedTenant.getId(), savedTenant.getSlug());
-        return authMapper.toHospitalRegistration(savedTenant);
+        return hospitalRegistrationService.register(request, ipAddress, userAgent);
     }
 
     @Override
@@ -209,93 +174,11 @@ public class AuthServiceImpl implements AuthService {
             final String ipAddress,
             final String userAgent
     ) {
-        final Tenant tenant = tenantRepository.findById(request.tenantId())
-                .orElseThrow(() -> new ResourceNotFoundException("Hospital tenant not found"));
-
-        if (tenant.getStatus() != TenantStatus.PENDING && tenant.getStatus() != TenantStatus.ACTIVE) {
-            throw new BusinessException("TENANT_NOT_ACTIVE", "Hospital tenant is not eligible for onboarding");
-        }
-
-        final long existingAdmins = userRepository.countByTenantIdAndRoleType(
-                tenant.getId(),
-                RoleType.HOSPITAL_ADMIN
+        // Phase 2.7: disabled — bare tenantId onboarding enabled tenant enumeration and
+        // admin takeover of orphan/admin-less tenants. Use atomic hospital registration.
+        throw new ForbiddenException(
+                "Legacy initial-admin registration is disabled. Use POST /api/v1/hospitals/register"
         );
-        if (existingAdmins > 0) {
-            throw new ConflictException(
-                    "INITIAL_ADMIN_EXISTS",
-                    "Initial hospital administrator is already registered for this tenant"
-            );
-        }
-
-        final String email = normalizeEmail(request.email());
-        if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new ConflictException("EMAIL_ALREADY_EXISTS", "Email is already registered");
-        }
-
-        final Role hospitalAdminRole = roleRepository.findSystemRoleWithPermissions(RoleType.HOSPITAL_ADMIN)
-                .orElseThrow(() -> new BusinessException(
-                        "ROLE_NOT_CONFIGURED",
-                        "Hospital Admin role is not configured"
-                ));
-
-        final User admin = new User();
-        admin.setTenantId(tenant.getId());
-        admin.setFirstName(request.firstName().trim());
-        admin.setLastName(request.lastName().trim());
-        admin.setEmail(email);
-        admin.setPasswordHash(passwordEncoder.encode(request.password()));
-        admin.setPhone(trimToNull(request.phone()));
-        admin.setStatus(UserStatus.ACTIVE);
-        admin.setEmailVerified(false);
-        admin.addRole(hospitalAdminRole);
-
-        final User savedAdmin = userRepository.save(admin);
-
-        try {
-            final String rawToken = emailVerificationService.issueVerificationToken(
-                    savedAdmin,
-                    ipAddress,
-                    userAgent
-            );
-            emailVerificationEmailService.sendVerificationLink(savedAdmin, rawToken);
-
-            auditLogService.record(
-                    tenant.getId(),
-                    savedAdmin.getId(),
-                    ENTITY_USER,
-                    savedAdmin.getId().toString(),
-                    AuditAction.EMAIL_VERIFICATION_REQUEST,
-                    null,
-                    "Verification email sent on registration",
-                    ipAddress,
-                    userAgent
-            );
-        } catch (final EmailDeliveryException exception) {
-            log.error(
-                    "Verification email could not be delivered for userId={}",
-                    savedAdmin.getId(),
-                    exception
-            );
-        }
-
-        auditLogService.record(
-                tenant.getId(),
-                savedAdmin.getId(),
-                ENTITY_USER,
-                savedAdmin.getId().toString(),
-                AuditAction.CREATE,
-                null,
-                "Initial hospital admin registered (email verification pending)",
-                ipAddress,
-                userAgent
-        );
-
-        log.info(
-                "Initial hospital admin registered userId={} tenantId={} (awaiting email verification)",
-                savedAdmin.getId(),
-                tenant.getId()
-        );
-        return authMapper.toUserProfile(savedAdmin);
     }
 
     @Override
@@ -513,13 +396,20 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         emailVerificationService.markTokenUsed(request.token());
 
-        // Activate pending hospital tenant once the initial admin verifies email.
+        // Activate pending hospital tenant + default hospital once the initial admin verifies email.
         if (user.getTenantId() != null) {
             tenantRepository.findById(user.getTenantId()).ifPresent(tenant -> {
                 if (tenant.getStatus() == TenantStatus.PENDING) {
-                    tenant.setStatus(TenantStatus.ACTIVE);
+                    tenant.activate();
                     tenantRepository.save(tenant);
                     log.info("Hospital tenant activated after admin verification tenantId={}", tenant.getId());
+                }
+            });
+            hospitalRepository.findByTenantIdAndDefaultHospitalTrue(user.getTenantId()).ifPresent(hospital -> {
+                if (hospital.getStatus() == HospitalStatus.PENDING) {
+                    hospital.setStatus(HospitalStatus.ACTIVE);
+                    hospitalRepository.save(hospital);
+                    log.info("Default hospital activated after admin verification hospitalId={}", hospital.getId());
                 }
             });
         }
@@ -634,30 +524,6 @@ public class AuthServiceImpl implements AuthService {
                 refreshExpiresInSeconds,
                 authMapper.toUserProfile(user)
         );
-    }
-
-    private String generateUniqueSlug(final String hospitalName) {
-        String baseSlug = toSlug(hospitalName);
-        if (baseSlug.isBlank()) {
-            baseSlug = "hospital";
-        }
-
-        String candidate = baseSlug;
-        int suffix = 1;
-        while (tenantRepository.existsBySlugIgnoreCase(candidate)) {
-            candidate = baseSlug + "-" + suffix;
-            suffix++;
-        }
-        return candidate;
-    }
-
-    private static String toSlug(final String value) {
-        final String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toLowerCase(Locale.ROOT)
-                .trim();
-        final String dashed = NON_ALPHANUMERIC.matcher(normalized).replaceAll("-");
-        return MULTI_DASH.matcher(dashed).replaceAll("-").replaceAll("^-|-$", "");
     }
 
     private static String normalizeEmail(final String email) {

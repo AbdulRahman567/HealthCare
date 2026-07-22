@@ -23,7 +23,10 @@ export function AuthShell({ title, description, children, footer, className }: A
       <aside className="relative hidden overflow-hidden bg-[linear-gradient(145deg,#0b3a5b_0%,#0f5f8a_48%,#1a7a9c_100%)] px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(56,189,248,0.2),transparent_40%)]" />
         <div className="relative space-y-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium tracking-wide">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-sm font-medium tracking-wide"
+          >
             <span className="bg-white/15 flex size-9 items-center justify-center rounded-lg backdrop-blur-sm">
               <HeartPulse className="size-4" aria-hidden />
             </span>
@@ -49,7 +52,10 @@ export function AuthShell({ title, description, children, footer, className }: A
       <main className="flex items-center justify-center px-4 py-10 sm:px-8">
         <div className={cn('w-full max-w-md space-y-6', className)}>
           <div className="space-y-2 lg:hidden">
-            <Link href="/" className="text-foreground inline-flex items-center gap-2 text-sm font-medium">
+            <Link
+              href="/"
+              className="text-foreground inline-flex items-center gap-2 text-sm font-medium"
+            >
               <span className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg">
                 <HeartPulse className="size-3.5" aria-hidden />
               </span>

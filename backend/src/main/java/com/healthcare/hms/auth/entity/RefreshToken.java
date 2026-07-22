@@ -1,6 +1,6 @@
 package com.healthcare.hms.auth.entity;
 
-import com.healthcare.hms.common.persistence.TenantAwareEntity;
+import com.healthcare.hms.common.persistence.TenantOwnedEntity;
 import com.healthcare.hms.users.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,7 +31,7 @@ import org.hibernate.annotations.SQLRestriction;
         }
 )
 @SQLRestriction("deleted = false")
-public class RefreshToken extends TenantAwareEntity {
+public class RefreshToken extends TenantOwnedEntity {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

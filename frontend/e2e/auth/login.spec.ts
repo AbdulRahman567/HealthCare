@@ -48,9 +48,9 @@ test.describe('Login page', () => {
     await page.getByLabel('Password').fill('some-password');
     await page.getByRole('button', { name: 'Sign in' }).click();
 
-    await expect(
-      page.getByText(/valid email|email address/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/valid email|email address/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('links to the forgot password page', async ({ page }) => {
@@ -101,7 +101,8 @@ test.describe('Login page', () => {
     await page.getByLabel('Password').fill('CorrectPass1!');
 
     const loginResponse = page.waitForResponse(
-      (response) => response.url().includes('/auth/login') && response.request().method() === 'POST',
+      (response) =>
+        response.url().includes('/auth/login') && response.request().method() === 'POST',
     );
     await page.getByRole('button', { name: 'Sign in' }).click();
     const response = await loginResponse;

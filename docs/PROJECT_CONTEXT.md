@@ -188,7 +188,7 @@ Always enforce:
 - Input Validation
 - Secure File Uploads
 - Audit Logging
-- Tenant Isolation
+- Tenant Isolation (Shared Schema + `tenant_id`; see MULTI_TENANCY.md)
 
 Never expose:
 
@@ -196,6 +196,22 @@ Never expose:
 - Secrets
 - Internal errors
 - Sensitive medical information
+
+---
+
+# 9.1 Architectural Decisions (active)
+
+| Decision                 | Choice                                                                       | Why                                                                                           |
+| ------------------------ | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Multi-tenancy            | Shared DB + Shared Schema + Tenant ID                                        | Operational simplicity, matches DATABASE.md, scales horizontally; physical isolation deferred |
+| Tenant module            | `com.healthcare.hms.tenant`                                                  | Cross-cutting foundation separate from Phase 3 hospital business APIs                         |
+| Tenant resolution        | `X-Tenant-ID` via `HeaderTenantResolver`                                     | Phase 2.2; subdomain resolver wired but disabled                                              |
+| Tenant middleware        | `TenantFilter` after JWT (`OncePerRequestFilter`)                            | Phase 2.3; public bypass + always clear context                                               |
+| Tenant persistence       | `TenantOwnedEntity` + Hibernate `tenantFilter`                               | Phase 2.4; enabled on JPA TX begin from `TenantContextHolder`                                 |
+| Hospital registration    | Atomic `POST /api/v1/hospitals/register`                                     | Phase 2.5; tenant + default hospital + admin + roles                                          |
+| Hospital settings        | `GET/PUT /api/v1/hospitals/settings`                                         | Phase 2.6; tenant-isolated profile/locale/contact/hours                                       |
+| Tenant security audit    | Hardened resolution, JWT, public bypass, legacy admin disabled               | Phase 2.7                                                                                     |
+| Tenant production review | Auth-first tenant filter, OpenAPI tenant header, FE/BE registration contract | Phase 2.8                                                                                     |
 
 ---
 
@@ -269,6 +285,7 @@ frontend/
 backend/
 ├── auth
 ├── users
+├── tenant
 ├── hospitals
 ├── patients
 ├── appointments
@@ -311,6 +328,7 @@ The project documentation includes:
 - SECURITY.md
 - TESTING.md
 - DEPLOYMENT.md
+- MULTI_TENANCY.md
 
 ---
 

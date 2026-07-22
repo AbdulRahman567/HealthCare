@@ -1,7 +1,7 @@
 package com.healthcare.hms.users.entity;
 
 import com.healthcare.hms.auth.entity.RefreshToken;
-import com.healthcare.hms.common.persistence.TenantAwareEntity;
+import com.healthcare.hms.common.persistence.TenantOwnedEntity;
 import com.healthcare.hms.users.enums.UserStatus;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,7 +39,7 @@ import org.hibernate.annotations.SQLRestriction;
         }
 )
 @SQLRestriction("deleted = false")
-public class User extends TenantAwareEntity {
+public class User extends TenantOwnedEntity {
 
     @NotBlank
     @Size(max = 100)

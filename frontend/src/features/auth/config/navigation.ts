@@ -83,11 +83,7 @@ export const APP_NAVIGATION: NavItem[] = [
   },
 ];
 
-export function canAccessNavItem(
-  item: NavItem,
-  roles: string[],
-  permissions: string[],
-): boolean {
+export function canAccessNavItem(item: NavItem, roles: string[], permissions: string[]): boolean {
   const roleOk =
     !item.roles || item.roles.length === 0 || item.roles.some((role) => roles.includes(role));
   const permissionOk =

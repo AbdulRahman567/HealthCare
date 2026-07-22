@@ -6,10 +6,7 @@ import type { ReactNode } from 'react';
 
 import { buttonVariants } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import {
-  APP_NAVIGATION,
-  canAccessNavItem,
-} from '@/features/auth/config/navigation';
+import { APP_NAVIGATION, canAccessNavItem } from '@/features/auth/config/navigation';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/providers/session-provider';
 

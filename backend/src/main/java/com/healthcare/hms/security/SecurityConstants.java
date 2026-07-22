@@ -31,7 +31,9 @@ public final class SecurityConstants {
             "/api/v1/system/health",
             "/api/v1/auth/login",
             "/api/v1/auth/register/hospital",
+            // Kept public only to return HTTP 410 Gone — handler never performs tenant lookups.
             "/api/v1/auth/register/admin",
+            "/api/v1/hospitals/register",
             "/api/v1/auth/refresh-token",
             "/api/v1/auth/forgot-password",
             "/api/v1/auth/reset-password",

@@ -11,10 +11,7 @@ export const metadata: Metadata = {
 
 export default function VerifyEmailPage() {
   return (
-    <AuthShell
-      title="Verify email"
-      description="Confirming your email address for Healthcare HMS."
-    >
+    <AuthShell title="Verify email" description="Confirming your email address for Healthcare HMS.">
       <Suspense fallback={<p className="text-muted-foreground text-sm">Preparing verification…</p>}>
         <VerifyEmailHandler />
       </Suspense>

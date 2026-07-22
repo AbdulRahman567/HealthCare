@@ -14,9 +14,7 @@ describe('AuthFormMessage', () => {
   });
 
   it('renders a success message with title and description', () => {
-    render(
-      <AuthFormMessage variant="success" title="Check your email" description="Link sent" />,
-    );
+    render(<AuthFormMessage variant="success" title="Check your email" description="Link sent" />);
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('Check your email')).toBeInTheDocument();

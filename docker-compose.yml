@@ -37,6 +37,7 @@ services:
       JWT_ALLOW_INSECURE_SECRETS: ${JWT_ALLOW_INSECURE_SECRETS:-true}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost}
+      TENANT_SUBDOMAIN_RESOLUTION_ENABLED: ${TENANT_SUBDOMAIN_RESOLUTION_ENABLED:-false}
     ports:
       - '8080:8080'
     depends_on:

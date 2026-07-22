@@ -12,7 +12,10 @@ export function AuthFormMessage({ variant, title, description }: AuthFormMessage
   const isError = variant === 'error';
 
   return (
-    <Alert variant={isError ? 'destructive' : 'default'} className={isError ? undefined : 'border-emerald-200 bg-emerald-50 text-emerald-950'}>
+    <Alert
+      variant={isError ? 'destructive' : 'default'}
+      className={isError ? undefined : 'border-emerald-200 bg-emerald-50 text-emerald-950'}
+    >
       {isError ? <AlertCircleIcon /> : <CheckCircle2Icon className="text-emerald-600" />}
       <AlertTitle>{title}</AlertTitle>
       {description ? <AlertDescription>{description}</AlertDescription> : null}

@@ -192,6 +192,12 @@ WHERE tenant_id = ?
 
 Never allow cross-tenant access.
 
+Enforcement (Phase 2.4): Hibernate `tenantFilter` on `TenantOwnedEntity` subclasses,
+enabled on JPA transaction begin from `TenantContextHolder`. See MULTI_TENANCY.md §6.1.
+
+Native SQL against tenant-owned tables is forbidden unless it includes an explicit
+`tenant_id` predicate and is security-reviewed.
+
 All uploaded files
 
 All reports

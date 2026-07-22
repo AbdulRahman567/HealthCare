@@ -22,19 +22,25 @@ export const authApi = {
 
   async registerHospital(payload: RegisterHospitalPayload): Promise<HospitalRegistrationResponse> {
     const { data } = await apiClient.post<ApiSuccessResponse<HospitalRegistrationResponse>>(
-      '/auth/register/hospital',
+      '/hospitals/register',
       payload,
     );
     return data.data;
   },
 
   async forgotPassword(payload: ForgotPasswordPayload): Promise<string> {
-    const { data } = await apiClient.post<ApiSuccessResponse<null>>('/auth/forgot-password', payload);
+    const { data } = await apiClient.post<ApiSuccessResponse<null>>(
+      '/auth/forgot-password',
+      payload,
+    );
     return data.message;
   },
 
   async resetPassword(payload: ResetPasswordPayload): Promise<string> {
-    const { data } = await apiClient.post<ApiSuccessResponse<null>>('/auth/reset-password', payload);
+    const { data } = await apiClient.post<ApiSuccessResponse<null>>(
+      '/auth/reset-password',
+      payload,
+    );
     return data.message;
   },
 
@@ -44,7 +50,10 @@ export const authApi = {
   },
 
   async resendVerification(payload: ResendVerificationPayload): Promise<string> {
-    const { data } = await apiClient.post<ApiSuccessResponse<null>>('/auth/resend-verification', payload);
+    const { data } = await apiClient.post<ApiSuccessResponse<null>>(
+      '/auth/resend-verification',
+      payload,
+    );
     return data.message;
   },
 

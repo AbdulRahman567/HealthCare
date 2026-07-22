@@ -22,10 +22,9 @@ test.describe('Verify email pages', () => {
     await expect(
       page.getByText('This verification link has expired. Request a new one to continue.'),
     ).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Request a new verification link' })).toHaveAttribute(
-      'href',
-      '/resend-verification',
-    );
+    await expect(
+      page.getByRole('link', { name: 'Request a new verification link' }),
+    ).toHaveAttribute('href', '/resend-verification');
   });
 
   test('the failed page explains an invalid link', async ({ page }) => {

@@ -2,10 +2,8 @@ package com.healthcare.hms.auth.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.healthcare.hms.auth.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.auth.dto.response.UserProfileResponse;
 import com.healthcare.hms.auth.support.AuthTestData;
-import com.healthcare.hms.hospitals.entity.Tenant;
 import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
 import java.util.Set;
@@ -18,11 +16,6 @@ class AuthMapperTest {
     private final AuthMapper mapper = new AuthMapper() {
         @Override
         public UserProfileResponse toUserProfile(final User user) {
-            return null;
-        }
-
-        @Override
-        public HospitalRegistrationResponse toHospitalRegistration(final Tenant tenant) {
             return null;
         }
     };

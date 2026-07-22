@@ -26,7 +26,10 @@ export default function LandingPage() {
           <Link href="/login" className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 px-3')}>
             Sign in
           </Link>
-          <Link href="/register/hospital" className={cn(buttonVariants({ variant: 'default' }), 'h-9 px-3')}>
+          <Link
+            href="/register/hospital"
+            className={cn(buttonVariants({ variant: 'default' }), 'h-9 px-3')}
+          >
             Register hospital
           </Link>
         </nav>
@@ -46,12 +49,18 @@ export default function LandingPage() {
             dashboards.
           </p>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/register/hospital" className={cn(buttonVariants({ size: 'lg' }), 'h-11 min-w-44 px-5')}>
+            <Link
+              href="/register/hospital"
+              className={cn(buttonVariants({ size: 'lg' }), 'h-11 min-w-44 px-5')}
+            >
               Register your hospital
             </Link>
             <Link
               href="/login"
-              className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-11 min-w-44 px-5')}
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'lg' }),
+                'h-11 min-w-44 px-5',
+              )}
             >
               Sign in
             </Link>
@@ -70,7 +79,8 @@ export default function LandingPage() {
             <LockKeyhole className="text-primary size-5" />
             <h2 className="font-medium">Secure authentication</h2>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              JWT-backed sign-in with validated forms, clear errors, and production-ready API wiring.
+              JWT-backed sign-in with validated forms, clear errors, and production-ready API
+              wiring.
             </p>
           </article>
           <article className="space-y-3 rounded-2xl border border-black/5 bg-white/80 p-6 shadow-sm backdrop-blur">
