@@ -10,8 +10,10 @@ import com.healthcare.hms.hospitals.entity.Hospital;
 import com.healthcare.hms.hospitals.mapper.HospitalSettingsMapper;
 import com.healthcare.hms.hospitals.repository.HospitalRepository;
 import com.healthcare.hms.hospitals.service.HospitalSettingsService;
+import com.healthcare.hms.security.annotation.RequirePermission;
 import com.healthcare.hms.security.util.SecurityUtils;
 import com.healthcare.hms.tenant.context.TenantContextHolder;
+import com.healthcare.hms.users.constant.PermissionConstants;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -51,12 +53,14 @@ public class HospitalSettingsServiceImpl implements HospitalSettingsService {
 
     @Override
     @Transactional(readOnly = true)
+    @RequirePermission(PermissionConstants.HOSPITAL_READ)
     public HospitalSettingsResponse getSettings() {
         return hospitalSettingsMapper.toResponse(requireDefaultHospital());
     }
 
     @Override
     @Transactional
+    @RequirePermission(PermissionConstants.HOSPITAL_UPDATE)
     public HospitalSettingsResponse updateSettings(
             final UpdateHospitalSettingsRequest request,
             final String ipAddress,

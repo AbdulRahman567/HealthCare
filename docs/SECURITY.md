@@ -156,7 +156,46 @@ Lab Technician
 
 Pharmacist
 
+Accountant
+
 Patient
+
+### Permission model (Phase 3.1 / 3.5)
+
+- Canonical code format: `{PermissionGroup}_{PermissionAction}`
+  (e.g. `PATIENT_READ`, `PATIENT_CREATE`, `PATIENT_UPDATE`, `PATIENT_DELETE`).
+- Actions: `READ`, `CREATE`, `UPDATE`, `DELETE` (legacy `WRITE` renamed to `UPDATE` in Phase 3.5).
+- Permissions are a **platform-global catalog**; tenant isolation is via tenant-scoped roles
+  and `role_permissions` grants.
+- Default grants for system roles are defined in `SystemRolePermissionMatrix`
+  (see [PERMISSION_MATRIX.md](./PERMISSION_MATRIX.md)).
+- Role **hierarchy** (parent + `hierarchy_level`) is structural for ordering/assignment
+  eligibility. Runtime access remains the **explicit** permission set on the role
+  (no silent inheritance).
+
+### Authorization infrastructure (Phase 3.2)
+
+- Centralized evaluation via `PermissionEvaluator` + enforcement via `AuthorizationService`.
+- `CurrentUser` abstraction (immutable principal snapshot); `PermissionResolver` derives codes.
+- AuthZ failures use `AuthorizationException` hierarchy (distinct from authN) → HTTP 403.
+- Default deny; method security `hasPermission` SpEL wired through Spring `PermissionEvaluator`.
+
+### Permission-based authorization (Phase 3.3)
+
+- Declarative `@RequirePermission` on controllers (interceptor) and services (aspect).
+- Controllers must not contain imperative authorization logic — annotations + infrastructure only.
+- `PermissionGuard` for rare programmatic checks; unified AccessDenied JSON (`AUTHZ_ACCESS_DENIED`).
+
+### RBAC hardening (Phase 3.8)
+
+- `/api/**` handlers must be classified (`@PublicEndpoint`, `@RequireAuthenticated`,
+  `@RequirePermission`, or `@RequiresRole`); unclassified handlers are denied (fail-closed).
+- Startup coverage guard fails boot if any `/api` REST handler is unclassified.
+- Platform Super Admin tenant bypass is centralized in `PlatformPrincipalSupport`
+  (`tenantId == null` **and** `SUPER_ADMIN`).
+- Temporarily disabling Hibernate `tenantFilter` requires platform Super Admin.
+- Frontend unknown `/app/*` routes fail closed; route catalog is independent of navigation UI.
+- Full findings and recommendations: [RBAC_REVIEW_PHASE_3_8.md](./RBAC_REVIEW_PHASE_3_8.md).
 
 Every request must verify
 

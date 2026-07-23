@@ -23,7 +23,15 @@ type SessionContextValue = {
   user: UserProfile | null;
   accessToken: string | null;
   isAuthenticated: boolean;
+  /**
+   * @deprecated Prefer `useAuthorization().hasRole` / `canAccess` from the authorization feature.
+   * Session snapshot roles may lag behind `GET /auth/authorization`.
+   */
   hasRole: (role: string | string[]) => boolean;
+  /**
+   * @deprecated Prefer `useAuthorization().can` / `canAccess` from the authorization feature.
+   * Session snapshot permissions may lag behind `GET /auth/authorization`.
+   */
   hasPermission: (permission: string | string[]) => boolean;
   signIn: (auth: AuthResponse) => void;
   signOut: () => Promise<void>;

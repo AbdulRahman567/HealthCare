@@ -1,11 +1,11 @@
 package com.healthcare.hms.tenant.validation;
 
+import com.healthcare.hms.security.authorization.PlatformPrincipalSupport;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.tenant.context.TenantContext;
 import com.healthcare.hms.tenant.entity.Tenant;
 import com.healthcare.hms.tenant.exception.TenantMismatchException;
 import com.healthcare.hms.tenant.service.TenantAccessService;
-import com.healthcare.hms.users.enums.RoleType;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,7 +49,7 @@ public class TenantValidationService implements TenantValidation {
             return;
         }
 
-        if (!user.getRoles().contains(RoleType.Names.SUPER_ADMIN)) {
+        if (!PlatformPrincipalSupport.isPlatformSuperAdmin(user)) {
             throw TenantMismatchException.headerDoesNotMatchPrincipal();
         }
     }

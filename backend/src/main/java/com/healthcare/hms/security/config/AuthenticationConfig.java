@@ -4,6 +4,9 @@ import com.healthcare.hms.security.jwt.JwtProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.PermissionEvaluator;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -12,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Core authentication infrastructure beans (encoder, manager) and JWT property binding.
- * Does not register authentication controllers or user persistence.
+ * Wires Spring method-security {@link PermissionEvaluator} for {@code hasPermission} SpEL.
  */
 @Configuration
 @EnableMethodSecurity
@@ -29,5 +32,14 @@ public class AuthenticationConfig {
             final AuthenticationConfiguration authenticationConfiguration
     ) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(
+            final PermissionEvaluator permissionEvaluator
+    ) {
+        final DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
+        handler.setPermissionEvaluator(permissionEvaluator);
+        return handler;
     }
 }

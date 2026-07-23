@@ -5,10 +5,12 @@ import com.healthcare.hms.common.web.ClientRequestDetails;
 import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
 import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.hospitals.service.HospitalRegistrationService;
+import com.healthcare.hms.security.annotation.PublicEndpoint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -34,13 +36,15 @@ public class HospitalRegistrationController {
     }
 
     @PostMapping("/register")
+    @PublicEndpoint
+    @SecurityRequirements
     @Operation(
             summary = "Register a hospital",
             description = """
-                    Atomically creates a tenant, default hospital profile, default roles with
-                    permission grants, and the initial hospital administrator. If any step fails,
-                    the entire registration is rolled back. The administrator must verify email
-                    before signing in; the tenant remains PENDING until verification.
+                    Public (anonymous). Atomically creates a tenant, default hospital profile,
+                    default roles with permission grants, and the initial hospital administrator.
+                    If any step fails, the entire registration is rolled back. The administrator
+                    must verify email before signing in; the tenant remains PENDING until verification.
                     """
     )
     @ApiResponses({

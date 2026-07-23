@@ -5,7 +5,7 @@ import com.healthcare.hms.common.web.ClientRequestDetails;
 import com.healthcare.hms.hospitals.dto.request.UpdateHospitalSettingsRequest;
 import com.healthcare.hms.hospitals.dto.response.HospitalSettingsResponse;
 import com.healthcare.hms.hospitals.service.HospitalSettingsService;
-import com.healthcare.hms.security.annotation.RequiresPermission;
+import com.healthcare.hms.security.annotation.RequirePermission;
 import com.healthcare.hms.users.constant.PermissionConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,12 +39,14 @@ public class HospitalSettingsController {
     }
 
     @GetMapping
-    @RequiresPermission(PermissionConstants.HOSPITAL_READ)
+    @RequirePermission(PermissionConstants.HOSPITAL_READ)
     @Operation(
             summary = "Get hospital settings",
             description = """
-                    Returns the current tenant's default hospital settings: profile, logo,
-                    timezone, currency, language, contact information, address, and working hours.
+                    Requires JWT (Bearer), matching tenant context, role membership, and
+                    permission HOSPITAL_READ. Returns the current tenant's default hospital
+                    settings: profile, logo, timezone, currency, language, contact information,
+                    address, and working hours.
                     """
     )
     @ApiResponses({
@@ -74,12 +76,14 @@ public class HospitalSettingsController {
     }
 
     @PutMapping
-    @RequiresPermission(PermissionConstants.HOSPITAL_WRITE)
+    @RequirePermission(PermissionConstants.HOSPITAL_UPDATE)
     @Operation(
             summary = "Update hospital settings",
             description = """
-                    Replaces the current tenant's default hospital settings. Changes are
-                    audited. Client-supplied hospital or tenant identifiers are not accepted.
+                    Requires JWT (Bearer), matching tenant context, role membership, and
+                    permission HOSPITAL_UPDATE. Replaces the current tenant's default hospital
+                    settings. Changes are audited. Client-supplied hospital or tenant
+                    identifiers are not accepted.
                     """
     )
     @ApiResponses({
@@ -98,7 +102,7 @@ public class HospitalSettingsController {
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "403",
-                    description = "Missing HOSPITAL_WRITE permission or tenant access denied"
+                    description = "Missing HOSPITAL_UPDATE permission or tenant access denied"
             ),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "404",

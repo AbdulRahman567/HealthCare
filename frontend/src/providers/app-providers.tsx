@@ -5,6 +5,7 @@ import { ReactNode, useState } from 'react';
 import { Provider as ReduxProvider } from 'react-redux';
 
 import { Toaster } from '@/components/ui/sonner';
+import { AuthorizationProvider } from '@/features/authorization/providers/authorization-provider';
 import { SessionProvider } from '@/providers/session-provider';
 import { store } from '@/store';
 
@@ -32,8 +33,10 @@ export function AppProviders({ children }: AppProvidersProps) {
     <ReduxProvider store={store}>
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
-          {children}
-          <Toaster position="top-right" richColors closeButton />
+          <AuthorizationProvider>
+            {children}
+            <Toaster position="top-right" richColors closeButton />
+          </AuthorizationProvider>
         </SessionProvider>
       </QueryClientProvider>
     </ReduxProvider>

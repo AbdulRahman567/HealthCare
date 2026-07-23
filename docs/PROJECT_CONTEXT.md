@@ -212,6 +212,14 @@ Never expose:
 | Hospital settings        | `GET/PUT /api/v1/hospitals/settings`                                         | Phase 2.6; tenant-isolated profile/locale/contact/hours                                       |
 | Tenant security audit    | Hardened resolution, JWT, public bypass, legacy admin disabled               | Phase 2.7                                                                                     |
 | Tenant production review | Auth-first tenant filter, OpenAPI tenant header, FE/BE registration contract | Phase 2.8                                                                                     |
+| RBAC domain              | PermissionGroup/Action, naming `{GROUP}_{ACTION}`, role hierarchy, V9 migration  | Phase 3.1                                                                                     |
+| Authorization infra      | PermissionEvaluator, AuthorizationService, CurrentUser, PermissionResolver       | Phase 3.2                                                                                     |
+| Permission-based authZ   | `@RequirePermission`, PermissionGuard, aspect + interceptor, AccessDenied JSON   | Phase 3.3                                                                                     |
+| Secure existing APIs     | Public vs protected annotations, JWT/role/permission/tenant, Swagger auth docs   | Phase 3.4                                                                                     |
+| Default system roles     | CREATE/UPDATE naming, BILLING, Accountant, matrix, Flyway V10 + bootstrap         | Phase 3.5                                                                                     |
+| Frontend authorization   | Permission/Role providers, hooks, Can/Protected, route UX guards (backend = SoT) | Phase 3.6                                                                                     |
+| Dynamic navigation       | Permission-aware shell: sidebar, top nav, breadcrumbs, cards, quick actions      | Phase 3.7                                                                                     |
+| RBAC review / hardening  | Fail-closed APIs & routes, platform trust bar, coverage guard, review reports    | Phase 3.8                                                                                     |
 
 ---
 
@@ -329,6 +337,7 @@ The project documentation includes:
 - TESTING.md
 - DEPLOYMENT.md
 - MULTI_TENANCY.md
+- phasesreadme.md
 
 ---
 

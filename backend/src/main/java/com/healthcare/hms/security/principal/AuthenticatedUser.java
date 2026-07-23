@@ -1,6 +1,7 @@
 package com.healthcare.hms.security.principal;
 
 import com.healthcare.hms.security.SecurityConstants;
+import com.healthcare.hms.security.util.AuthorityUtils;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -9,10 +10,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 /**
- * Authenticated principal populated from validated JWT claims.
- * Designed for future RBAC: roles and permissions are exposed as authorities.
+ * Immutable JWT-backed {@link CurrentUser} principal.
+ *
+ * <p>Roles and permissions are snapshotted at authentication time from the database
+ * (see {@link com.healthcare.hms.security.jwt.JwtPrincipalValidator}) and never mutated.
  */
-public final class AuthenticatedUser implements UserDetails {
+public final class AuthenticatedUser implements CurrentUser, UserDetails {
 
     private final UUID userId;
     private final UUID tenantId;
@@ -46,9 +49,7 @@ public final class AuthenticatedUser implements UserDetails {
         final java.util.HashSet<GrantedAuthority> authorities = new java.util.HashSet<>();
 
         roles.stream()
-                .map(role -> role.startsWith(SecurityConstants.ROLE_PREFIX)
-                        ? role
-                        : SecurityConstants.ROLE_PREFIX + role)
+                .map(AuthorityUtils::toRoleAuthority)
                 .map(SimpleGrantedAuthority::new)
                 .forEach(authorities::add);
 
@@ -59,26 +60,32 @@ public final class AuthenticatedUser implements UserDetails {
         return Set.copyOf(authorities);
     }
 
+    @Override
     public UUID getUserId() {
         return userId;
     }
 
+    @Override
     public UUID getTenantId() {
         return tenantId;
     }
 
+    @Override
     public String getEmail() {
         return email;
     }
 
+    @Override
     public Set<String> getRoles() {
         return roles;
     }
 
+    @Override
     public Set<String> getPermissions() {
         return permissions;
     }
 
+    @Override
     public long getTokenVersion() {
         return tokenVersion;
     }
@@ -116,5 +123,10 @@ public final class AuthenticatedUser implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "AuthenticatedUser{userId=" + userId + ", tenantId=" + tenantId + "}";
     }
 }

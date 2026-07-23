@@ -110,6 +110,20 @@ Enable multiple hospitals to operate independently on the same platform.
 - Hospital settings _(delivered in Phase 2.6)_
 - Staff assignment
 
+### Sub-phases
+
+| Sub-phase | Scope                                                                                                         | Status      |
+| --------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
+| 3.1       | RBAC domain design (Role/Permission refinement, PermissionGroup/Action, hierarchy, defaults, Flyway V9)       | Done        |
+| 3.2       | Authorization infrastructure (PermissionEvaluator, AuthorizationService, CurrentUser, resolvers, exceptions) | Done        |
+| 3.3       | Permission-based authorization (`@RequirePermission`, aspect/interceptor, PermissionGuard, AccessDenied)     | Done        |
+| 3.4       | Secure all existing APIs (JWT/role/permission/tenant, 401/403, Swagger auth docs)                            | Done        |
+| 3.5       | Default system roles + permission matrix (CREATE/UPDATE naming, Accountant, Flyway V10, bootstrap)           | Done        |
+| 3.6       | Frontend authorization (providers, hooks, Protected/Can, route protection, nav UX)                           | Done        |
+| 3.7       | Dynamic navigation (sidebar, top nav, breadcrumbs, dashboard cards, quick actions — permission-driven)       | Done        |
+| 3.8       | Complete RBAC review + hardening (fail-closed APIs/routes, platform trust bar, reports)                        | Done        |
+| 3.x       | Departments, staff assignment, multi-hospital ops beyond default hospital                                     | Not started |
+
 ### Definition of Done
 
 - Each hospital can manage only its own data.

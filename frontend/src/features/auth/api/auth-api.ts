@@ -66,6 +66,29 @@ export const authApi = {
     return data.data;
   },
 
+  /**
+   * Authorization introspection for UX bootstrap (roles + effective permissions).
+   * Backend remains the enforcement authority.
+   */
+  async getAuthorization(): Promise<{
+    userId: string;
+    tenantId: string | null;
+    email: string;
+    roles: string[];
+    permissions: string[];
+  }> {
+    const { data } = await apiClient.get<
+      ApiSuccessResponse<{
+        userId: string;
+        tenantId: string | null;
+        email: string;
+        roles: string[];
+        permissions: string[];
+      }>
+    >('/auth/authorization');
+    return data.data;
+  },
+
   async logout(): Promise<void> {
     const refreshToken = authTokenStore.getRefreshToken();
     try {

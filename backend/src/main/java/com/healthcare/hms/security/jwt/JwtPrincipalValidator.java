@@ -4,15 +4,12 @@ import com.healthcare.hms.common.exception.auth.AccountNotActiveException;
 import com.healthcare.hms.common.exception.auth.EmailNotVerifiedException;
 import com.healthcare.hms.common.exception.auth.InvalidTokenException;
 import com.healthcare.hms.common.exception.auth.UnauthorizedException;
+import com.healthcare.hms.security.authorization.PermissionResolver;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
-import com.healthcare.hms.users.entity.Permission;
-import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
 import com.healthcare.hms.users.enums.UserStatus;
 import com.healthcare.hms.users.repository.UserRepository;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class JwtPrincipalValidator {
 
     private final UserRepository userRepository;
+    private final PermissionResolver permissionResolver;
 
-    public JwtPrincipalValidator(final UserRepository userRepository) {
+    public JwtPrincipalValidator(
+            final UserRepository userRepository,
+            final PermissionResolver permissionResolver
+    ) {
         this.userRepository = userRepository;
+        this.permissionResolver = permissionResolver;
     }
 
     @Transactional(readOnly = true)
@@ -58,23 +60,9 @@ public class JwtPrincipalValidator {
                 user.getId(),
                 user.getTenantId(),
                 user.getEmail(),
-                extractRoles(user),
-                extractPermissions(user),
+                permissionResolver.resolveRoles(user),
+                permissionResolver.resolvePermissions(user),
                 claims.tokenVersion()
         );
-    }
-
-    private static Set<String> extractRoles(final User user) {
-        return user.getRoles().stream()
-                .map(Role::getType)
-                .map(Enum::name)
-                .collect(Collectors.toUnmodifiableSet());
-    }
-
-    private static Set<String> extractPermissions(final User user) {
-        return user.getRoles().stream()
-                .flatMap(role -> role.getPermissions().stream())
-                .map(Permission::getCode)
-                .collect(Collectors.toUnmodifiableSet());
     }
 }

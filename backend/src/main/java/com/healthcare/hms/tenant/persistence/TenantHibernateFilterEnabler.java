@@ -1,6 +1,10 @@
 package com.healthcare.hms.tenant.persistence;
 
+import com.healthcare.hms.common.exception.auth.UnauthorizedException;
 import com.healthcare.hms.common.persistence.TenantPersistence;
+import com.healthcare.hms.security.authorization.PlatformPrincipalSupport;
+import com.healthcare.hms.security.principal.AuthenticatedUser;
+import com.healthcare.hms.security.util.SecurityUtils;
 import com.healthcare.hms.tenant.context.TenantContextHolder;
 import jakarta.persistence.EntityManager;
 import java.util.Objects;
@@ -62,6 +66,10 @@ public class TenantHibernateFilterEnabler {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("A non-blank reason is required to disable the tenant filter");
         }
+
+        final AuthenticatedUser actor = SecurityUtils.findAuthenticatedUser()
+                .orElseThrow(UnauthorizedException::new);
+        PlatformPrincipalSupport.requirePlatformSuperAdmin(actor);
 
         final Session session = entityManager.unwrap(Session.class);
         final boolean wasEnabled = session.getEnabledFilter(TenantPersistence.FILTER_NAME) != null;

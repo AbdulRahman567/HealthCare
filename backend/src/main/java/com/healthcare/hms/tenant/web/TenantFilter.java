@@ -2,6 +2,7 @@ package com.healthcare.hms.tenant.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.healthcare.hms.common.api.ApiErrorResponse;
+import com.healthcare.hms.security.authorization.PlatformPrincipalSupport;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.tenant.context.TenantContext;
 import com.healthcare.hms.tenant.context.TenantContextHolder;
@@ -13,7 +14,6 @@ import com.healthcare.hms.tenant.exception.TenantNotFoundException;
 import com.healthcare.hms.tenant.exception.TenantRequiredException;
 import com.healthcare.hms.tenant.resolution.TenantResolutionService;
 import com.healthcare.hms.tenant.validation.TenantValidation;
-import com.healthcare.hms.users.enums.RoleType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -141,15 +141,15 @@ public class TenantFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Platform Super Admin may omit tenant context. Null {@code tenantId} alone is
-     * insufficient — the principal must also hold the {@code SUPER_ADMIN} role.
+     * Platform Super Admin may omit tenant context. Delegates to
+     * {@link PlatformPrincipalSupport} so the trust bar cannot drift from validation.
      */
     private boolean isPlatformSuperAdmin() {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser user)) {
             return false;
         }
-        return user.getTenantId() == null && user.getRoles().contains(RoleType.Names.SUPER_ADMIN);
+        return PlatformPrincipalSupport.isPlatformSuperAdmin(user);
     }
 
     private void writeError(

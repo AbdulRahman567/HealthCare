@@ -3,6 +3,7 @@ package com.healthcare.hms.users.entity;
 import com.healthcare.hms.common.persistence.TenantAwareEntity;
 import com.healthcare.hms.common.persistence.TenantPersistence;
 import com.healthcare.hms.users.enums.RoleType;
+import com.healthcare.hms.users.rbac.RoleHierarchy;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +13,8 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
@@ -22,6 +25,13 @@ import java.util.Set;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.SQLRestriction;
 
+/**
+ * RBAC role — either a platform system template ({@code tenant_id IS NULL}) or a
+ * tenant-scoped operational role.
+ *
+ * <p>Hierarchy is structural ({@link #hierarchyLevel}, {@link #parentRole}); effective
+ * access is always the explicit permission set on this role.
+ */
 @Entity
 @Table(
         name = "roles",
@@ -32,6 +42,11 @@ import org.hibernate.annotations.SQLRestriction;
         indexes = {
                 @Index(name = "idx_roles_tenant_id", columnList = "tenant_id"),
                 @Index(name = "idx_roles_type", columnList = "type"),
+                @Index(name = "idx_roles_parent_role_id", columnList = "parent_role_id"),
+                @Index(name = "idx_roles_hierarchy_level", columnList = "hierarchy_level"),
+                @Index(name = "idx_roles_tenant_hierarchy", columnList = "tenant_id, hierarchy_level"),
+                @Index(name = "idx_roles_system_role", columnList = "system_role"),
+                @Index(name = "idx_roles_assignable", columnList = "assignable"),
                 @Index(name = "idx_roles_deleted", columnList = "deleted")
         }
 )
@@ -53,8 +68,31 @@ public class Role extends TenantAwareEntity {
     @Column(name = "description", length = 500)
     private String description;
 
+    /**
+     * Platform catalog template when {@code true} and {@code tenant_id IS NULL}.
+     * Tenant-provisioned copies of default roles use {@code false}.
+     */
     @Column(name = "system_role", nullable = false)
     private boolean systemRole = false;
+
+    /**
+     * Privilege rank — lower value means higher privilege. Defaults from {@link RoleHierarchy}.
+     */
+    @Column(name = "hierarchy_level", nullable = false)
+    private int hierarchyLevel;
+
+    /**
+     * Whether hospital administrators may assign this role to users.
+     */
+    @Column(name = "assignable", nullable = false)
+    private boolean assignable = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_role_id")
+    private Role parentRole;
+
+    @OneToMany(mappedBy = "parentRole", fetch = FetchType.LAZY)
+    private Set<Role> childRoles = new HashSet<>();
 
     @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
@@ -74,6 +112,18 @@ public class Role extends TenantAwareEntity {
             }
     )
     private Set<Permission> permissions = new HashSet<>();
+
+    /**
+     * Applies catalog hierarchy level and assignable flag from {@link RoleHierarchy}.
+     * Call when creating roles from the default system/tenant catalogs.
+     */
+    public void applyCatalogHierarchy() {
+        if (type == null) {
+            return;
+        }
+        this.hierarchyLevel = RoleHierarchy.levelOf(type);
+        this.assignable = RoleHierarchy.isAssignable(type);
+    }
 
     public String getName() {
         return name;
@@ -105,6 +155,38 @@ public class Role extends TenantAwareEntity {
 
     public void setSystemRole(final boolean systemRole) {
         this.systemRole = systemRole;
+    }
+
+    public int getHierarchyLevel() {
+        return hierarchyLevel;
+    }
+
+    public void setHierarchyLevel(final int hierarchyLevel) {
+        this.hierarchyLevel = hierarchyLevel;
+    }
+
+    public boolean isAssignable() {
+        return assignable;
+    }
+
+    public void setAssignable(final boolean assignable) {
+        this.assignable = assignable;
+    }
+
+    public Role getParentRole() {
+        return parentRole;
+    }
+
+    public void setParentRole(final Role parentRole) {
+        this.parentRole = parentRole;
+    }
+
+    public Set<Role> getChildRoles() {
+        return childRoles;
+    }
+
+    public void setChildRoles(final Set<Role> childRoles) {
+        this.childRoles = childRoles;
     }
 
     public Set<User> getUsers() {

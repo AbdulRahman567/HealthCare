@@ -27,12 +27,28 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
 
     List<Role> findByTenantId(UUID tenantId);
 
+    List<Role> findByTenantIdOrderByHierarchyLevelAsc(UUID tenantId);
+
+    List<Role> findByParentRoleId(UUID parentRoleId);
+
+    List<Role> findByTenantIdAndAssignableTrue(UUID tenantId);
+
+    List<Role> findByTenantIdAndHierarchyLevelGreaterThan(UUID tenantId, int hierarchyLevel);
+
     @Query("""
             SELECT DISTINCT r FROM Role r
             LEFT JOIN FETCH r.permissions
             WHERE r.id = :id
             """)
     Optional<Role> findByIdWithPermissions(@Param("id") UUID id);
+
+    @Query("""
+            SELECT DISTINCT r FROM Role r
+            LEFT JOIN FETCH r.permissions
+            WHERE r.tenantId = :tenantId
+            ORDER BY r.hierarchyLevel ASC
+            """)
+    List<Role> findByTenantIdWithPermissions(@Param("tenantId") UUID tenantId);
 
     boolean existsByTenantIdAndType(UUID tenantId, RoleType type);
 }

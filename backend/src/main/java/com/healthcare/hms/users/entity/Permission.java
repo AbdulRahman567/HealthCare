@@ -1,30 +1,50 @@
 package com.healthcare.hms.users.entity;
 
 import com.healthcare.hms.common.persistence.BaseEntity;
+import com.healthcare.hms.users.enums.PermissionAction;
+import com.healthcare.hms.users.enums.PermissionGroup;
+import com.healthcare.hms.users.rbac.PermissionNaming;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 import org.hibernate.annotations.SQLRestriction;
 
 /**
- * Global permission catalog. Permissions are platform-scoped (not tenant-owned).
+ * Global permission catalog entry (platform-scoped, not tenant-owned).
+ *
+ * <p>Permissions are shared across tenants. Tenant isolation is enforced by which
+ * {@link Role} rows (tenant-scoped or platform) hold grants via {@code role_permissions}.
+ *
+ * <p>Canonical {@code code} format: {@code {GROUP}_{ACTION}} per {@link PermissionNaming}.
  */
 @Entity
 @Table(
         name = "permissions",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_permissions_code", columnNames = {"code"})
+                @UniqueConstraint(name = "uk_permissions_code", columnNames = {"code"}),
+                @UniqueConstraint(
+                        name = "uk_permissions_group_action",
+                        columnNames = {"permission_group", "action"}
+                )
         },
         indexes = {
-                @Index(name = "idx_permissions_module", columnList = "module"),
+                @Index(name = "idx_permissions_group", columnList = "permission_group"),
+                @Index(name = "idx_permissions_action", columnList = "action"),
+                @Index(name = "idx_permissions_group_action", columnList = "permission_group, action"),
+                @Index(name = "idx_permissions_system", columnList = "system_permission"),
                 @Index(name = "idx_permissions_deleted", columnList = "deleted")
         }
 )
@@ -45,13 +65,39 @@ public class Permission extends BaseEntity {
     @Column(name = "description", length = 500)
     private String description;
 
-    @NotBlank
-    @Size(max = 80)
-    @Column(name = "module", nullable = false, length = 80)
-    private String module;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "permission_group", nullable = false, length = 80)
+    private PermissionGroup permissionGroup;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "action", nullable = false, length = 30)
+    private PermissionAction action;
+
+    /**
+     * Platform-seeded catalog rows are immutable from application admin APIs.
+     */
+    @Column(name = "system_permission", nullable = false)
+    private boolean systemPermission = true;
 
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
     private Set<Role> roles = new HashSet<>();
+
+    @PrePersist
+    @PreUpdate
+    void syncCodeWithGroupAndAction() {
+        if (permissionGroup != null && action != null) {
+            final String expected = PermissionNaming.code(permissionGroup, action);
+            if (code == null || code.isBlank()) {
+                code = expected;
+            } else if (!expected.equals(code)) {
+                throw new IllegalStateException(
+                        "Permission code '" + code + "' does not match group/action '" + expected + "'"
+                );
+            }
+        }
+    }
 
     public String getCode() {
         return code;
@@ -77,12 +123,28 @@ public class Permission extends BaseEntity {
         this.description = description;
     }
 
-    public String getModule() {
-        return module;
+    public PermissionGroup getPermissionGroup() {
+        return permissionGroup;
     }
 
-    public void setModule(final String module) {
-        this.module = module;
+    public void setPermissionGroup(final PermissionGroup permissionGroup) {
+        this.permissionGroup = permissionGroup;
+    }
+
+    public PermissionAction getAction() {
+        return action;
+    }
+
+    public void setAction(final PermissionAction action) {
+        this.action = action;
+    }
+
+    public boolean isSystemPermission() {
+        return systemPermission;
+    }
+
+    public void setSystemPermission(final boolean systemPermission) {
+        this.systemPermission = systemPermission;
     }
 
     public Set<Role> getRoles() {

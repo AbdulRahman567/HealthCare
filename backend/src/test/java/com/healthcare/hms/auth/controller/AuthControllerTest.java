@@ -32,6 +32,7 @@ import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.hospitals.enums.HospitalStatus;
 import com.healthcare.hms.tenant.enums.SubscriptionPlan;
 import com.healthcare.hms.tenant.enums.TenantStatus;
+import com.healthcare.hms.security.authorization.SecurityContextCurrentUserAccessor;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.security.resolver.CurrentUserArgumentResolver;
 import com.healthcare.hms.users.enums.UserStatus;
@@ -71,7 +72,7 @@ class AuthControllerTest {
         objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         final MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(objectMapper);
         mockMvc = MockMvcBuilders.standaloneSetup(new AuthController(authService))
-                .setCustomArgumentResolvers(new CurrentUserArgumentResolver())
+                .setCustomArgumentResolvers(new CurrentUserArgumentResolver(new SecurityContextCurrentUserAccessor()))
                 .setMessageConverters(converter)
                 .build();
     }

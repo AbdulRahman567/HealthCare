@@ -19,11 +19,16 @@ import com.healthcare.hms.common.web.ClientRequestDetails;
 import com.healthcare.hms.hospitals.dto.request.HospitalRegistrationRequest;
 import com.healthcare.hms.hospitals.dto.response.HospitalRegistrationResponse;
 import com.healthcare.hms.security.annotation.CurrentUser;
-import com.healthcare.hms.security.annotation.RequiresPermission;
+import com.healthcare.hms.security.annotation.PublicEndpoint;
+import com.healthcare.hms.security.annotation.RequireAuthenticated;
+import com.healthcare.hms.security.annotation.RequirePermission;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.users.constant.PermissionConstants;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -31,7 +36,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,7 +44,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Authentication and session APIs with method-level authorization annotations.
+ * Authentication and session APIs.
+ *
+ * <p>Public endpoints are anonymous ({@link PublicEndpoint}). Protected endpoints require a
+ * verified JWT principal; self-service uses {@link RequireAuthenticated}, resource APIs use
+ * {@link RequirePermission}. Tenant binding is enforced by the security filter chain.
  */
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -54,7 +62,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Authenticate user and issue access plus refresh tokens")
+    @PublicEndpoint
+    @SecurityRequirements
+    @Operation(
+            summary = "Authenticate user and issue access plus refresh tokens",
+            description = "Public. Returns JWT access and refresh tokens after credential verification."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Authenticated",
+                    content = @Content(schema = @Schema(implementation = AuthResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid credentials, inactive account, or unverified email"
+            )
+    })
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody final LoginRequest request,
             final HttpServletRequest httpRequest
@@ -68,10 +92,25 @@ public class AuthController {
     }
 
     @PostMapping("/register/hospital")
+    @PublicEndpoint
+    @SecurityRequirements
     @Operation(
             summary = "Register a new hospital tenant (compatibility)",
-            description = "Delegates to atomic hospital registration. Prefer POST /api/v1/hospitals/register."
+            description = """
+                    Public. Delegates to atomic hospital registration.
+                    Prefer POST /api/v1/hospitals/register.
+                    """
     )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "201",
+                    description = "Hospital registered"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "409",
+                    description = "Hospital or administrator email already exists"
+            )
+    })
     public ResponseEntity<ApiResponse<HospitalRegistrationResponse>> registerHospital(
             @Valid @RequestBody final HospitalRegistrationRequest request,
             final HttpServletRequest httpRequest
@@ -89,13 +128,21 @@ public class AuthController {
     }
 
     @PostMapping("/register/admin")
+    @PublicEndpoint
+    @SecurityRequirements
     @Operation(
             summary = "Legacy initial admin registration (disabled)",
             description = """
-                    Disabled in Phase 2.7 for tenant security. Prefer atomic
+                    Public stub returning HTTP 410 Gone. Prefer atomic
                     POST /api/v1/hospitals/register which creates tenant + admin together.
                     """
     )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "410",
+                    description = "Endpoint permanently disabled"
+            )
+    })
     public ResponseEntity<ApiErrorResponse> registerInitialAdmin(
             @Valid @RequestBody final RegisterAdminRequest request,
             final HttpServletRequest httpRequest
@@ -109,7 +156,22 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    @Operation(summary = "Rotate refresh token and issue a new access token")
+    @PublicEndpoint
+    @SecurityRequirements
+    @Operation(
+            summary = "Rotate refresh token and issue a new access token",
+            description = "Public. Requires a valid refresh token body; does not use Bearer auth."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Tokens rotated"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired refresh token"
+            )
+    })
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
             @Valid @RequestBody final RefreshTokenRequest request,
             final HttpServletRequest httpRequest
@@ -123,9 +185,24 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Logout current user, revoke refresh tokens, and record audit event")
+    @RequireAuthenticated
+    @Operation(
+            summary = "Logout current user, revoke refresh tokens, and record audit event",
+            description = """
+                    Requires authenticated JWT. Verifies principal (user, roles, permissions, tenant)
+                    then revokes refresh tokens for the session.
+                    """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Logged out"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Missing or invalid JWT"
+            )
+    })
     public ResponseEntity<ApiResponse<Void>> logout(
             @CurrentUser final AuthenticatedUser currentUser,
             @RequestBody(required = false) final LogoutRequest request,
@@ -140,9 +217,29 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Get the authenticated user's profile")
+    @RequireAuthenticated
+    @Operation(
+            summary = "Get the authenticated user's profile",
+            description = """
+                    Requires authenticated JWT. Returns the caller's own profile
+                    (roles and effective permissions included for session bootstrap).
+                    """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Profile retrieved",
+                    content = @Content(schema = @Schema(implementation = UserProfileResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Missing or invalid JWT"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Tenant access denied"
+            )
+    })
     public ResponseEntity<ApiResponse<UserProfileResponse>> getCurrentUser(
             @CurrentUser final AuthenticatedUser currentUser
     ) {
@@ -152,9 +249,25 @@ public class AuthController {
     }
 
     @PutMapping("/profile")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Update the authenticated user's profile")
+    @RequireAuthenticated
+    @Operation(
+            summary = "Update the authenticated user's profile",
+            description = "Requires authenticated JWT. Updates only the caller's own profile fields."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Profile updated"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Missing or invalid JWT"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Tenant access denied"
+            )
+    })
     public ResponseEntity<ApiResponse<UserProfileResponse>> updateProfile(
             @CurrentUser final AuthenticatedUser currentUser,
             @Valid @RequestBody final UpdateProfileRequest request,
@@ -169,9 +282,28 @@ public class AuthController {
     }
 
     @PostMapping("/change-password")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Change the authenticated user's password")
+    @RequireAuthenticated
+    @Operation(
+            summary = "Change the authenticated user's password",
+            description = """
+                    Requires authenticated JWT. Verifies the current password, then rotates
+                    credentials and invalidates other refresh tokens.
+                    """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Password changed"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Missing JWT or current password incorrect"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Tenant access denied"
+            )
+    })
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @CurrentUser final AuthenticatedUser currentUser,
             @Valid @RequestBody final ChangePasswordRequest request,
@@ -186,7 +318,18 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    @Operation(summary = "Request a password reset email for an account")
+    @PublicEndpoint
+    @SecurityRequirements
+    @Operation(
+            summary = "Request a password reset email for an account",
+            description = "Public. Always returns a generic success message (no account enumeration)."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Generic acknowledgement"
+            )
+    })
     public ResponseEntity<ApiResponse<Void>> forgotPassword(
             @Valid @RequestBody final ForgotPasswordRequest request,
             final HttpServletRequest httpRequest
@@ -203,7 +346,22 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    @Operation(summary = "Reset password using a single-use recovery token")
+    @PublicEndpoint
+    @SecurityRequirements
+    @Operation(
+            summary = "Reset password using a single-use recovery token",
+            description = "Public. Consumes a single-use reset token; does not reveal whether the token was valid beyond generic auth errors."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Password reset"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired reset token"
+            )
+    })
     public ResponseEntity<ApiResponse<Void>> resetPassword(
             @Valid @RequestBody final ResetPasswordRequest request,
             final HttpServletRequest httpRequest
@@ -217,7 +375,22 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    @Operation(summary = "Verify account email using a single-use verification token")
+    @PublicEndpoint
+    @SecurityRequirements
+    @Operation(
+            summary = "Verify account email using a single-use verification token",
+            description = "Public. Activates the account (and tenant/hospital when applicable) after email verification."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Email verified"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Invalid or expired verification token"
+            )
+    })
     public ResponseEntity<ApiResponse<Void>> verifyEmail(
             @Valid @RequestBody final VerifyEmailRequest request,
             final HttpServletRequest httpRequest
@@ -231,7 +404,18 @@ public class AuthController {
     }
 
     @PostMapping("/resend-verification")
-    @Operation(summary = "Resend the email verification link for an unverified account")
+    @PublicEndpoint
+    @SecurityRequirements
+    @Operation(
+            summary = "Resend the email verification link for an unverified account",
+            description = "Public. Always returns a generic success message (no account enumeration)."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Generic acknowledgement"
+            )
+    })
     public ResponseEntity<ApiResponse<Void>> resendVerification(
             @Valid @RequestBody final ResendVerificationRequest request,
             final HttpServletRequest httpRequest
@@ -249,12 +433,30 @@ public class AuthController {
 
     /**
      * Authorization introspection endpoint for session bootstrap.
-     * Requires authentication; available to all clinical staff roles.
      */
     @GetMapping("/authorization")
-    @PreAuthorize("isAuthenticated()")
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Inspect the current principal's authorization context")
+    @RequireAuthenticated
+    @Operation(
+            summary = "Inspect the current principal's authorization context",
+            description = """
+                    Requires authenticated JWT. Returns the caller's userId, tenantId, roles,
+                    and effective permissions for frontend route guards. Does not expose secrets.
+                    """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Authorization context resolved"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Missing or invalid JWT"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Tenant access denied"
+            )
+    })
     public ResponseEntity<ApiResponse<Map<String, Object>>> getAuthorizationContext(
             @CurrentUser final AuthenticatedUser currentUser
     ) {
@@ -264,7 +466,6 @@ public class AuthController {
         payload.put("email", currentUser.getEmail());
         payload.put("roles", currentUser.getRoles());
         payload.put("permissions", currentUser.getPermissions());
-        payload.put("samplePermission", PermissionConstants.USER_READ);
         return ResponseEntity.ok(ApiResponse.success("Authorization context resolved", payload));
     }
 
@@ -272,10 +473,28 @@ public class AuthController {
      * Permission-middleware probe: requires HOSPITAL_READ without exposing a business module.
      */
     @GetMapping("/authorization/hospital-access")
-    @PreAuthorize("isAuthenticated()")
-    @RequiresPermission(PermissionConstants.HOSPITAL_READ)
-    @SecurityRequirement(name = "bearerAuth")
-    @Operation(summary = "Verify HOSPITAL_READ permission for the current principal")
+    @RequirePermission(PermissionConstants.HOSPITAL_READ)
+    @Operation(
+            summary = "Verify HOSPITAL_READ permission for the current principal",
+            description = """
+                    Requires authenticated JWT, matching tenant context, and permission HOSPITAL_READ.
+                    Returns 403 with a generic access-denied body when the permission is missing.
+                    """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "Hospital access permitted"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "Missing or invalid JWT"
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "403",
+                    description = "Missing HOSPITAL_READ or tenant access denied"
+            )
+    })
     public ResponseEntity<ApiResponse<Map<String, Object>>> verifyHospitalAccess(
             @CurrentUser final AuthenticatedUser currentUser
     ) {

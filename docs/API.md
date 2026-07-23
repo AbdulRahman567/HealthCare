@@ -100,7 +100,7 @@ are not accepted — isolation comes from `TenantContextHolder` + Hibernate
 
 `GET /api/v1/hospitals/settings` — permission `HOSPITAL_READ`
 
-`PUT /api/v1/hospitals/settings` — permission `HOSPITAL_WRITE`
+`PUT /api/v1/hospitals/settings` — permission `HOSPITAL_UPDATE`
 
 Supports:
 
@@ -127,37 +127,28 @@ Updates are audited (`AuditAction.UPDATE` on entity `HOSPITAL`).
 
 # 3.1 Session & Profile APIs
 
-POST
+Public (anonymous):
 
-/auth/login
+- `POST /auth/login`
+- `POST /auth/refresh-token`
+- `POST /auth/forgot-password`
+- `POST /auth/reset-password`
+- `POST /auth/verify-email`
+- `POST /auth/resend-verification`
 
-POST
+Authenticated (JWT + tenant; self-service `@RequireAuthenticated`):
 
-/auth/logout
+- `POST /auth/logout`
+- `POST /auth/change-password`
+- `GET /auth/profile`
+- `PUT /auth/profile`
+- `GET /auth/authorization`
 
-POST
+Permission-gated:
 
-/auth/refresh-token
+- `GET /auth/authorization/hospital-access` — `HOSPITAL_READ`
 
-POST
-
-/auth/forgot-password
-
-POST
-
-/auth/reset-password
-
-POST
-
-/auth/change-password
-
-GET
-
-/auth/profile
-
-PUT
-
-/auth/profile
+Unauthorized → **401**. Missing permission / tenant mismatch → **403** (generic body).
 
 ---
 

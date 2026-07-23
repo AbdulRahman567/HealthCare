@@ -1,10 +1,5 @@
-import { RouteGuard } from '@/features/auth/components/route-guard';
-import { ProtectedShell } from '@/features/auth/components/protected-shell';
+import { ProtectedLayout } from '@/features/authorization/components/protected-layout';
 
-export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <RouteGuard>
-      <ProtectedShell>{children}</ProtectedShell>
-    </RouteGuard>
-  );
+export default function ProtectedAppLayout({ children }: { children: React.ReactNode }) {
+  return <ProtectedLayout>{children}</ProtectedLayout>;
 }

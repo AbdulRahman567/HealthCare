@@ -72,20 +72,24 @@ public class JwtService {
                         ? jwtProperties.getAccessTokenExpiration()
                         : jwtProperties.getRefreshTokenExpiration());
 
-        return Jwts.builder()
+        final var builder = Jwts.builder()
                 .issuer(jwtProperties.getIssuer())
                 .subject(claims.userId().toString())
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(expiresAt))
                 .claim(SecurityConstants.CLAIM_TOKEN_TYPE, tokenType.name())
                 .claim(SecurityConstants.CLAIM_USER_ID, claims.userId().toString())
-                .claim(SecurityConstants.CLAIM_TENANT_ID, claims.tenantId().toString())
                 .claim(SecurityConstants.CLAIM_EMAIL, claims.email())
                 .claim(SecurityConstants.CLAIM_ROLES, List.copyOf(claims.roles()))
                 .claim(SecurityConstants.CLAIM_PERMISSIONS, List.copyOf(claims.permissions()))
-                .claim(SecurityConstants.CLAIM_TOKEN_VERSION, claims.tokenVersion())
-                .signWith(resolveKey(tokenType))
-                .compact();
+                .claim(SecurityConstants.CLAIM_TOKEN_VERSION, claims.tokenVersion());
+
+        // Platform Super Admin may omit tenant; hospital principals always carry one.
+        if (claims.tenantId() != null) {
+            builder.claim(SecurityConstants.CLAIM_TENANT_ID, claims.tenantId().toString());
+        }
+
+        return builder.signWith(resolveKey(tokenType)).compact();
     }
 
     private JwtClaims parseToken(final String token, final JwtTokenType expectedType) {
@@ -107,7 +111,7 @@ public class JwtService {
 
             return new JwtClaims(
                     UUID.fromString(requireClaim(claims, SecurityConstants.CLAIM_USER_ID, String.class)),
-                    UUID.fromString(requireClaim(claims, SecurityConstants.CLAIM_TENANT_ID, String.class)),
+                    optionalUuidClaim(claims, SecurityConstants.CLAIM_TENANT_ID),
                     requireClaim(claims, SecurityConstants.CLAIM_EMAIL, String.class),
                     toStringSet(claims.get(SecurityConstants.CLAIM_ROLES, Collection.class)),
                     toStringSet(claims.get(SecurityConstants.CLAIM_PERMISSIONS, Collection.class)),
@@ -133,6 +137,14 @@ public class JwtService {
             throw new TokenValidationException("Missing required claim: " + claimName);
         }
         return value;
+    }
+
+    private static UUID optionalUuidClaim(final Claims claims, final String claimName) {
+        final String raw = claims.get(claimName, String.class);
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return UUID.fromString(raw);
     }
 
     @SuppressWarnings("unchecked")

@@ -95,4 +95,25 @@ class JwtServiceTest {
     void isAccessTokenValid_false() {
         assertThat(jwtService.isAccessTokenValid("not-a-jwt")).isFalse();
     }
+
+    @Test
+    @DisplayName("platform Super Admin tokens may omit tenant claim")
+    void platformSuperAdminTokenRoundTripWithoutTenant() {
+        final JwtClaims platformClaims = new JwtClaims(
+                UUID.fromString("33333333-3333-4333-8333-333333333333"),
+                null,
+                "super@platform.test",
+                Set.of("SUPER_ADMIN"),
+                Set.of("HOSPITAL_READ", "DASHBOARD_READ"),
+                0L,
+                JwtTokenType.ACCESS
+        );
+
+        final String token = jwtService.generateAccessToken(platformClaims);
+        final JwtClaims parsed = jwtService.parseAccessToken(token);
+
+        assertThat(parsed.tenantId()).isNull();
+        assertThat(parsed.userId()).isEqualTo(platformClaims.userId());
+        assertThat(parsed.roles()).containsExactly("SUPER_ADMIN");
+    }
 }

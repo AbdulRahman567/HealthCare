@@ -11,6 +11,10 @@ import com.healthcare.hms.common.exception.auth.InvalidCredentialsException;
 import com.healthcare.hms.common.exception.auth.InvalidTokenException;
 import com.healthcare.hms.common.exception.auth.TokenValidationException;
 import com.healthcare.hms.common.exception.auth.UnauthorizedException;
+import com.healthcare.hms.common.exception.authorization.AuthorizationException;
+import com.healthcare.hms.common.exception.authorization.PermissionDeniedException;
+import com.healthcare.hms.common.exception.authorization.RoleDeniedException;
+import com.healthcare.hms.security.authorization.AccessDeniedResponses;
 import com.healthcare.hms.tenant.exception.InvalidTenantIdentifierException;
 import com.healthcare.hms.tenant.exception.TenantMismatchException;
 import com.healthcare.hms.tenant.exception.TenantNotActiveException;
@@ -69,12 +73,43 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.UNAUTHORIZED, exception, request.getRequestURI());
     }
 
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ApiErrorResponse> handleForbidden(
-            final ForbiddenException exception,
+    @ExceptionHandler({
+            ForbiddenException.class,
+            PermissionDeniedException.class,
+            RoleDeniedException.class,
+            AuthorizationException.class
+    })
+    public ResponseEntity<ApiErrorResponse> handleAuthorizationDenied(
+            final AuthorizationException exception,
             final HttpServletRequest request
     ) {
-        return buildResponse(HttpStatus.FORBIDDEN, exception, request.getRequestURI());
+        if (exception instanceof PermissionDeniedException permissionDenied) {
+            log.warn(
+                    "Permission denied on {}: requiredPermissions={} requireAll={}",
+                    request.getRequestURI(),
+                    permissionDenied.getRequiredPermissions(),
+                    permissionDenied.isRequireAll()
+            );
+        } else if (exception instanceof RoleDeniedException roleDenied) {
+            log.warn(
+                    "Role denied on {}: requiredRoles={} requireAll={}",
+                    request.getRequestURI(),
+                    roleDenied.getRequiredRoles(),
+                    roleDenied.isRequireAll()
+            );
+        } else {
+            log.warn(
+                    "Authorization denied on {}: errorCode={}",
+                    request.getRequestURI(),
+                    exception.getErrorCode()
+            );
+        }
+        // Generic client body — never echo permission/role codes or internal diagnostics.
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiErrorResponse.of(
+                        AccessDeniedResponses.MESSAGE,
+                        AccessDeniedResponses.ERROR_CODE,
+                        request.getRequestURI()));
     }
 
     @ExceptionHandler({
@@ -157,8 +192,8 @@ public class GlobalExceptionHandler {
     ) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ApiErrorResponse.of(
-                        "Access denied",
-                        "ACCESS_DENIED",
+                        AccessDeniedResponses.MESSAGE,
+                        AccessDeniedResponses.ERROR_CODE,
                         request.getRequestURI()));
     }
 

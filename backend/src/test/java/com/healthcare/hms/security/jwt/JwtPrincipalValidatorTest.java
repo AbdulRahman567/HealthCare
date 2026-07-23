@@ -2,6 +2,8 @@ package com.healthcare.hms.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import com.healthcare.hms.auth.support.AuthTestData;
@@ -9,12 +11,14 @@ import com.healthcare.hms.common.exception.auth.AccountNotActiveException;
 import com.healthcare.hms.common.exception.auth.EmailNotVerifiedException;
 import com.healthcare.hms.common.exception.auth.InvalidTokenException;
 import com.healthcare.hms.common.exception.auth.UnauthorizedException;
+import com.healthcare.hms.security.authorization.PermissionResolver;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.users.entity.User;
 import com.healthcare.hms.users.enums.UserStatus;
 import com.healthcare.hms.users.repository.UserRepository;
 import java.util.Optional;
 import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +33,28 @@ class JwtPrincipalValidatorTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PermissionResolver permissionResolver;
+
     @InjectMocks
     private JwtPrincipalValidator validator;
+
+    @BeforeEach
+    void stubPermissionResolver() {
+        lenient().when(permissionResolver.resolveRoles(any(User.class))).thenAnswer(invocation -> {
+            final User user = invocation.getArgument(0);
+            return user.getRoles().stream()
+                    .map(role -> role.getType().name())
+                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        });
+        lenient().when(permissionResolver.resolvePermissions(any(User.class))).thenAnswer(invocation -> {
+            final User user = invocation.getArgument(0);
+            return user.getRoles().stream()
+                    .flatMap(role -> role.getPermissions().stream())
+                    .map(permission -> permission.getCode())
+                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        });
+    }
 
     @Test
     @DisplayName("builds principal for active verified user from database roles")
@@ -82,14 +106,15 @@ class JwtPrincipalValidatorTest {
     }
 
     @Test
-    @DisplayName("missing user throws UnauthorizedException")
+    @DisplayName("missing user rejects token")
     void missingUser() {
-        when(userRepository.findByIdWithRolesAndPermissions(AuthTestData.userId())).thenReturn(Optional.empty());
+        final java.util.UUID userId = AuthTestData.userId();
+        when(userRepository.findByIdWithRolesAndPermissions(userId)).thenReturn(Optional.empty());
 
         final JwtClaims claims = new JwtClaims(
-                AuthTestData.userId(),
+                userId,
                 AuthTestData.tenantId(),
-                "admin@hospital.test",
+                "gone@hospital.test",
                 Set.of(),
                 Set.of(),
                 0L,
@@ -101,8 +126,8 @@ class JwtPrincipalValidatorTest {
     }
 
     @Test
-    @DisplayName("inactive account throws AccountNotActiveException")
-    void inactiveAccount() {
+    @DisplayName("inactive user is rejected")
+    void inactiveUser() {
         final User user = AuthTestData.activeVerifiedUser("hash");
         user.setStatus(UserStatus.INACTIVE);
         when(userRepository.findByIdWithRolesAndPermissions(user.getId())).thenReturn(Optional.of(user));
@@ -122,7 +147,7 @@ class JwtPrincipalValidatorTest {
     }
 
     @Test
-    @DisplayName("unverified email throws EmailNotVerifiedException")
+    @DisplayName("unverified email is rejected")
     void unverifiedEmail() {
         final User user = AuthTestData.activeVerifiedUser("hash");
         user.setEmailVerified(false);
@@ -143,7 +168,7 @@ class JwtPrincipalValidatorTest {
     }
 
     @Test
-    @DisplayName("token version mismatch throws InvalidTokenException")
+    @DisplayName("token version mismatch is rejected")
     void tokenVersionMismatch() {
         final User user = AuthTestData.activeVerifiedUser("hash");
         user.setTokenVersion(2L);
@@ -160,6 +185,7 @@ class JwtPrincipalValidatorTest {
         );
 
         assertThatThrownBy(() -> validator.validateAndBuildPrincipal(claims))
-                .isInstanceOf(InvalidTokenException.class);
+                .isInstanceOf(InvalidTokenException.class)
+                .hasMessageContaining("revoked");
     }
 }

@@ -39,10 +39,11 @@ import com.healthcare.hms.security.jwt.JwtClaims;
 import com.healthcare.hms.security.jwt.JwtProperties;
 import com.healthcare.hms.security.jwt.JwtService;
 import com.healthcare.hms.security.jwt.JwtTokenType;
-import com.healthcare.hms.security.principal.AuthenticatedUser;
+import com.healthcare.hms.security.principal.CurrentUser;
 import com.healthcare.hms.security.util.SecurityUtils;
 import com.healthcare.hms.users.entity.Permission;
 import com.healthcare.hms.users.entity.User;
+import com.healthcare.hms.users.enums.RoleType;
 import com.healthcare.hms.users.enums.UserStatus;
 import com.healthcare.hms.users.repository.UserRepository;
 import java.time.Instant;
@@ -194,7 +195,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(final String refreshToken, final String ipAddress, final String userAgent) {
-        final AuthenticatedUser currentUser = SecurityUtils.requireCurrentUser();
+        final CurrentUser currentUser = SecurityUtils.requireCurrentUser();
 
         if (refreshToken != null && !refreshToken.isBlank()) {
             refreshTokenService.revokeToken(refreshToken);
@@ -226,7 +227,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public UserProfileResponse getCurrentUser() {
-        final AuthenticatedUser currentUser = SecurityUtils.requireCurrentUser();
+        final CurrentUser currentUser = SecurityUtils.requireCurrentUser();
         final User user = userRepository.findByIdWithRolesAndPermissions(currentUser.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
         return authMapper.toUserProfile(user);
@@ -238,7 +239,7 @@ public class AuthServiceImpl implements AuthService {
             final String ipAddress,
             final String userAgent
     ) {
-        final AuthenticatedUser currentUser = SecurityUtils.requireCurrentUser();
+        final CurrentUser currentUser = SecurityUtils.requireCurrentUser();
         final User user = userRepository.findByIdWithRolesAndPermissions(currentUser.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
 
@@ -271,7 +272,7 @@ public class AuthServiceImpl implements AuthService {
             final String ipAddress,
             final String userAgent
     ) {
-        final AuthenticatedUser currentUser = SecurityUtils.requireCurrentUser();
+        final CurrentUser currentUser = SecurityUtils.requireCurrentUser();
         final User user = userRepository.findById(currentUser.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
 
@@ -496,10 +497,14 @@ public class AuthServiceImpl implements AuthService {
                 .collect(Collectors.toUnmodifiableSet());
 
         if (user.getTenantId() == null) {
-            throw new BusinessException(
-                    "TENANT_REQUIRED",
-                    "Access token issuance requires a tenant-scoped user in this phase"
-            );
+            final boolean platformSuperAdmin = user.getRoles().stream()
+                    .anyMatch(role -> role.getType() == RoleType.SUPER_ADMIN);
+            if (!platformSuperAdmin) {
+                throw new BusinessException(
+                        "TENANT_REQUIRED",
+                        "Access token issuance requires a tenant-scoped user"
+                );
+            }
         }
 
         final JwtClaims claims = new JwtClaims(

@@ -1,29 +1,26 @@
 import type { Metadata } from 'next';
 
-import { AuthFormMessage } from '@/features/auth/components/auth-form-message';
-import { SessionHome } from '@/features/auth/components/session-home';
+import { DashboardCards } from '@/features/navigation/components/dashboard-cards';
+import { QuickActions } from '@/features/navigation/components/quick-actions';
+import { WorkspaceHome } from '@/features/navigation/components/workspace-home';
 
 export const metadata: Metadata = {
-  title: 'Workspace | Healthcare HMS',
-  description: 'Authenticated workspace home',
+  title: 'Dashboard | Healthcare HMS',
+  description: 'Permission-aware workspace dashboard',
 };
 
 export default function AppHomePage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-8">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Workspace</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground text-sm text-pretty">
-          Authorization infrastructure is active. Clinical modules are intentionally unavailable in
-          this phase.
+          Your menus and actions are limited to what you are authorized to access.
         </p>
       </div>
-      <SessionHome />
-      <AuthFormMessage
-        variant="success"
-        title="Protected area"
-        description="This layout is guarded by session checks and role-aware navigation."
-      />
+      <WorkspaceHome />
+      <QuickActions />
+      <DashboardCards />
     </div>
   );
 }

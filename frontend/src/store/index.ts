@@ -1,7 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 
+import { authorizationReducer } from '@/features/authorization/store/authorization-slice';
+
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    authorization: authorizationReducer,
+  },
   devTools: process.env.NODE_ENV !== 'production',
 });
 

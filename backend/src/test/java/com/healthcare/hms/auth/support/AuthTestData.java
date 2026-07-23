@@ -7,6 +7,8 @@ import com.healthcare.hms.tenant.enums.TenantType;
 import com.healthcare.hms.users.entity.Permission;
 import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
+import com.healthcare.hms.users.enums.PermissionAction;
+import com.healthcare.hms.users.enums.PermissionGroup;
 import com.healthcare.hms.users.enums.RoleType;
 import com.healthcare.hms.users.enums.UserStatus;
 import java.util.UUID;
@@ -50,11 +52,13 @@ public final class AuthTestData {
         role.setName("Hospital Admin");
         role.setType(RoleType.HOSPITAL_ADMIN);
         role.setSystemRole(true);
+        role.applyCatalogHierarchy();
         final Permission permission = new Permission();
         permission.setId(UUID.fromString("a1000000-0000-4000-8000-000000000007"));
         permission.setCode("HOSPITAL_READ");
         permission.setName("Read hospitals");
-        permission.setModule("HOSPITAL");
+        permission.setPermissionGroup(PermissionGroup.HOSPITAL);
+        permission.setAction(PermissionAction.READ);
         role.getPermissions().add(permission);
         return role;
     }

@@ -1,26 +1,33 @@
 package com.healthcare.hms.security.authorization;
 
-import com.healthcare.hms.security.annotation.RequiresPermission;
+import com.healthcare.hms.common.exception.authorization.MissingAuthorizationAnnotationException;
 import com.healthcare.hms.security.annotation.RequiresRole;
+import com.healthcare.hms.security.authorization.PermissionAnnotationSupport.PermissionRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.core.annotation.AnnotationUtils;
+import java.util.Optional;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * Permission middleware that enforces {@link RequiresPermission} and {@link RequiresRole}
- * on matched controller handlers before the method executes.
+ * HTTP-layer authorization middleware for controller handlers.
+ *
+ * <p>Phase 3.8 fail-closed policy: every {@code /api/**} {@link HandlerMethod} must declare
+ * {@link com.healthcare.hms.security.annotation.PublicEndpoint},
+ * {@link com.healthcare.hms.security.annotation.RequireAuthenticated},
+ * {@link com.healthcare.hms.security.annotation.RequirePermission} (or legacy
+ * {@link com.healthcare.hms.security.annotation.RequiresPermission}), or
+ * {@link RequiresRole}. Unclassified handlers are denied.
  */
 @Component
 public class PermissionAuthorizationInterceptor implements HandlerInterceptor {
 
-    private final AuthorizationService authorizationService;
+    private final PermissionGuard permissionGuard;
 
-    public PermissionAuthorizationInterceptor(final AuthorizationService authorizationService) {
-        this.authorizationService = authorizationService;
+    public PermissionAuthorizationInterceptor(final PermissionGuard permissionGuard) {
+        this.permissionGuard = permissionGuard;
     }
 
     @Override
@@ -33,44 +40,29 @@ public class PermissionAuthorizationInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        final RequiresPermission methodPermission =
-                AnnotationUtils.findAnnotation(handlerMethod.getMethod(), RequiresPermission.class);
-        final RequiresPermission typePermission =
-                AnnotationUtils.findAnnotation(handlerMethod.getBeanType(), RequiresPermission.class);
-        final RequiresRole methodRole =
-                AnnotationUtils.findAnnotation(handlerMethod.getMethod(), RequiresRole.class);
-        final RequiresRole typeRole =
-                AnnotationUtils.findAnnotation(handlerMethod.getBeanType(), RequiresRole.class);
+        final var method = handlerMethod.getMethod();
+        final var beanType = handlerMethod.getBeanType();
 
-        if (methodPermission == null && typePermission == null && methodRole == null && typeRole == null) {
+        if (PermissionAnnotationSupport.isPublicEndpoint(method, beanType)) {
             return true;
         }
 
-        authorizationService.requireAuthenticated();
-        enforcePermission(methodPermission != null ? methodPermission : typePermission);
-        enforceRole(methodRole != null ? methodRole : typeRole);
+        final Optional<PermissionRequirement> permission =
+                PermissionAnnotationSupport.findPermissionRequirement(method, beanType);
+        final Optional<RequiresRole> role =
+                PermissionAnnotationSupport.findRoleRequirement(method, beanType);
+        final boolean authenticatedOnly =
+                PermissionAnnotationSupport.requiresAuthenticatedOnly(method, beanType);
+
+        if (permission.isEmpty() && role.isEmpty() && !authenticatedOnly) {
+            throw new MissingAuthorizationAnnotationException(
+                    beanType.getSimpleName() + "#" + method.getName()
+            );
+        }
+
+        permissionGuard.requireAuthenticated();
+        permission.ifPresent(permissionGuard::enforce);
+        role.ifPresent(permissionGuard::enforce);
         return true;
-    }
-
-    private void enforcePermission(final RequiresPermission annotation) {
-        if (annotation == null || annotation.value().length == 0) {
-            return;
-        }
-        if (annotation.requireAll()) {
-            authorizationService.requireAllPermissions(annotation.value());
-        } else {
-            authorizationService.requireAnyPermission(annotation.value());
-        }
-    }
-
-    private void enforceRole(final RequiresRole annotation) {
-        if (annotation == null || annotation.value().length == 0) {
-            return;
-        }
-        if (annotation.requireAll()) {
-            authorizationService.requireAllRoles(annotation.value());
-        } else {
-            authorizationService.requireAnyRole(annotation.value());
-        }
     }
 }

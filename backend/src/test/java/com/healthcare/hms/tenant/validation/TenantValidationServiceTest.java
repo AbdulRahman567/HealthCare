@@ -81,7 +81,7 @@ class TenantValidationServiceTest {
                 null,
                 "orphan@platform.test",
                 Set.of("HOSPITAL_ADMIN"),
-                Set.of("HOSPITAL_WRITE"),
+                Set.of("HOSPITAL_UPDATE"),
                 0L
         );
         SecurityContextHolder.getContext().setAuthentication(

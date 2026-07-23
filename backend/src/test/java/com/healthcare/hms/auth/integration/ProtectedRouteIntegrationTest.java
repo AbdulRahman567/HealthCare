@@ -100,6 +100,50 @@ class ProtectedRouteIntegrationTest extends AbstractMySqlIntegrationTest {
                 .andExpect(jsonPath("$.data.permissions", hasItem("HOSPITAL_READ")));
     }
 
+    @Test
+    @DisplayName("POST /change-password without a bearer token returns 401")
+    void changePassword_withoutToken_returns401() throws Exception {
+        mockMvc.perform(post(BASE + "/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"currentPassword":"StrongPass1!ab","newPassword":"StrongPass2!cd"}
+                                """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("AUTH_UNAUTHORIZED"));
+    }
+
+    @Test
+    @DisplayName("GET /hospitals/settings without a bearer token returns 401")
+    void hospitalSettings_withoutToken_returns401() throws Exception {
+        mockMvc.perform(get("/api/v1/hospitals/settings"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("AUTH_UNAUTHORIZED"));
+    }
+
+    @Test
+    @DisplayName("GET /authorization/hospital-access with admin token returns 200")
+    void hospitalAccess_withAdminToken_returns200() throws Exception {
+        final String accessToken = registerVerifyAndLogin(uniqueEmail("hospital-access"));
+
+        mockMvc.perform(get(BASE + "/authorization/hospital-access")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.allowed").value(true))
+                .andExpect(jsonPath("$.data.permission").value("HOSPITAL_READ"));
+    }
+
+    @Test
+    @DisplayName("GET /hospitals/settings with mismatched X-Tenant-ID returns 403")
+    void hospitalSettings_tenantMismatch_returns403() throws Exception {
+        final String accessToken = registerVerifyAndLogin(uniqueEmail("tenant-mismatch"));
+
+        mockMvc.perform(get("/api/v1/hospitals/settings")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                        .header("X-Tenant-ID", UUID.randomUUID().toString()))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
     // ------------------------------------------------------------------
     // Test fixtures and MockMvc helpers
     // ------------------------------------------------------------------

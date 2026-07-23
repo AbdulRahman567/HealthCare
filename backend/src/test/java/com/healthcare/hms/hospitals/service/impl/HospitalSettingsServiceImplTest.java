@@ -80,7 +80,7 @@ class HospitalSettingsServiceImplTest {
                 tenantId,
                 "admin@city.test",
                 Set.of("HOSPITAL_ADMIN"),
-                Set.of("HOSPITAL_READ", "HOSPITAL_WRITE"),
+                Set.of("HOSPITAL_READ", "HOSPITAL_UPDATE"),
                 1L
         );
         SecurityContextHolder.getContext().setAuthentication(

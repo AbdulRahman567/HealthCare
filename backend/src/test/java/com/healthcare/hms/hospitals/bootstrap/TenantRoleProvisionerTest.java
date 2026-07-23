@@ -10,7 +10,10 @@ import static org.mockito.Mockito.when;
 import com.healthcare.hms.common.exception.BusinessException;
 import com.healthcare.hms.users.entity.Permission;
 import com.healthcare.hms.users.entity.Role;
+import com.healthcare.hms.users.enums.PermissionAction;
+import com.healthcare.hms.users.enums.PermissionGroup;
 import com.healthcare.hms.users.enums.RoleType;
+import com.healthcare.hms.users.rbac.RoleHierarchy;
 import com.healthcare.hms.users.repository.PermissionRepository;
 import com.healthcare.hms.users.repository.RoleRepository;
 import java.util.ArrayList;
@@ -49,7 +52,8 @@ class TenantRoleProvisionerTest {
                 permission.setId(UUID.randomUUID());
                 permission.setCode(code);
                 permission.setName(code);
-                permission.setModule("TEST");
+                permission.setPermissionGroup(PermissionGroup.PATIENT);
+                permission.setAction(PermissionAction.READ);
                 permissions.add(permission);
             }
             return permissions;
@@ -65,7 +69,16 @@ class TenantRoleProvisionerTest {
             assertThat(role.getTenantId()).isEqualTo(tenantId);
             assertThat(role.isSystemRole()).isFalse();
             assertThat(role.getPermissions()).isNotEmpty();
+            assertThat(role.getHierarchyLevel()).isEqualTo(RoleHierarchy.levelOf(role.getType()));
+            assertThat(role.isAssignable()).isEqualTo(RoleHierarchy.isAssignable(role.getType()));
         });
+        final Role hospitalAdmin = roles.stream()
+                .filter(role -> role.getType() == RoleType.HOSPITAL_ADMIN)
+                .findFirst()
+                .orElseThrow();
+        assertThat(hospitalAdmin.getParentRole()).isNull();
+        assertThat(roles.stream().filter(role -> role.getType() != RoleType.HOSPITAL_ADMIN))
+                .allSatisfy(role -> assertThat(role.getParentRole()).isSameAs(hospitalAdmin));
         verify(roleRepository, times(DefaultTenantRoleCatalog.definitions().size())).save(any(Role.class));
     }
 

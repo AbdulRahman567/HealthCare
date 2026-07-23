@@ -237,21 +237,43 @@ created_at
 
 roles
 
-Super Admin
+Tenant-aware (`tenant_id` nullable for platform system templates).
 
-Hospital Admin
+Fields
 
-Doctor
+id (UUID)
+tenant_id (nullable — platform system roles)
+name
+type (RoleType enum)
+description
+system_role
+hierarchy_level (lower = higher privilege)
+assignable
+parent_role_id (self-FK; tenant HOSPITAL_ADMIN is root)
+created_at / updated_at / created_by / updated_by
+deleted / deleted_at / deleted_by
+version
 
-Receptionist
+Default system roles
 
-Nurse
+Super Admin (platform only, level 0)
+Hospital Admin (level 10)
+Doctor (level 20)
+Nurse / Receptionist / Lab Technician / Pharmacist (level 30)
+Patient (level 40, not assignable in MVP)
 
-Lab Technician
+Hierarchy (structural — effective access is still explicit `role_permissions`):
 
-Pharmacist
-
-Patient
+```
+SUPER_ADMIN
+  └── HOSPITAL_ADMIN
+        ├── DOCTOR
+        ├── NURSE
+        ├── RECEPTIONIST
+        ├── LAB_TECHNICIAN
+        ├── PHARMACIST
+        └── PATIENT
+```
 
 ---
 
@@ -259,11 +281,30 @@ Patient
 
 permissions
 
+Platform-global catalog (not tenant-owned). Grants are tenant-isolated via roles.
+
+Fields
+
+id (UUID)
+code (`{GROUP}_{ACTION}`, e.g. PATIENT_READ)
+name
+description
+permission_group (PermissionGroup enum)
+action (PermissionAction: READ | CREATE | WRITE | DELETE)
+system_permission
+created_at / updated_at / created_by / updated_by
+deleted / deleted_at / deleted_by
+version
+
+Unique: code; (permission_group, action)
+
 Example
 
 PATIENT_READ
 
-PATIENT_WRITE
+PATIENT_CREATE
+
+PATIENT_UPDATE
 
 PATIENT_DELETE
 
