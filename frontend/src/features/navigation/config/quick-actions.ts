@@ -7,6 +7,39 @@ import type { QuickActionItem } from '@/features/navigation/types';
  */
 export const QUICK_ACTIONS: QuickActionItem[] = [
   {
+    id: 'invite-user',
+    label: 'Invite staff',
+    description: 'Send a hospital invitation email',
+    href: '/app/invitations',
+    permissions: [Permissions.USER_CREATE],
+    icon: 'mail-plus',
+  },
+  {
+    id: 'add-department',
+    label: 'Add department',
+    description: 'Create an organizational unit',
+    href: '/app/departments',
+    permissions: [Permissions.DEPARTMENT_CREATE],
+    icon: 'building-2',
+  },
+  {
+    id: 'add-staff',
+    label: 'Add staff profile',
+    description: 'Link a user to employment records',
+    href: '/app/staff',
+    permissions: [Permissions.STAFF_CREATE, Permissions.DOCTOR_CREATE],
+    mode: 'any',
+    icon: 'stethoscope',
+  },
+  {
+    id: 'manage-users',
+    label: 'Manage users',
+    description: 'Search and update hospital accounts',
+    href: '/app/users',
+    permissions: [Permissions.USER_READ],
+    icon: 'users',
+  },
+  {
     id: 'register-patient',
     label: 'Register patient',
     description: 'Create a new patient record',
@@ -22,15 +55,6 @@ export const QUICK_ACTIONS: QuickActionItem[] = [
     href: '/app/appointments',
     permissions: [Permissions.APPOINTMENT_CREATE],
     icon: 'calendar-plus',
-    comingSoon: true,
-  },
-  {
-    id: 'invite-user',
-    label: 'Invite staff',
-    description: 'Add a hospital user',
-    href: '/app/users',
-    permissions: [Permissions.USER_CREATE],
-    icon: 'users',
     comingSoon: true,
   },
   {

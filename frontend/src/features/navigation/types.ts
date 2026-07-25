@@ -16,7 +16,9 @@ export type NavIconName =
   | 'user-plus'
   | 'calendar-plus'
   | 'settings-2'
-  | 'file-plus';
+  | 'file-plus'
+  | 'stethoscope'
+  | 'mail-plus';
 
 export type NavSection = 'main' | 'clinical' | 'admin' | 'account';
 

@@ -49,8 +49,7 @@ export function RouteProtection({
     authorized = canAccess(requirement ?? { roles, permissions });
   } else if (useRouteCatalog) {
     const resolved = resolveRouteAccess(pathname);
-    authorized =
-      resolved.status === 'allow' ? canAccess(resolved.requirement) : false;
+    authorized = resolved.status === 'allow' ? canAccess(resolved.requirement) : false;
   }
 
   const authzReady = authzStatus === 'ready' || authzStatus === 'error' || !isAuthenticated;

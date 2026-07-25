@@ -444,7 +444,9 @@ public class AuthServiceImpl implements AuthService {
                 return;
             }
 
-            if (user.getStatus() == UserStatus.INACTIVE || user.getStatus() == UserStatus.LOCKED) {
+            if (user.getStatus() == UserStatus.INACTIVE
+                    || user.getStatus() == UserStatus.LOCKED
+                    || user.getStatus() == UserStatus.SUSPENDED) {
                 log.info("Resend verification skipped for non-eligible status userId={}", user.getId());
                 return;
             }

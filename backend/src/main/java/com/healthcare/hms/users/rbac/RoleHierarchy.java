@@ -87,6 +87,15 @@ public final class RoleHierarchy {
         return type != RoleType.SUPER_ADMIN && type != RoleType.PATIENT;
     }
 
+    /**
+     * Roles a tenant Hospital Admin may invite. Excludes peer {@link RoleType#HOSPITAL_ADMIN}
+     * to prevent invite-then-suspend takeover. Platform Super Admin may still invite
+     * hospital admins via {@link #isAssignable(RoleType)}.
+     */
+    public static boolean isInvitableByTenantAdmin(final RoleType type) {
+        return isAssignable(type) && type != RoleType.HOSPITAL_ADMIN;
+    }
+
     public static boolean isStrictlyHigher(final RoleType higher, final RoleType lower) {
         return levelOf(higher) < levelOf(lower);
     }

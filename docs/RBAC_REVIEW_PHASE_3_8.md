@@ -8,7 +8,6 @@
 > platform Super Admin (`tenantId == null`) could not obtain JWTs. See
 > [EQB_RBAC_VALIDATION_REPORT.md](./EQB_RBAC_VALIDATION_REPORT.md).
 
-
 ---
 
 ## Architecture report
@@ -53,11 +52,11 @@ Navigation catalogs (permission-only) → Sidebar / Top nav / Cards / Quick acti
 
 ### Dependency direction (corrected in 3.8)
 
-| Layer | Depends on |
-| ----- | ---------- |
-| `navigation` | `authorization` types + permission constants |
+| Layer                  | Depends on                                                   |
+| ---------------------- | ------------------------------------------------------------ |
+| `navigation`           | `authorization` types + permission constants                 |
 | `authorization` routes | **Independent** `PROTECTED_ROUTES` (not derived from nav UI) |
-| Nav ↔ routes | Kept in sync via unit parity tests |
+| Nav ↔ routes           | Kept in sync via unit parity tests                           |
 
 ### Hardcoded roles — allowed exceptions
 
@@ -74,28 +73,28 @@ All other access control uses permission codes.
 
 ### Issues found and fixed (Phase 3.8)
 
-| Severity | Issue | Fix |
-| -------- | ----- | --- |
-| Critical | Interceptor fail-open for unannotated `/api/**` handlers | Fail-closed: require `@PublicEndpoint` / `@RequireAuthenticated` / `@RequirePermission` / `@RequiresRole`; else `MissingAuthorizationAnnotationException` → 403 |
-| Critical | Unclassified handlers undetected until exploit | Startup `ControllerAuthorizationCoverageGuard` fails boot if any `/api` handler lacks classification |
-| High | Duplicate independent `SUPER_ADMIN` checks | Consolidated into `PlatformPrincipalSupport` |
-| High | `executeWithoutTenantFilter` only required a free-text reason | Now requires authenticated platform Super Admin |
-| High | Frontend unknown `/app/*` routes fail-open | `resolveRouteAccess` denies unlisted app paths |
-| Medium | AuthZ routes derived from nav catalog (inverted deps) | Independent `PROTECTED_ROUTES` + parity tests |
-| Medium | `@RequiresPermission` could drift from `@RequirePermission` | Composed alias via Spring `@AliasFor` |
-| Medium | Hospital settings only guarded at controller | `@RequirePermission` on service interface + impl |
-| Low | Session `hasRole`/`hasPermission` parallel SoT | Deprecated in favor of `useAuthorization` |
+| Severity | Issue                                                         | Fix                                                                                                                                                             |
+| -------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Critical | Interceptor fail-open for unannotated `/api/**` handlers      | Fail-closed: require `@PublicEndpoint` / `@RequireAuthenticated` / `@RequirePermission` / `@RequiresRole`; else `MissingAuthorizationAnnotationException` → 403 |
+| Critical | Unclassified handlers undetected until exploit                | Startup `ControllerAuthorizationCoverageGuard` fails boot if any `/api` handler lacks classification                                                            |
+| High     | Duplicate independent `SUPER_ADMIN` checks                    | Consolidated into `PlatformPrincipalSupport`                                                                                                                    |
+| High     | `executeWithoutTenantFilter` only required a free-text reason | Now requires authenticated platform Super Admin                                                                                                                 |
+| High     | Frontend unknown `/app/*` routes fail-open                    | `resolveRouteAccess` denies unlisted app paths                                                                                                                  |
+| Medium   | AuthZ routes derived from nav catalog (inverted deps)         | Independent `PROTECTED_ROUTES` + parity tests                                                                                                                   |
+| Medium   | `@RequiresPermission` could drift from `@RequirePermission`   | Composed alias via Spring `@AliasFor`                                                                                                                           |
+| Medium   | Hospital settings only guarded at controller                  | `@RequirePermission` on service interface + impl                                                                                                                |
+| Low      | Session `hasRole`/`hasPermission` parallel SoT                | Deprecated in favor of `useAuthorization`                                                                                                                       |
 
 ### Verified secure behaviors
 
-| Control | Status |
-| ------- | ------ |
-| Privilege escalation via JWT role claims | Blocked (DB principal) |
-| Cross-tenant header spoofing (hospital user) | 403 `TenantMismatchException` |
-| AuthN vs AuthZ status codes | 401 vs 403 correct; generic `AUTHZ_ACCESS_DENIED` bodies |
-| Permission code leakage in API responses | Prevented |
-| Token version / email / status checks | Enforced in `JwtPrincipalValidator` |
-| Frontend UI bypass | UX only — APIs re-enforce |
+| Control                                      | Status                                                   |
+| -------------------------------------------- | -------------------------------------------------------- |
+| Privilege escalation via JWT role claims     | Blocked (DB principal)                                   |
+| Cross-tenant header spoofing (hospital user) | 403 `TenantMismatchException`                            |
+| AuthN vs AuthZ status codes                  | 401 vs 403 correct; generic `AUTHZ_ACCESS_DENIED` bodies |
+| Permission code leakage in API responses     | Prevented                                                |
+| Token version / email / status checks        | Enforced in `JwtPrincipalValidator`                      |
+| Frontend UI bypass                           | UX only — APIs re-enforce                                |
 
 ### Residual (non-critical) risks
 
@@ -129,14 +128,14 @@ All other access control uses permission codes.
 
 ## Definition of Done (Phase 3.8)
 
-- [x] Architecture reviewed and documented  
-- [x] Security reviewed; Critical issues fixed  
-- [x] Backend fail-closed API classification + startup guard  
-- [x] Cross-tenant / Super Admin trust bar centralized  
-- [x] Frontend route catalog fail-closed + independent of nav  
-- [x] Tests updated (backend + frontend)  
-- [x] Re-review: no Critical issues remain  
+- [x] Architecture reviewed and documented
+- [x] Security reviewed; Critical issues fixed
+- [x] Backend fail-closed API classification + startup guard
+- [x] Cross-tenant / Super Admin trust bar centralized
+- [x] Frontend route catalog fail-closed + independent of nav
+- [x] Tests updated (backend + frontend)
+- [x] Re-review: no Critical issues remain
 
 ---
 
-*Companion docs: [SECURITY.md](./SECURITY.md), [PERMISSION_MATRIX.md](./PERMISSION_MATRIX.md), [phasesreadme.md](./phasesreadme.md)*
+_Companion docs: [SECURITY.md](./SECURITY.md), [PERMISSION_MATRIX.md](./PERMISSION_MATRIX.md), [phasesreadme.md](./phasesreadme.md)_

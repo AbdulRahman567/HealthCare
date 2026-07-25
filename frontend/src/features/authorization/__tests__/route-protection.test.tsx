@@ -34,8 +34,7 @@ function renderProtected(
   (useRouter as jest.Mock).mockReturnValue({ replace: mockReplace });
   (usePathname as jest.Mock).mockReturnValue(options.pathname ?? '/app');
   (useSession as jest.Mock).mockReturnValue(
-    options.session ??
-      createMockSession({ status: 'authenticated', isAuthenticated: true }),
+    options.session ?? createMockSession({ status: 'authenticated', isAuthenticated: true }),
   );
 
   const store = configureStore({

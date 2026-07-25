@@ -171,6 +171,56 @@ public class User extends TenantOwnedEntity {
         this.status = status;
     }
 
+    /**
+     * Whether the account may authenticate (ACTIVE only).
+     */
+    public boolean isAuthenticationEligible() {
+        return status == UserStatus.ACTIVE && !isDeleted();
+    }
+
+    /**
+     * Activate for operational use: {@code PENDING} or {@code INACTIVE} → {@code ACTIVE}.
+     */
+    public void activate() {
+        if (status != UserStatus.PENDING && status != UserStatus.INACTIVE) {
+            throw new IllegalStateException("Cannot activate user from status " + status);
+        }
+        this.status = UserStatus.ACTIVE;
+    }
+
+    /**
+     * Deactivate: {@code ACTIVE} → {@code INACTIVE}.
+     */
+    public void deactivate() {
+        if (status != UserStatus.ACTIVE) {
+            throw new IllegalStateException("Cannot deactivate user from status " + status);
+        }
+        this.status = UserStatus.INACTIVE;
+    }
+
+    /**
+     * Suspend: {@code ACTIVE} → {@code SUSPENDED}.
+     */
+    public void suspend() {
+        if (status != UserStatus.ACTIVE) {
+            throw new IllegalStateException("Cannot suspend user from status " + status);
+        }
+        this.status = UserStatus.SUSPENDED;
+    }
+
+    /**
+     * Restore to active: {@code INACTIVE} or {@code SUSPENDED} → {@code ACTIVE}.
+     *
+     * <p>{@link UserStatus#LOCKED} is a security lock and must not be cleared via admin
+     * lifecycle APIs (requires a dedicated unlock path when lockout is implemented).
+     */
+    public void restore() {
+        if (status != UserStatus.INACTIVE && status != UserStatus.SUSPENDED) {
+            throw new IllegalStateException("Cannot restore user from status " + status);
+        }
+        this.status = UserStatus.ACTIVE;
+    }
+
     public Instant getLastLoginAt() {
         return lastLoginAt;
     }

@@ -11,11 +11,21 @@ export const PROTECTED_ROUTES: Record<string, AccessRequirement> = {
     permissions: [Permissions.DASHBOARD_READ],
   },
   '/app/profile': {},
-  '/app/hospital': {
-    permissions: [Permissions.HOSPITAL_READ],
+  '/app/departments': {
+    permissions: [Permissions.DEPARTMENT_READ],
+  },
+  '/app/staff': {
+    permissions: [Permissions.STAFF_READ, Permissions.DOCTOR_READ],
+    mode: 'any',
   },
   '/app/users': {
     permissions: [Permissions.USER_READ],
+  },
+  '/app/invitations': {
+    permissions: [Permissions.USER_READ],
+  },
+  '/app/hospital': {
+    permissions: [Permissions.HOSPITAL_READ],
   },
   '/app/patients': {
     permissions: [Permissions.PATIENT_READ],

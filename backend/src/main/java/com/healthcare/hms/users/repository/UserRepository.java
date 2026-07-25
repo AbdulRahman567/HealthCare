@@ -6,16 +6,19 @@ import com.healthcare.hms.users.enums.UserStatus;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
     Optional<User> findByEmailIgnoreCase(String email);
 
     Optional<User> findByTenantIdAndEmailIgnoreCase(UUID tenantId, String email);
+
+    Optional<User> findByIdAndTenantId(UUID id, UUID tenantId);
 
     boolean existsByEmailIgnoreCase(String email);
 
@@ -28,6 +31,17 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             WHERE u.id = :id
             """)
     Optional<User> findByIdWithRolesAndPermissions(@Param("id") UUID id);
+
+    @Query("""
+            SELECT DISTINCT u FROM User u
+            LEFT JOIN FETCH u.roles r
+            LEFT JOIN FETCH r.permissions
+            WHERE u.id = :id AND u.tenantId = :tenantId
+            """)
+    Optional<User> findByIdAndTenantIdWithRolesAndPermissions(
+            @Param("id") UUID id,
+            @Param("tenantId") UUID tenantId
+    );
 
     @Query("""
             SELECT DISTINCT u FROM User u
@@ -46,6 +60,19 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     long countByTenantIdAndRoleType(
             @Param("tenantId") UUID tenantId,
             @Param("roleType") RoleType roleType
+    );
+
+    @Query("""
+            SELECT COUNT(DISTINCT u) FROM User u
+            JOIN u.roles r
+            WHERE u.tenantId = :tenantId
+              AND r.type = :roleType
+              AND u.status = :status
+            """)
+    long countByTenantIdAndRoleTypeAndStatus(
+            @Param("tenantId") UUID tenantId,
+            @Param("roleType") RoleType roleType,
+            @Param("status") UserStatus status
     );
 
     long countByTenantIdAndStatus(UUID tenantId, UserStatus status);

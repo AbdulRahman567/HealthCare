@@ -154,33 +154,49 @@ Unauthorized → **401**. Missing permission / tenant mismatch → **403** (gene
 
 # 4. User Management
 
-GET
+Base path: `/api/v1`
 
-/users
+## 4.1 User invitations (Phase 4.5)
 
-GET
+Requires JWT + `X-Tenant-ID` for admin operations. Accept/reject/token preview are public.
 
-/users/{id}
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| POST | `/invitations` | USER_CREATE | Invite by email + role; emails hashed single-use token |
+| GET | `/invitations` | USER_READ | Filter `status`, `email`; pageable |
+| GET | `/invitations/{id}` | USER_READ | Tenant-scoped get |
+| POST | `/invitations/{id}/resend` | USER_CREATE | New token + extended expiry |
+| POST | `/invitations/{id}/cancel` | USER_UPDATE | Cancel pending invite |
+| POST | `/invitations/preview` | Public | Preview pending invitation (token in body) |
+| POST | `/invitations/accept` | Public | Create account, assign role, join hospital tenant |
+| POST | `/invitations/reject` | Public | Reject pending invitation |
 
-POST
+Workflow: Hospital Admin invites → email with `#token=` fragment link →
+`/accept-invitation` (public) → preview (token in body) → accept (create user + role)
+or reject → optional resend/cancel while pending.
 
-/users
+Token TTL: `hms.security.user-invitation.token-expiration` (default 72h).
+Expired pending invitations are persisted as `EXPIRED` so the email may be re-invited.
 
-PUT
+## 4.2 Users (Phase 4.6)
 
-/users/{id}
+Requires JWT + `X-Tenant-ID` + `USER_*` permissions.
 
-PATCH
+No physical delete — lifecycle uses status changes only.
 
-/users/{id}/status
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| GET | `/users` | USER_READ | Search `q`; filter `status` / `roleType` / `emailVerified`; pageable sort |
+| GET | `/users/{id}` | USER_READ | Tenant-scoped get with role types |
+| PUT | `/users/{id}` | USER_UPDATE | Admin profile update (name, phone) |
+| POST | `/users/{id}/activate` | USER_UPDATE | PENDING or INACTIVE → ACTIVE |
+| POST | `/users/{id}/deactivate` | USER_UPDATE | ACTIVE → INACTIVE; revokes sessions; clears dept heads; suspends staff employment |
+| POST | `/users/{id}/suspend` | USER_UPDATE | ACTIVE → SUSPENDED; revokes sessions; clears dept heads; suspends staff employment |
+| POST | `/users/{id}/restore` | USER_UPDATE | INACTIVE / SUSPENDED → ACTIVE (LOCKED excluded) |
 
-DELETE
+Status transitions forbid self-target for activate/deactivate/suspend/restore.
 
-/users/{id}
-
-GET
-
-/users/search
+User creation remains via invitations (Phase 4.5) or hospital registration.
 
 ---
 
@@ -214,61 +230,54 @@ PUT
 
 # 6. Departments
 
-GET
+Base path: `/api/v1/departments`
 
-/departments
+Requires JWT + `X-Tenant-ID` + department permissions.
 
-POST
-
-/departments
-
-PUT
-
-/departments/{id}
-
-DELETE
-
-/departments/{id}
-
-GET
-
-/departments/{id}
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| GET | `/departments` | DEPARTMENT_READ | Search `q`, filter `status`/`type`/`hospitalId`, pageable sort |
+| GET | `/departments/{id}` | DEPARTMENT_READ | Tenant-scoped get |
+| POST | `/departments` | DEPARTMENT_CREATE | Bound to default hospital; unique code/name per tenant |
+| PUT | `/departments/{id}` | DEPARTMENT_UPDATE | Full replace; unique code/name |
+| DELETE | `/departments/{id}` | DEPARTMENT_DELETE | Soft delete (204); frees code/name uniqueness |
 
 ---
 
-# 7. Doctors
+# 7. Doctors / Staff
 
-GET
+Staff administration (Phase 4.3). No scheduling/appointment endpoints here.
 
-/doctors
+| Method | Path | Permission |
+| ------ | ---- | ---------- |
+| CRUD | `/api/v1/doctors` | `DOCTOR_*` |
+| CRUD | `/api/v1/nurses` | `STAFF_*` |
+| CRUD | `/api/v1/receptionists` | `STAFF_*` |
+| CRUD | `/api/v1/laboratory-staff` | `STAFF_*` |
+| CRUD | `/api/v1/pharmacists` | `STAFF_*` |
 
-GET
+List endpoints support `q`, `employmentStatus`, `departmentId`, and pageable sort.
+Create requires existing tenant `userId` with matching role + `departmentId`.
+Soft delete returns `204`.
 
-/doctors/{id}
+---
 
-POST
+# 7.1 Staff assignments (Phase 4.4)
 
-/doctors
+Base path: `/api/v1`
 
-PUT
+Requires JWT + `X-Tenant-ID`.
 
-/doctors/{id}
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| POST | `/staff-assignments` | STAFF_UPDATE | Assign staff with no current department; rejects duplicates |
+| POST | `/staff-assignments/transfers` | STAFF_UPDATE | Transfer between departments; closes open history; clears head if leaving |
+| GET | `/staff-assignments/current` | STAFF_READ | Open assignment for `staffType` + `staffId` |
+| GET | `/staff-assignments` | STAFF_READ | History by `staffType`+`staffId` or `departmentId` |
+| PUT | `/departments/{departmentId}/head` | DEPARTMENT_UPDATE | Staff must currently belong to the department |
+| DELETE | `/departments/{departmentId}/head` | DEPARTMENT_UPDATE | Clear head (staff + user refs) |
 
-DELETE
-
-/doctors/{id}
-
-GET
-
-/doctors/search
-
-GET
-
-/doctors/{id}/patients
-
-GET
-
-/doctors/{id}/appointments
+Assignment history is also written when staff profiles are created/updated/soft-deleted.
 
 ---
 

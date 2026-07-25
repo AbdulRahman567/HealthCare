@@ -10,6 +10,7 @@ const AUTH_PAGES = [
   '/reset-password',
   '/verify-email',
   '/resend-verification',
+  '/accept-invitation',
 ];
 
 export function middleware(request: NextRequest) {
@@ -46,5 +47,6 @@ export const config = {
     '/verify-email',
     '/verify-email/:path*',
     '/resend-verification',
+    '/accept-invitation',
   ],
 };

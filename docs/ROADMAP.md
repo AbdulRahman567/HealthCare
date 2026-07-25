@@ -112,17 +112,17 @@ Enable multiple hospitals to operate independently on the same platform.
 
 ### Sub-phases
 
-| Sub-phase | Scope                                                                                                         | Status      |
-| --------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
-| 3.1       | RBAC domain design (Role/Permission refinement, PermissionGroup/Action, hierarchy, defaults, Flyway V9)       | Done        |
+| Sub-phase | Scope                                                                                                        | Status      |
+| --------- | ------------------------------------------------------------------------------------------------------------ | ----------- |
+| 3.1       | RBAC domain design (Role/Permission refinement, PermissionGroup/Action, hierarchy, defaults, Flyway V9)      | Done        |
 | 3.2       | Authorization infrastructure (PermissionEvaluator, AuthorizationService, CurrentUser, resolvers, exceptions) | Done        |
 | 3.3       | Permission-based authorization (`@RequirePermission`, aspect/interceptor, PermissionGuard, AccessDenied)     | Done        |
 | 3.4       | Secure all existing APIs (JWT/role/permission/tenant, 401/403, Swagger auth docs)                            | Done        |
 | 3.5       | Default system roles + permission matrix (CREATE/UPDATE naming, Accountant, Flyway V10, bootstrap)           | Done        |
 | 3.6       | Frontend authorization (providers, hooks, Protected/Can, route protection, nav UX)                           | Done        |
 | 3.7       | Dynamic navigation (sidebar, top nav, breadcrumbs, dashboard cards, quick actions — permission-driven)       | Done        |
-| 3.8       | Complete RBAC review + hardening (fail-closed APIs/routes, platform trust bar, reports)                        | Done        |
-| 3.x       | Departments, staff assignment, multi-hospital ops beyond default hospital                                     | Not started |
+| 3.8       | Complete RBAC review + hardening (fail-closed APIs/routes, platform trust bar, reports)                      | Done        |
+| 3.x       | Departments, staff assignment, multi-hospital ops beyond default hospital                                    | Partially done (depts+assignment in 4.2–4.4; multi-hospital later) |
 
 ### Definition of Done
 
@@ -146,6 +146,23 @@ Manage healthcare personnel within each hospital.
 - Pharmacist management
 - User profiles
 - Role assignment
+
+### Sub-phases
+
+| Sub-phase | Scope                                                                                                         | Status      |
+| --------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
+| 4.1       | Hospital Administration architecture (organization package, Staff base, employment/department enums, diagrams) | Done        |
+| 4.2       | Department management (entity, DTOs, repo, service, controller, validation, Flyway V12)                       | Done        |
+| 4.3       | Staff management (Doctor, Nurse, Receptionist, Lab Staff, Pharmacist)                                         | Done        |
+| 4.4       | Staff assignment (assign/transfer, department head, history, Flyway V14)                                      | Done        |
+| 4.5       | User invitation (invite-by-email, accept/reject/resend/cancel, Flyway V15)                                    | Done        |
+| 4.6       | User management (directory, profile update, activate/deactivate/suspend/restore)                              | Done        |
+| 4.7       | Hospital Administration UI (dashboard, departments, staff, users, invitations)                                | Done        |
+| 4.8       | Hospital Administration security review (tenant/RBAC/privilege hardening)                                     | Done        |
+| 4.9       | Hospital Administration production readiness (compile/build/lifecycle review + Critical/High fixes)           | Done        |
+| 4.10+     | Staff UX, scheduling hooks, richer profiles                                                                   | Not started |
+
+Design reference: [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md).
 
 ### Definition of Done
 

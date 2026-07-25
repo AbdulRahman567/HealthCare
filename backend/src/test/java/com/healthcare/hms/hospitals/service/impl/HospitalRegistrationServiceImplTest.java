@@ -166,7 +166,7 @@ class HospitalRegistrationServiceImplTest {
 
         assertThatThrownBy(() -> service.register(request, IP, UA))
                 .isInstanceOf(ConflictException.class)
-                .hasMessageContaining("Hospital email");
+                .hasMessageContaining("Registration could not be completed");
 
         verify(hospitalRepository, never()).saveAndFlush(any());
         verify(userRepository, never()).saveAndFlush(any());
@@ -181,7 +181,7 @@ class HospitalRegistrationServiceImplTest {
 
         assertThatThrownBy(() -> service.register(request, IP, UA))
                 .isInstanceOf(ConflictException.class)
-                .hasMessageContaining("Administrator email");
+                .hasMessageContaining("Registration could not be completed");
 
         verify(tenantRepository, never()).saveAndFlush(any());
     }

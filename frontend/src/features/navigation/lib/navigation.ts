@@ -1,7 +1,4 @@
-import {
-  NAV_SECTION_ORDER,
-  WORKSPACE_NAVIGATION,
-} from '@/features/navigation/config/nav-items';
+import { NAV_SECTION_ORDER, WORKSPACE_NAVIGATION } from '@/features/navigation/config/nav-items';
 import { filterByPermission } from '@/features/navigation/lib/filter-by-permission';
 import type { BreadcrumbItem, WorkspaceNavItem } from '@/features/navigation/types';
 
@@ -12,9 +9,7 @@ export function filterNavigation(
   return filterByPermission(items, permissions);
 }
 
-export function filterSidebarNavigation(
-  permissions: readonly string[],
-): WorkspaceNavItem[] {
+export function filterSidebarNavigation(permissions: readonly string[]): WorkspaceNavItem[] {
   return filterNavigation(WORKSPACE_NAVIGATION, permissions).filter(
     (item) => item.showInSidebar !== false,
   );
@@ -69,11 +64,7 @@ export function buildBreadcrumbs(pathname: string): BreadcrumbItem[] {
     return crumbs;
   }
 
-  const nested = pathname
-    .slice(match.href.length)
-    .split('/')
-    .filter(Boolean)
-    .map(titleCaseSegment);
+  const nested = pathname.slice(match.href.length).split('/').filter(Boolean).map(titleCaseSegment);
 
   if (nested.length === 0) {
     crumbs.push({ label: match.label });

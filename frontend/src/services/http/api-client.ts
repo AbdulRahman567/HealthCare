@@ -49,7 +49,10 @@ function shouldSkipRefresh(url?: string): boolean {
     url.includes('/auth/forgot-password') ||
     url.includes('/auth/reset-password') ||
     url.includes('/auth/verify-email') ||
-    url.includes('/auth/resend-verification')
+    url.includes('/auth/resend-verification') ||
+    url.includes('/invitations/preview') ||
+    url.includes('/invitations/accept') ||
+    url.includes('/invitations/reject')
   );
 }
 

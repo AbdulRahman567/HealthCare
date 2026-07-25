@@ -29,14 +29,21 @@ describe('filterByPermission', () => {
     expect(ids).not.toContain('hospital');
   });
 
-  it('shows hospital when HOSPITAL_READ is granted (permission-only)', () => {
+  it('shows invitations with users when USER_READ is granted', () => {
     const items = filterSidebarNavigation([
       Permissions.HOSPITAL_READ,
       Permissions.USER_READ,
       Permissions.BILLING_READ,
     ]);
     const ids = items.map((item) => item.id);
-    expect(ids).toEqual(expect.arrayContaining(['hospital', 'users', 'billing']));
+    expect(ids).toEqual(
+      expect.arrayContaining(['hospital', 'users', 'invitations', 'billing']),
+    );
+  });
+
+  it('shows staff when either STAFF_READ or DOCTOR_READ is granted', () => {
+    expect(filterSidebarNavigation([Permissions.STAFF_READ]).map((i) => i.id)).toContain('staff');
+    expect(filterSidebarNavigation([Permissions.DOCTOR_READ]).map((i) => i.id)).toContain('staff');
   });
 
   it('filters dashboard cards by permission', () => {
@@ -74,11 +81,12 @@ describe('filterByPermission', () => {
 });
 
 describe('route and navigation catalog parity', () => {
-  it('keeps every workspace nav href in PROTECTED_ROUTES with matching permissions', () => {
+  it('keeps every workspace nav href in PROTECTED_ROUTES with matching access', () => {
     for (const item of WORKSPACE_NAVIGATION) {
       expect(PROTECTED_ROUTES[item.href]).toBeDefined();
       if (item.permissions?.length) {
         expect(PROTECTED_ROUTES[item.href].permissions).toEqual(item.permissions);
+        expect(PROTECTED_ROUTES[item.href].mode).toEqual(item.mode);
       } else {
         expect(PROTECTED_ROUTES[item.href]).toEqual({});
       }

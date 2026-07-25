@@ -4,11 +4,11 @@ import { Roles } from '@/features/authorization/constants/roles';
 
 describe('filterNavigation (compat)', () => {
   it('hides unauthorized menu items using permissions only', () => {
-    const items = filterNavigation(APP_NAVIGATION, [Roles.DOCTOR], [
-      Permissions.PATIENT_READ,
-      Permissions.APPOINTMENT_READ,
-      Permissions.DASHBOARD_READ,
-    ]);
+    const items = filterNavigation(
+      APP_NAVIGATION,
+      [Roles.DOCTOR],
+      [Permissions.PATIENT_READ, Permissions.APPOINTMENT_READ, Permissions.DASHBOARD_READ],
+    );
 
     const ids = items.map((item) => item.id);
     expect(ids).toContain('dashboard');
@@ -21,11 +21,11 @@ describe('filterNavigation (compat)', () => {
   });
 
   it('shows hospital for HOSPITAL_READ regardless of role argument', () => {
-    const items = filterNavigation(APP_NAVIGATION, [], [
-      Permissions.HOSPITAL_READ,
-      Permissions.USER_READ,
-      Permissions.BILLING_READ,
-    ]);
+    const items = filterNavigation(
+      APP_NAVIGATION,
+      [],
+      [Permissions.HOSPITAL_READ, Permissions.USER_READ, Permissions.BILLING_READ],
+    );
     const ids = items.map((item) => item.id);
     expect(ids).toEqual(expect.arrayContaining(['hospital', 'users', 'billing']));
   });

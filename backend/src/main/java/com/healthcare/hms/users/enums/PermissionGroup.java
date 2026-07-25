@@ -12,6 +12,8 @@ public enum PermissionGroup {
     HOSPITAL,
     DEPARTMENT,
     DOCTOR,
+    /** Operational staff profiles (nurse, receptionist, lab tech, pharmacist). */
+    STAFF,
     PATIENT,
     APPOINTMENT,
     VISIT,

@@ -2,12 +2,7 @@
 
 import Link from 'next/link';
 
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDashboardCards } from '@/features/navigation/hooks/use-workspace-navigation';
 import { resolveNavIcon } from '@/features/navigation/lib/icons';
 import { cn } from '@/lib/utils';
@@ -49,9 +44,7 @@ export function DashboardCards({ className }: DashboardCardsProps) {
               key={card.id}
               href={card.href}
               className="group block rounded-xl outline-none"
-              aria-label={
-                card.comingSoon ? `${card.title} (coming soon)` : card.title
-              }
+              aria-label={card.comingSoon ? `${card.title} (coming soon)` : card.title}
             >
               <Card
                 className={cn(

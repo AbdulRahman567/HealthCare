@@ -246,6 +246,33 @@ patient
 └── exception
 ```
 
+### Hospital Administration (Phases 4.1–4.9)
+
+Organizational employment and departments live in `com.healthcare.hms.organization`,
+separate from the hospital profile module (`hospitals`) and identity/RBAC (`users`).
+Phase 4.9 production readiness: accept-invitation UI, soft-delete-aware staff↔user
+uniqueness (Flyway V17), invitation expiry persistence, and user-lifecycle org hooks.
+See [HOSPITAL_ADMIN_PHASE_4_9_REVIEW.md](./HOSPITAL_ADMIN_PHASE_4_9_REVIEW.md).
+
+```
+organization
+├── controller/DepartmentController
+├── service(+impl)/DepartmentService
+├── repository/DepartmentRepository + Specifications
+├── mapper/DepartmentMapper
+├── dto/request|response
+├── entity/Staff          # @MappedSuperclass — shared employment fields
+├── entity/Department     # Phase 4.2 aggregate
+├── enums                 # Employment*, DepartmentType, DepartmentStatus
+├── department/           # documentation anchor
+└── staff/                # reserved — Doctor/Nurse/… later
+```
+
+- `Department` and `Staff` extend `TenantOwnedEntity` (UUID, `tenant_id`, audit, soft delete, version).
+- Cross-module reads use `HospitalQueryService` / `UserQueryService` (no foreign repositories).
+- Full package layout, ER relationships, and module interaction diagrams:
+  [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md).
+
 ---
 
 # 6. Frontend Architecture

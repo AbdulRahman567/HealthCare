@@ -93,11 +93,12 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         final String hospitalEmail = normalizeEmail(request.hospitalEmail());
         final String adminEmail = normalizeEmail(request.adminEmail());
 
-        if (tenantRepository.existsByEmailIgnoreCase(hospitalEmail)) {
-            throw new ConflictException("EMAIL_ALREADY_EXISTS", "Hospital email is already registered");
-        }
-        if (userRepository.existsByEmailIgnoreCase(adminEmail)) {
-            throw new ConflictException("EMAIL_ALREADY_EXISTS", "Administrator email is already registered");
+        if (tenantRepository.existsByEmailIgnoreCase(hospitalEmail)
+                || userRepository.existsByEmailIgnoreCase(adminEmail)) {
+            throw new ConflictException(
+                    "EMAIL_ALREADY_EXISTS",
+                    "Registration could not be completed with the provided email addresses"
+            );
         }
 
         final Tenant tenant = createTenant(request, hospitalEmail);
@@ -168,9 +169,8 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         tenant.setEmail(hospitalEmail);
         tenant.setPhone(trimToNull(request.hospitalPhone()));
         tenant.setAddress(trimToNull(request.hospitalAddress()));
-        tenant.setSubscriptionPlan(
-                request.subscriptionPlan() == null ? SubscriptionPlan.BASIC : request.subscriptionPlan()
-        );
+        // Public registration always starts on BASIC; paid plans require billing upgrade later.
+        tenant.setSubscriptionPlan(SubscriptionPlan.BASIC);
         // PENDING until the initial admin verifies email — prevents open tenant takeover.
         tenant.setStatus(TenantStatus.PENDING);
         return tenantRepository.saveAndFlush(tenant);

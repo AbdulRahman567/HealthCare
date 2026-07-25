@@ -40,6 +40,11 @@ public final class PermissionConstants {
     public static final String DOCTOR_UPDATE = "DOCTOR_UPDATE";
     public static final String DOCTOR_DELETE = "DOCTOR_DELETE";
 
+    public static final String STAFF_READ = "STAFF_READ";
+    public static final String STAFF_CREATE = "STAFF_CREATE";
+    public static final String STAFF_UPDATE = "STAFF_UPDATE";
+    public static final String STAFF_DELETE = "STAFF_DELETE";
+
     public static final String PATIENT_READ = "PATIENT_READ";
     public static final String PATIENT_CREATE = "PATIENT_CREATE";
     public static final String PATIENT_UPDATE = "PATIENT_UPDATE";

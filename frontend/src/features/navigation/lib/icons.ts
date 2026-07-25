@@ -5,8 +5,10 @@ import {
   FilePlus,
   HeartPulse,
   LayoutDashboard,
+  MailPlus,
   Receipt,
   Settings2,
+  Stethoscope,
   UserPlus,
   UserRound,
   Users,
@@ -27,6 +29,8 @@ const NAV_ICONS: Record<NavIconName, LucideIcon> = {
   'calendar-plus': CalendarPlus,
   'settings-2': Settings2,
   'file-plus': FilePlus,
+  stethoscope: Stethoscope,
+  'mail-plus': MailPlus,
 };
 
 export function resolveNavIcon(name: NavIconName): LucideIcon {

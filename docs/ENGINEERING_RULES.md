@@ -130,7 +130,8 @@ src/
 ├── auth
 ├── users
 ├── tenant          # Multi-tenant foundation (Phase 2.1)
-├── hospitals       # Hospital profile / departments (Phase 3+)
+├── hospitals       # Hospital profile / settings (Phase 2.5–2.6)
+├── organization    # Hospital Administration: Staff base + org enums (Phase 4.1+)
 ├── patients
 ├── appointments
 ├── visits

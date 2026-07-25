@@ -1,15 +1,12 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 
 import { hasAll, hasAny } from '@/features/authorization/lib/access';
-import { selectAuthorization, selectRoles } from '@/features/authorization/store/authorization-slice';
+import {
+  selectAuthorization,
+  selectRoles,
+} from '@/features/authorization/store/authorization-slice';
 import { useAppSelector } from '@/store/hooks';
 
 type RoleContextValue = {

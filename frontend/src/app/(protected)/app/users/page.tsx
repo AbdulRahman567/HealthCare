@@ -1,10 +1,12 @@
-import { ComingSoonPage } from '@/features/authorization/components/coming-soon-page';
+import type { Metadata } from 'next';
 
-export default function UsersPage() {
-  return (
-    <ComingSoonPage
-      title="Users"
-      description="Staff directory and role assignment will be available here."
-    />
-  );
+import { UsersPage } from '@/features/hospital-admin';
+
+export const metadata: Metadata = {
+  title: 'Users | Healthcare HMS',
+  description: 'Manage hospital users and account status',
+};
+
+export default function UsersRoutePage() {
+  return <UsersPage />;
 }

@@ -324,7 +324,58 @@ permission_id
 
 # 7. Hospital Structure
 
-departments
+## Phase 4.1 — Staff foundation (no tables yet)
+
+Domain contract: [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md).
+
+`Staff` is a `@MappedSuperclass` (not a concrete table). When concrete subtypes
+are introduced, each subtype table inherits:
+
+| Column | Notes |
+| ------ | ----- |
+| id | UUID PK |
+| tenant_id | FK → tenants |
+| hospital_id | FK → hospitals |
+| user_id | FK → users |
+| department_id | FK → departments (nullable until departments exist) |
+| reports_to_staff_id | Self-FK for reporting hierarchy |
+| employee_code | Unique per tenant (enforced on concrete tables) |
+| job_title | Optional |
+| employment_status | PENDING / ACTIVE / ON_LEAVE / SUSPENDED / TERMINATED |
+| employment_type | FULL_TIME / PART_TIME / CONTRACT / TEMPORARY / INTERN / CONSULTANT |
+| hired_at / terminated_at | Employment dates |
+| created_at / updated_at / created_by / updated_by | Audit |
+| deleted / deleted_at / deleted_by / version | Soft delete + optimistic lock |
+
+`DepartmentType` enum is ready for the future `departments` table
+(CLINICAL, DIAGNOSTIC, EMERGENCY, ADMINISTRATIVE, SUPPORT, RESEARCH, OTHER).
+
+---
+
+## Target structure (later phases) — departments implemented in Phase 4.2
+
+### departments
+
+Table: `departments` (Flyway `V12__departments.sql`)
+
+| Column | Notes |
+| ------ | ----- |
+| id | UUID PK |
+| tenant_id | FK → tenants |
+| hospital_id | FK → hospitals |
+| name | Unique per tenant |
+| code | Unique per tenant (stored uppercase) |
+| description | Optional |
+| department_type | CLINICAL / DIAGNOSTIC / EMERGENCY / ADMINISTRATIVE / SUPPORT / RESEARCH / OTHER |
+| status | ACTIVE / INACTIVE / SUSPENDED |
+| location | Optional |
+| head_user_id | Optional FK → users (head of department) |
+| created_at / updated_at / created_by / updated_by | Audit |
+| deleted / deleted_at / deleted_by / version | Soft delete + optimistic lock |
+
+Indexes: tenant, hospital, status, type, head_user, name, deleted.
+
+Soft delete suffixes `code`/`name` with `__DEL__{id8}` so unique keys can be reused.
 
 Examples
 
@@ -346,7 +397,7 @@ Emergency
 
 doctors
 
-doctor_profile
+doctor_profile (Phase 4.3 table: `doctors`)
 
 Fields
 
@@ -358,25 +409,41 @@ specialization
 
 license_number
 
-experience
+experience_years
 
 qualification
 
 consultation_fee
 
-availability
+(+ inherited Staff employment columns)
+
+Soft-delete uniqueness (Phase 4.9 / Flyway `V17`): live rows keep
+`(tenant_id, user_id)` unique via generated `active_user_slot`; soft-deleted rows free
+the slot for rehire.
 
 ---
 
-nurses
+nurses (`nurses`)
 
-nurse_profile
+department_id, shift, qualification, license_number (+ Staff columns)
 
-department_id
+---
 
-shift
+receptionists (`receptionists`)
 
-qualification
+desk_location, languages (+ Staff columns)
+
+---
+
+laboratory_staff
+
+specialty_area, license_number, certification (+ Staff columns)
+
+---
+
+pharmacists
+
+license_number, pharmacy_location, qualification (+ Staff columns)
 
 ---
 

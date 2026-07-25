@@ -36,5 +36,9 @@ class RoleHierarchyTest {
         assertThat(RoleHierarchy.isAssignable(RoleType.DOCTOR)).isTrue();
         assertThat(RoleHierarchy.isAssignable(RoleType.SUPER_ADMIN)).isFalse();
         assertThat(RoleHierarchy.isAssignable(RoleType.PATIENT)).isFalse();
+        assertThat(RoleHierarchy.isAssignable(RoleType.HOSPITAL_ADMIN)).isTrue();
+        assertThat(RoleHierarchy.isInvitableByTenantAdmin(RoleType.DOCTOR)).isTrue();
+        assertThat(RoleHierarchy.isInvitableByTenantAdmin(RoleType.HOSPITAL_ADMIN)).isFalse();
+        assertThat(RoleHierarchy.isInvitableByTenantAdmin(RoleType.SUPER_ADMIN)).isFalse();
     }
 }

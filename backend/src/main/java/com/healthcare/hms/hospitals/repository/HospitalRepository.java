@@ -11,6 +11,8 @@ public interface HospitalRepository extends JpaRepository<Hospital, UUID> {
 
     Optional<Hospital> findByTenantIdAndDefaultHospitalTrue(UUID tenantId);
 
+    Optional<Hospital> findByIdAndTenantId(UUID id, UUID tenantId);
+
     boolean existsByTenantId(UUID tenantId);
 
     boolean existsByTenantIdAndNameIgnoreCaseAndIdNot(UUID tenantId, String name, UUID id);

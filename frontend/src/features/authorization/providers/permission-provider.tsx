@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 
 import { hasAll, hasAny } from '@/features/authorization/lib/access';
 import {

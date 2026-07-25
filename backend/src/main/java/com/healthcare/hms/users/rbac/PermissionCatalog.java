@@ -43,6 +43,11 @@ public final class PermissionCatalog {
             entry(PermissionGroup.DOCTOR, PermissionAction.UPDATE, "Update doctors", "Update doctor profiles"),
             entry(PermissionGroup.DOCTOR, PermissionAction.DELETE, "Delete doctors", "Soft-delete doctors"),
 
+            entry(PermissionGroup.STAFF, PermissionAction.READ, "Read staff", "View operational staff profiles"),
+            entry(PermissionGroup.STAFF, PermissionAction.CREATE, "Create staff", "Create operational staff profiles"),
+            entry(PermissionGroup.STAFF, PermissionAction.UPDATE, "Update staff", "Update operational staff profiles"),
+            entry(PermissionGroup.STAFF, PermissionAction.DELETE, "Delete staff", "Soft-delete operational staff profiles"),
+
             entry(PermissionGroup.PATIENT, PermissionAction.READ, "Read patients", "View patient records"),
             entry(PermissionGroup.PATIENT, PermissionAction.CREATE, "Create patients", "Register patients"),
             entry(PermissionGroup.PATIENT, PermissionAction.UPDATE, "Update patients", "Update patient records"),
@@ -133,6 +138,8 @@ public final class PermissionCatalog {
                 PermissionConstants.DEPARTMENT_UPDATE, PermissionConstants.DEPARTMENT_DELETE,
                 PermissionConstants.DOCTOR_READ, PermissionConstants.DOCTOR_CREATE,
                 PermissionConstants.DOCTOR_UPDATE, PermissionConstants.DOCTOR_DELETE,
+                PermissionConstants.STAFF_READ, PermissionConstants.STAFF_CREATE,
+                PermissionConstants.STAFF_UPDATE, PermissionConstants.STAFF_DELETE,
                 PermissionConstants.PATIENT_READ, PermissionConstants.PATIENT_CREATE,
                 PermissionConstants.PATIENT_UPDATE, PermissionConstants.PATIENT_DELETE,
                 PermissionConstants.APPOINTMENT_READ, PermissionConstants.APPOINTMENT_CREATE,

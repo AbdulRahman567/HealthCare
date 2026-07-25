@@ -43,9 +43,7 @@ export function QuickActions({ className }: QuickActionsProps) {
               <Link
                 href={action.href}
                 title={action.description}
-                aria-label={
-                  action.comingSoon ? `${action.label} (coming soon)` : action.label
-                }
+                aria-label={action.comingSoon ? `${action.label} (coming soon)` : action.label}
                 className={cn(
                   buttonVariants({ variant: 'outline' }),
                   'h-9 gap-2',
