@@ -201,34 +201,44 @@ Never expose:
 
 # 9.1 Architectural Decisions (active)
 
-| Decision                 | Choice                                                                           | Why                                                                                           |
-| ------------------------ | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Multi-tenancy            | Shared DB + Shared Schema + Tenant ID                                            | Operational simplicity, matches DATABASE.md, scales horizontally; physical isolation deferred |
-| Tenant module            | `com.healthcare.hms.tenant`                                                      | Cross-cutting foundation separate from Phase 3 hospital business APIs                         |
-| Tenant resolution        | `X-Tenant-ID` via `HeaderTenantResolver`                                         | Phase 2.2; subdomain resolver wired but disabled                                              |
-| Tenant middleware        | `TenantFilter` after JWT (`OncePerRequestFilter`)                                | Phase 2.3; public bypass + always clear context                                               |
-| Tenant persistence       | `TenantOwnedEntity` + Hibernate `tenantFilter`                                   | Phase 2.4; enabled on JPA TX begin from `TenantContextHolder`                                 |
-| Hospital registration    | Atomic `POST /api/v1/hospitals/register`                                         | Phase 2.5; tenant + default hospital + admin + roles                                          |
-| Hospital settings        | `GET/PUT /api/v1/hospitals/settings`                                             | Phase 2.6; tenant-isolated profile/locale/contact/hours                                       |
-| Tenant security audit    | Hardened resolution, JWT, public bypass, legacy admin disabled                   | Phase 2.7                                                                                     |
-| Tenant production review | Auth-first tenant filter, OpenAPI tenant header, FE/BE registration contract     | Phase 2.8                                                                                     |
-| RBAC domain              | PermissionGroup/Action, naming `{GROUP}_{ACTION}`, role hierarchy, V9 migration  | Phase 3.1                                                                                     |
-| Authorization infra      | PermissionEvaluator, AuthorizationService, CurrentUser, PermissionResolver       | Phase 3.2                                                                                     |
-| Permission-based authZ   | `@RequirePermission`, PermissionGuard, aspect + interceptor, AccessDenied JSON   | Phase 3.3                                                                                     |
-| Secure existing APIs     | Public vs protected annotations, JWT/role/permission/tenant, Swagger auth docs   | Phase 3.4                                                                                     |
-| Default system roles     | CREATE/UPDATE naming, BILLING, Accountant, matrix, Flyway V10 + bootstrap        | Phase 3.5                                                                                     |
-| Frontend authorization   | Permission/Role providers, hooks, Can/Protected, route UX guards (backend = SoT) | Phase 3.6                                                                                     |
-| Dynamic navigation       | Permission-aware shell: sidebar, top nav, breadcrumbs, cards, quick actions      | Phase 3.7                                                                                     |
-| RBAC review / hardening  | Fail-closed APIs & routes, platform trust bar, coverage guard, review reports    | Phase 3.8                                                                                     |
-| Hospital organization    | Top-level `organization` module; `Staff` MappedSuperclass; employment/department enums | Phase 4.1; see [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md)                    |
-| Department management    | `Department` CRUD, unique code/name per tenant, search/page/sort/filter, Flyway V12  | Phase 4.2                                                                                 |
-| Staff management         | Doctor/Nurse/Receptionist/Lab/Pharmacist profiles; User+Department; STAFF_* RBAC; V13 | Phase 4.3                                                                                 |
-| Staff assignment         | Assign/transfer, department head as Staff FK, assignment history, V14                    | Phase 4.4                                                                                 |
-| User invitation          | Invite-by-email, hashed token, accept/reject/resend/cancel; Flyway V15                   | Phase 4.5                                                                                 |
-| User management          | Directory search/filter/page; profile update; activate/deactivate/suspend/restore        | Phase 4.6                                                                                 |
-| Hospital Administration UI | FE dashboard, departments, staff directory, users, invitations; permission-gated        | Phase 4.7                                                                                 |
-| Hospital Admin security review | Tenant isolation, RBAC, invite/user privilege hardening; no Critical remaining         | Phase 4.8                                                                                 |
-| Hospital Admin production readiness | Lifecycle verification, accept-invitation UI, soft-delete uniqueness, referential guards | Phase 4.9                                                                              |
+| Decision                            | Choice                                                                                   | Why                                                                                           |
+| ----------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Multi-tenancy                       | Shared DB + Shared Schema + Tenant ID                                                    | Operational simplicity, matches DATABASE.md, scales horizontally; physical isolation deferred |
+| Tenant module                       | `com.healthcare.hms.tenant`                                                              | Cross-cutting foundation separate from Phase 3 hospital business APIs                         |
+| Tenant resolution                   | `X-Tenant-ID` via `HeaderTenantResolver`                                                 | Phase 2.2; subdomain resolver wired but disabled                                              |
+| Tenant middleware                   | `TenantFilter` after JWT (`OncePerRequestFilter`)                                        | Phase 2.3; public bypass + always clear context                                               |
+| Tenant persistence                  | `TenantOwnedEntity` + Hibernate `tenantFilter`                                           | Phase 2.4; enabled on JPA TX begin from `TenantContextHolder`                                 |
+| Hospital registration               | Atomic `POST /api/v1/hospitals/register`                                                 | Phase 2.5; tenant + default hospital + admin + roles                                          |
+| Hospital settings                   | `GET/PUT /api/v1/hospitals/settings`                                                     | Phase 2.6; tenant-isolated profile/locale/contact/hours                                       |
+| Tenant security audit               | Hardened resolution, JWT, public bypass, legacy admin disabled                           | Phase 2.7                                                                                     |
+| Tenant production review            | Auth-first tenant filter, OpenAPI tenant header, FE/BE registration contract             | Phase 2.8                                                                                     |
+| RBAC domain                         | PermissionGroup/Action, naming `{GROUP}_{ACTION}`, role hierarchy, V9 migration          | Phase 3.1                                                                                     |
+| Authorization infra                 | PermissionEvaluator, AuthorizationService, CurrentUser, PermissionResolver               | Phase 3.2                                                                                     |
+| Permission-based authZ              | `@RequirePermission`, PermissionGuard, aspect + interceptor, AccessDenied JSON           | Phase 3.3                                                                                     |
+| Secure existing APIs                | Public vs protected annotations, JWT/role/permission/tenant, Swagger auth docs           | Phase 3.4                                                                                     |
+| Default system roles                | CREATE/UPDATE naming, BILLING, Accountant, matrix, Flyway V10 + bootstrap                | Phase 3.5                                                                                     |
+| Frontend authorization              | Permission/Role providers, hooks, Can/Protected, route UX guards (backend = SoT)         | Phase 3.6                                                                                     |
+| Dynamic navigation                  | Permission-aware shell: sidebar, top nav, breadcrumbs, cards, quick actions              | Phase 3.7                                                                                     |
+| RBAC review / hardening             | Fail-closed APIs & routes, platform trust bar, coverage guard, review reports            | Phase 3.8                                                                                     |
+| Hospital organization               | Top-level `organization` module; `Staff` MappedSuperclass; employment/department enums   | Phase 4.1; see [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md)                         |
+| Department management               | `Department` CRUD, unique code/name per tenant, search/page/sort/filter, Flyway V12      | Phase 4.2                                                                                     |
+| Staff management                    | Doctor/Nurse/Receptionist/Lab/Pharmacist profiles; User+Department; STAFF_* RBAC; V13    | Phase 4.3                                                                                     |
+| Staff assignment                    | Assign/transfer, department head as Staff FK, assignment history, V14                    | Phase 4.4                                                                                     |
+| User invitation                     | Invite-by-email, hashed token, accept/reject/resend/cancel; Flyway V15                   | Phase 4.5                                                                                     |
+| User management                     | Directory search/filter/page; profile update; activate/deactivate/suspend/restore        | Phase 4.6                                                                                     |
+| Hospital Administration UI          | FE dashboard, departments, staff directory, users, invitations; permission-gated         | Phase 4.7                                                                                     |
+| Hospital Admin security review      | Tenant isolation, RBAC, invite/user privilege hardening; no Critical remaining           | Phase 4.8                                                                                     |
+| Hospital Admin production readiness | Lifecycle verification, accept-invitation UI, soft-delete uniqueness, referential guards | Phase 4.9                                                                                     |
+| Patient domain                      | `patients` module; `Patient` + enums; soft-delete-aware unique MRN; Flyway V18           | Phase 5.1; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient registration                | Register/update/deactivate/reactivate APIs; MRN uniqueness; Swagger; no physical delete  | Phase 5.2; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient medical history             | Structured PastDisease/Surgery/ChronicCondition; MedicalHistory root; Flyway V19         | Phase 5.3; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient allergies                   | Drug/food/environmental; severity/reaction; banner + critical alerts; Flyway V20         | Phase 5.4; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient immunizations               | Vaccine/dose/manufacturer/batch/dates/provider; due API; Flyway V21                      | Phase 5.5; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient timeline                    | Provider SPI + cursor merge; V22 allergy date indexes; future VISIT/Rx/lab/billing hooks | Phase 5.6; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient search                      | Specifications + page/sort; age→DOB; V23 dept/doctor columns + indexes                   | Phase 5.7; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient Management UI               | Next.js list/register/edit/chart; allergy banner; history/allergies/vaccines/timeline    | Phase 5.8; see [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md)                               |
+| Patient security review             | Tenant/RBAC/PHI/audit hardening; soft-delete + critical allergy guards; no Critical left | Phase 5.9; see [PATIENT_PHASE_5_9_SECURITY_REVIEW.md](./PATIENT_PHASE_5_9_SECURITY_REVIEW.md) |
+| Patient production readiness        | Lifecycle verification, national-ID unique, allergy flag patch semantics, FE chart UX    | Phase 5.10; see [PATIENT_PHASE_5_10_PRODUCTION_READINESS.md](./PATIENT_PHASE_5_10_PRODUCTION_READINESS.md) |
 
 ---
 
@@ -349,6 +359,9 @@ The project documentation includes:
 - MULTI_TENANCY.md
 - HOSPITAL_ORGANIZATION.md
 - HOSPITAL_ADMIN_PHASE_4_9_REVIEW.md
+- PATIENT_MANAGEMENT.md
+- PATIENT_PHASE_5_9_SECURITY_REVIEW.md
+- PATIENT_PHASE_5_10_PRODUCTION_READINESS.md
 - phasesreadme.md
 
 ---

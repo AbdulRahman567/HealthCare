@@ -95,12 +95,7 @@ export function HospitalAdminDashboard() {
         </div>
       </div>
 
-      <div
-        className={cn(
-          'grid gap-4',
-          'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4',
-        )}
-      >
+      <div className={cn('grid gap-4', 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4')}>
         <Can permissions={[Permissions.DEPARTMENT_READ]}>
           <StatCard
             title="Departments"

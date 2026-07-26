@@ -71,7 +71,6 @@ export const WORKSPACE_NAVIGATION: WorkspaceNavItem[] = [
     permissions: [Permissions.PATIENT_READ],
     icon: 'heart-pulse',
     section: 'clinical',
-    comingSoon: true,
   },
   {
     id: 'appointments',

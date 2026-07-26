@@ -4,9 +4,9 @@
 **Purpose:** Complete inventory of what has been built, phase by phase — deliverables, modules, and what each important file/folder is for.  
 **Source of truth companions:** [ROADMAP.md](./ROADMAP.md), [MULTI_TENANCY.md](./MULTI_TENANCY.md), [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md), [ARCHITECTURE.md](./ARCHITECTURE.md)
 
-**Current progress:** Phases **1 → 2.8**, **Phase 3.1–3.8** (RBAC), **Phase 4.1–4.8**
-(organization APIs, Hospital Administration UI, security review) are delivered. Clinical
-modules remain **not started**.
+**Current progress:** Phases **1 → 2.8**, **Phase 3.1–3.8** (RBAC), **Phase 4.1–4.9**
+(Hospital Administration), and **Phase 5.1–5.10** (Patient Management production readiness)
+are delivered. Appointments and later clinical modules remain **not started**.
 
 ---
 
@@ -46,7 +46,18 @@ modules remain **not started**.
 | 4.8   | Hospital Administration security review            | Done                   |
 | 4.9   | Hospital Administration production readiness       | Done                   |
 | 4.10+ | Staff UX / richer profiles                         | Not started            |
-| 5+    | Patients, clinical, …                              | Not started            |
+| 5.1   | Patient domain (entity, enums, repo, Flyway V18)   | Done                   |
+| 5.2   | Patient registration APIs (CRUD lifecycle)         | Done                   |
+| 5.3   | Medical history (structured entries, Flyway V19)   | Done                   |
+| 5.4   | Allergy management (banner/critical, Flyway V20)   | Done                   |
+| 5.5   | Immunization records (dose/lot/due, Flyway V21)    | Done                   |
+| 5.6   | Patient timeline (SPI + cursor, Flyway V22)        | Done                   |
+| 5.7   | Patient search (Specifications, Flyway V23)        | Done                   |
+| 5.8   | Patient Management UI (list/register/edit/chart)   | Done                   |
+| 5.9   | Patient module security review                     | Done                   |
+| 5.10  | Patient Management production readiness            | Done                   |
+| 5.8+  | Patient documents / dedicated dashboard            | Not started            |
+| 6+    | Appointments, clinical, …                          | Not started            |
 
 ---
 
@@ -913,14 +924,14 @@ Nurses, or APIs.
 
 ### Key files
 
-| Path | Purpose |
-| ---- | ------- |
-| `organization/package-info.java` | Module boundary |
-| `organization/entity/Staff.java` | Base employment abstraction |
-| `organization/enums/EmploymentStatus.java` | Employment lifecycle |
-| `organization/enums/EmploymentType.java` | Contract type |
-| `organization/enums/DepartmentType.java` | Future department vocabulary |
-| `docs/HOSPITAL_ORGANIZATION.md` | Package / ER / interaction diagrams |
+| Path                                       | Purpose                             |
+| ------------------------------------------ | ----------------------------------- |
+| `organization/package-info.java`           | Module boundary                     |
+| `organization/entity/Staff.java`           | Base employment abstraction         |
+| `organization/enums/EmploymentStatus.java` | Employment lifecycle                |
+| `organization/enums/EmploymentType.java`   | Contract type                       |
+| `organization/enums/DepartmentType.java`   | Future department vocabulary        |
+| `docs/HOSPITAL_ORGANIZATION.md`            | Package / ER / interaction diagrams |
 
 ### Definition of Done (met)
 
@@ -948,12 +959,12 @@ pagination, sorting, and filtering.
 
 ### Key files
 
-| Path | Purpose |
-| ---- | ------- |
-| `organization/entity/Department.java` | Aggregate |
-| `organization/controller/DepartmentController.java` | REST API |
+| Path                                                   | Purpose        |
+| ------------------------------------------------------ | -------------- |
+| `organization/entity/Department.java`                  | Aggregate      |
+| `organization/controller/DepartmentController.java`    | REST API       |
 | `organization/service/impl/DepartmentServiceImpl.java` | Business rules |
-| `db/migration/V12__departments.sql` | Schema |
+| `db/migration/V12__departments.sql`                    | Schema         |
 
 ### Definition of Done (met)
 
@@ -1003,14 +1014,14 @@ validation, and tenant isolation.
 
 ### Key files
 
-| Path | Purpose |
-| ---- | ------- |
-| `organization/entity/StaffDepartmentAssignment.java` | History aggregate |
+| Path                                                        | Purpose                  |
+| ----------------------------------------------------------- | ------------------------ |
+| `organization/entity/StaffDepartmentAssignment.java`        | History aggregate        |
 | `organization/service/impl/StaffAssignmentServiceImpl.java` | Assign / transfer / head |
-| `organization/controller/StaffAssignmentController.java` | REST API |
-| `organization/staff/StaffProfileDirectory.java` | Cross-type staff lookup |
-| `organization/staff/StaffAssignmentHistoryWriter.java` | CRUD history sync |
-| `db/migration/V14__staff_department_assignments.sql` | Schema |
+| `organization/controller/StaffAssignmentController.java`    | REST API                 |
+| `organization/staff/StaffProfileDirectory.java`             | Cross-type staff lookup  |
+| `organization/staff/StaffAssignmentHistoryWriter.java`      | CRUD history sync        |
+| `db/migration/V14__staff_department_assignments.sql`        | Schema                   |
 
 ### Definition of Done (met)
 
@@ -1038,13 +1049,13 @@ hospital) or reject; admins can resend or cancel pending invitations.
 
 ### Key files
 
-| Path | Purpose |
-| ---- | ------- |
-| `users/entity/UserInvitation.java` | Invitation aggregate |
-| `users/service/impl/UserInvitationServiceImpl.java` | Lifecycle |
-| `users/service/InvitationEmailService.java` | Email abstraction |
-| `users/controller/UserInvitationController.java` | REST + Swagger |
-| `db/migration/V15__user_invitations.sql` | Schema |
+| Path                                                | Purpose              |
+| --------------------------------------------------- | -------------------- |
+| `users/entity/UserInvitation.java`                  | Invitation aggregate |
+| `users/service/impl/UserInvitationServiceImpl.java` | Lifecycle            |
+| `users/service/InvitationEmailService.java`         | Email abstraction    |
+| `users/controller/UserInvitationController.java`    | REST + Swagger       |
+| `db/migration/V15__user_invitations.sql`            | Schema               |
 
 ### Definition of Done (met)
 
@@ -1070,12 +1081,12 @@ lifecycle (activate, deactivate, suspend, restore) — no physical deletion.
 
 ### Key files
 
-| Path | Purpose |
-| ---- | ------- |
-| `users/controller/UserController.java` | REST API |
-| `users/service/impl/UserManagementServiceImpl.java` | Business rules |
-| `users/repository/UserSpecifications.java` | Search/filter |
-| `users/enums/UserStatus.java` | Lifecycle including SUSPENDED |
+| Path                                                | Purpose                       |
+| --------------------------------------------------- | ----------------------------- |
+| `users/controller/UserController.java`              | REST API                      |
+| `users/service/impl/UserManagementServiceImpl.java` | Business rules                |
+| `users/repository/UserSpecifications.java`          | Search/filter                 |
+| `users/enums/UserStatus.java`                       | Lifecycle including SUSPENDED |
 
 ### Definition of Done (met)
 
@@ -1103,16 +1114,73 @@ Patients and appointments remain out of scope.
 
 ### Key files
 
-| Path | Purpose |
-| ---- | ------- |
-| `frontend/src/features/hospital-admin/**` | APIs, hooks, forms, admin pages |
-| `frontend/src/features/hospital-admin/store/hospital-admin-ui-slice.ts` | List filter UI state |
-| `frontend/src/app/(protected)/app/{departments,staff,users,invitations}/page.tsx` | App Router pages |
-| `frontend/src/features/navigation/config/nav-items.ts` | Admin nav entries |
+| Path                                                                              | Purpose                         |
+| --------------------------------------------------------------------------------- | ------------------------------- |
+| `frontend/src/features/hospital-admin/**`                                         | APIs, hooks, forms, admin pages |
+| `frontend/src/features/hospital-admin/store/hospital-admin-ui-slice.ts`           | List filter UI state            |
+| `frontend/src/app/(protected)/app/{departments,staff,users,invitations}/page.tsx` | App Router pages                |
+| `frontend/src/features/navigation/config/nav-items.ts`                            | Admin nav entries               |
 
 ### Definition of Done (met)
 
 - Hospital admins can manage departments, staff profiles, users, and invitations from the UI
+
+---
+
+## Phase 5.9 — Patient module security review
+
+### Objective
+
+Complete security review of Patient, Medical History, Allergy, Immunization, Timeline, and
+Search APIs covering tenant isolation, RBAC, audit logs, PHI protection, sensitive data
+exposure, OWASP, authorization, and input validation — then remediate until no Critical
+issues remain.
+
+### Findings remediated
+
+| Severity | Issue | Fix |
+| -------- | ----- | --- |
+| High | Soft-delete via `PATIENT_UPDATE` (receptionist could remove clinical rows) | Soft-delete requires `PATIENT_DELETE` |
+| High | Critical allergy deactivate/downgrade via UPDATE | Requires `PATIENT_DELETE` |
+| Medium | Patient view not audited | `AuditAction.VIEW` on chart `getById` |
+| Medium | PHI in app INFO logs / timeline notes | ID-only logs; structured timeline summaries |
+| Medium | Clinical writes on inactive patients; unused national-ID uniqueness | Active-patient guard; enforce unique national ID |
+| Medium | FE create/edit routes inherited `PATIENT_READ` | Fail-closed create/update route guards |
+| Low | Immunization admin date unbounded | `@PastOrPresent` |
+
+Full report: [PATIENT_PHASE_5_9_SECURITY_REVIEW.md](./PATIENT_PHASE_5_9_SECURITY_REVIEW.md)
+
+### Definition of Done (met)
+
+- No Critical security issues remain in the Patient module
+
+---
+
+## Phase 5.10 — Patient Management production readiness
+
+### Objective
+
+End-to-end production readiness review of Patient Management (Phases 5.1–5.9):
+compilation, Flyway, Docker contract, Next.js build, Swagger, Hospital Admin lifecycle
+simulation, tenant/RBAC/audit/Clean Architecture — remediate until no Critical or High
+issues remain. **No new feature modules.**
+
+### Findings remediated
+
+| Severity | Issue | Fix |
+| -------- | ----- | --- |
+| High | Critical allergy flag cleared when `criticalAlert` omitted on PUT | Mapper patch semantics + regression tests |
+| High | National ID uniqueness race (app-only) | Flyway `V24` soft-delete-aware unique slot |
+| High | Deactivate without confirmation | Chart header confirm dialog |
+| High | Undebounced PHI search | 300ms debounce on directory search |
+| High | Stale timeline after clinical CUD | Invalidate timeline query keys |
+
+Full report: [PATIENT_PHASE_5_10_PRODUCTION_READINESS.md](./PATIENT_PHASE_5_10_PRODUCTION_READINESS.md)
+
+### Definition of Done (met)
+
+- No Critical or High Patient module production-readiness issues remain
+- Flyway chain through V24; FE/BE builds verified
 
 ---
 
@@ -1126,16 +1194,16 @@ data exposure, and broken authorization — then remediate until no Critical iss
 
 ### Findings remediated
 
-| Severity | Issue | Fix |
-| -------- | ----- | --- |
-| Critical | Invite/accept allowed same email across tenants while login is email-only | Global `existsByEmailIgnoreCase` on invite + accept |
-| High | Peer `HOSPITAL_ADMIN` invite → suspend takeover | Tenant admins cannot invite `HOSPITAL_ADMIN`; status changes require strict outrank + last-admin guard |
-| High | Invitation token in GET query string | `POST /invitations/preview` with body token; minimized public DTO |
-| High/Med | Public registration plan selection + email enumeration | Force `BASIC` plan; generic conflict message |
-| Medium | Admin restore cleared `LOCKED` | `User.restore()` excludes `LOCKED` |
-| Medium | Soft-delete unique truncation | Guaranteed-unique `DEL-{uuid}` release for departments/staff/licenses |
-| Medium | Accept without active tenant | `tenantAccessService.requireActiveTenant` on accept |
-| Low | Department CRUD `headUserId` bypass | Head assignment only via dedicated head API |
+| Severity | Issue                                                                     | Fix                                                                                                    |
+| -------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Critical | Invite/accept allowed same email across tenants while login is email-only | Global `existsByEmailIgnoreCase` on invite + accept                                                    |
+| High     | Peer `HOSPITAL_ADMIN` invite → suspend takeover                           | Tenant admins cannot invite `HOSPITAL_ADMIN`; status changes require strict outrank + last-admin guard |
+| High     | Invitation token in GET query string                                      | `POST /invitations/preview` with body token; minimized public DTO                                      |
+| High/Med | Public registration plan selection + email enumeration                    | Force `BASIC` plan; generic conflict message                                                           |
+| Medium   | Admin restore cleared `LOCKED`                                            | `User.restore()` excludes `LOCKED`                                                                     |
+| Medium   | Soft-delete unique truncation                                             | Guaranteed-unique `DEL-{uuid}` release for departments/staff/licenses                                  |
+| Medium   | Accept without active tenant                                              | `tenantAccessService.requireActiveTenant` on accept                                                    |
+| Low      | Department CRUD `headUserId` bypass                                       | Head assignment only via dedicated head API                                                            |
 
 ### Definition of Done (met)
 
@@ -1154,16 +1222,16 @@ issues remain. **No new feature modules.**
 
 ### Findings remediated
 
-| Severity | Issue | Fix |
-| -------- | ----- | --- |
-| Critical | Soft-delete blocked staff rehire (`uk_*_tenant_user`) | Flyway `V17` soft-delete-aware unique slot |
-| Critical | Invitee accept UI missing | Public `/accept-invitation` + preview/accept/reject client |
-| High | Expired invites stayed PENDING | Persist `EXPIRED`; free pending slot on list/invite/accept |
-| High | Department delete with affiliated staff | Reject with `DEPARTMENT_HAS_STAFF` |
-| High | Staff delete left department head | Clear heads in `closeOnSoftDelete` |
-| High | Invite token in email query string | Fragment `#token=` in invitation email URL |
-| High | Deactivate left heads / ACTIVE employment | `UserAccountLifecycleHook` in organization |
-| High | Staff FE role/permission/`reportsTo`/LOCKED bugs | Hospital Admin UI fixes |
+| Severity | Issue                                                 | Fix                                                        |
+| -------- | ----------------------------------------------------- | ---------------------------------------------------------- |
+| Critical | Soft-delete blocked staff rehire (`uk_*_tenant_user`) | Flyway `V17` soft-delete-aware unique slot                 |
+| Critical | Invitee accept UI missing                             | Public `/accept-invitation` + preview/accept/reject client |
+| High     | Expired invites stayed PENDING                        | Persist `EXPIRED`; free pending slot on list/invite/accept |
+| High     | Department delete with affiliated staff               | Reject with `DEPARTMENT_HAS_STAFF`                         |
+| High     | Staff delete left department head                     | Clear heads in `closeOnSoftDelete`                         |
+| High     | Invite token in email query string                    | Fragment `#token=` in invitation email URL                 |
+| High     | Deactivate left heads / ACTIVE employment             | `UserAccountLifecycleHook` in organization                 |
+| High     | Staff FE role/permission/`reportsTo`/LOCKED bugs      | Hospital Admin UI fixes                                    |
 
 Full reports: [HOSPITAL_ADMIN_PHASE_4_9_REVIEW.md](./HOSPITAL_ADMIN_PHASE_4_9_REVIEW.md)
 
@@ -1204,6 +1272,12 @@ gap and Flyway/`HOSPITAL_DELETE` drift were fixed. Full checklist:
 | `V15__user_invitations.sql`                      | 4.5   | User invitations + hashed tokens                                          |
 | `V16__users_global_email_unique.sql`             | 4.8   | Global unique email index (login invariant)                               |
 | `V17__staff_active_user_unique.sql`              | 4.9   | Soft-delete-aware unique staff↔user links                                 |
+| `V18__patients.sql`                              | 5.1   | Patient demographics + soft-delete-aware unique MRN                       |
+| `V19__medical_history.sql`                       | 5.3   | MedicalHistory + PastDisease + SurgeryHistory + ChronicCondition          |
+| `V20__patient_allergies.sql`                     | 5.4   | Patient allergies + clinical alert flags                                  |
+| `V21__patient_immunizations.sql`                 | 5.5   | Patient immunizations (dose, lot, next-due, provider)                     |
+| `V22__patient_timeline_indexes.sql`              | 5.6   | Allergy onset/created_at indexes for timeline fan-out                     |
+| `V23__patient_search.sql`                        | 5.7   | Patient search indexes + primary department/doctor columns                |
 
 ---
 
@@ -1216,11 +1290,11 @@ com.healthcare.hms
 ├── tenant/        # Multi-tenant foundation (2.1–2.4, 2.7–2.8)
 ├── hospitals/     # Registration (2.5) + settings (2.6)
 ├── organization/  # Hospital Administration (4.1–4.4: Staff, Departments, Assignments)
+├── patients/      # Patient domain + registration + history + allergies + immunizations + timeline + search (5.1–5.7)
 ├── security/      # JWT, RBAC annotations, SecurityConfig
 ├── common/        # API envelope, exceptions, persistence bases, email, health
 ├── audit/         # Audit log write path
 ├── config/        # OpenAPI
-├── patients/      # (empty — Phase 5+)
 ├── appointments/  # (empty — Phase 6)
 ├── visits/        # (empty — Phase 7)
 ├── prescriptions/ # (empty — later)
@@ -1261,15 +1335,15 @@ Response → TenantContextHolder.clear()
 
 ## Not done yet (later ROADMAP phases)
 
-| Phase         | Scope                                                                     |
-| ------------- | ------------------------------------------------------------------------- |
-| 3.x remaining | Multi-hospital ops beyond default hospital                                |
-| 4.7+          | Staff UX, scheduling hooks, richer profiles (post–admin UI/security)      |
-| 5             | Patient management                                                        |
-| 6             | Appointments                                                              |
-| 7             | Clinical visits                                                           |
-| 8+            | Prescriptions, lab, imaging, billing, notifications UI, analytics, …      |
-| 2.x remaining | Super Admin JWT/platform console, cookie-based sessions                   |
+| Phase         | Scope                                                                |
+| ------------- | -------------------------------------------------------------------- |
+| 3.x remaining | Multi-hospital ops beyond default hospital                           |
+| 4.10+         | Staff UX, scheduling hooks, richer profiles                          |
+| 5.8+          | Patient documents, dedicated patient dashboard                       |
+| 6             | Appointments                                                         |
+| 7             | Clinical visits                                                      |
+| 8+            | Prescriptions, lab, imaging, billing, notifications UI, analytics, … |
+| 2.x remaining | Super Admin JWT/platform console, cookie-based sessions              |
 
 ---
 

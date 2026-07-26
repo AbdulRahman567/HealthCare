@@ -102,11 +102,7 @@ export function UsersPage() {
       status: (ui.status || undefined) as UserManagementStatus | undefined,
       roleType: (ui.roleType || undefined) as RoleType | undefined,
       emailVerified:
-        ui.emailVerified === ''
-          ? undefined
-          : ui.emailVerified === 'true'
-            ? true
-            : false,
+        ui.emailVerified === '' ? undefined : ui.emailVerified === 'true' ? true : false,
       page: ui.page,
       size: ui.size,
       sort: ['lastName,asc', 'firstName,asc'],
@@ -269,9 +265,7 @@ export function UsersPage() {
                       </TableCell>
                       <TableCell>{user.emailVerified ? 'Yes' : 'No'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">
-                        {user.lastLoginAt
-                          ? new Date(user.lastLoginAt).toLocaleString()
-                          : 'Never'}
+                        {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never'}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
@@ -357,9 +351,7 @@ export function UsersPage() {
               <Label htmlFor="lastName">Last name</Label>
               <Input id="lastName" {...form.register('lastName')} />
               {form.formState.errors.lastName ? (
-                <p className="text-destructive text-xs">
-                  {form.formState.errors.lastName.message}
-                </p>
+                <p className="text-destructive text-xs">{form.formState.errors.lastName.message}</p>
               ) : null}
             </div>
             <div className="space-y-2">

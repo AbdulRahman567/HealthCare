@@ -160,16 +160,16 @@ Base path: `/api/v1`
 
 Requires JWT + `X-Tenant-ID` for admin operations. Accept/reject/token preview are public.
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| POST | `/invitations` | USER_CREATE | Invite by email + role; emails hashed single-use token |
-| GET | `/invitations` | USER_READ | Filter `status`, `email`; pageable |
-| GET | `/invitations/{id}` | USER_READ | Tenant-scoped get |
-| POST | `/invitations/{id}/resend` | USER_CREATE | New token + extended expiry |
-| POST | `/invitations/{id}/cancel` | USER_UPDATE | Cancel pending invite |
-| POST | `/invitations/preview` | Public | Preview pending invitation (token in body) |
-| POST | `/invitations/accept` | Public | Create account, assign role, join hospital tenant |
-| POST | `/invitations/reject` | Public | Reject pending invitation |
+| Method | Path                       | Permission  | Notes                                                  |
+| ------ | -------------------------- | ----------- | ------------------------------------------------------ |
+| POST   | `/invitations`             | USER_CREATE | Invite by email + role; emails hashed single-use token |
+| GET    | `/invitations`             | USER_READ   | Filter `status`, `email`; pageable                     |
+| GET    | `/invitations/{id}`        | USER_READ   | Tenant-scoped get                                      |
+| POST   | `/invitations/{id}/resend` | USER_CREATE | New token + extended expiry                            |
+| POST   | `/invitations/{id}/cancel` | USER_UPDATE | Cancel pending invite                                  |
+| POST   | `/invitations/preview`     | Public      | Preview pending invitation (token in body)             |
+| POST   | `/invitations/accept`      | Public      | Create account, assign role, join hospital tenant      |
+| POST   | `/invitations/reject`      | Public      | Reject pending invitation                              |
 
 Workflow: Hospital Admin invites → email with `#token=` fragment link →
 `/accept-invitation` (public) → preview (token in body) → accept (create user + role)
@@ -184,15 +184,15 @@ Requires JWT + `X-Tenant-ID` + `USER_*` permissions.
 
 No physical delete — lifecycle uses status changes only.
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| GET | `/users` | USER_READ | Search `q`; filter `status` / `roleType` / `emailVerified`; pageable sort |
-| GET | `/users/{id}` | USER_READ | Tenant-scoped get with role types |
-| PUT | `/users/{id}` | USER_UPDATE | Admin profile update (name, phone) |
-| POST | `/users/{id}/activate` | USER_UPDATE | PENDING or INACTIVE → ACTIVE |
-| POST | `/users/{id}/deactivate` | USER_UPDATE | ACTIVE → INACTIVE; revokes sessions; clears dept heads; suspends staff employment |
-| POST | `/users/{id}/suspend` | USER_UPDATE | ACTIVE → SUSPENDED; revokes sessions; clears dept heads; suspends staff employment |
-| POST | `/users/{id}/restore` | USER_UPDATE | INACTIVE / SUSPENDED → ACTIVE (LOCKED excluded) |
+| Method | Path                     | Permission  | Notes                                                                              |
+| ------ | ------------------------ | ----------- | ---------------------------------------------------------------------------------- |
+| GET    | `/users`                 | USER_READ   | Search `q`; filter `status` / `roleType` / `emailVerified`; pageable sort          |
+| GET    | `/users/{id}`            | USER_READ   | Tenant-scoped get with role types                                                  |
+| PUT    | `/users/{id}`            | USER_UPDATE | Admin profile update (name, phone)                                                 |
+| POST   | `/users/{id}/activate`   | USER_UPDATE | PENDING or INACTIVE → ACTIVE                                                       |
+| POST   | `/users/{id}/deactivate` | USER_UPDATE | ACTIVE → INACTIVE; revokes sessions; clears dept heads; suspends staff employment  |
+| POST   | `/users/{id}/suspend`    | USER_UPDATE | ACTIVE → SUSPENDED; revokes sessions; clears dept heads; suspends staff employment |
+| POST   | `/users/{id}/restore`    | USER_UPDATE | INACTIVE / SUSPENDED → ACTIVE (LOCKED excluded)                                    |
 
 Status transitions forbid self-target for activate/deactivate/suspend/restore.
 
@@ -234,13 +234,13 @@ Base path: `/api/v1/departments`
 
 Requires JWT + `X-Tenant-ID` + department permissions.
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| GET | `/departments` | DEPARTMENT_READ | Search `q`, filter `status`/`type`/`hospitalId`, pageable sort |
-| GET | `/departments/{id}` | DEPARTMENT_READ | Tenant-scoped get |
-| POST | `/departments` | DEPARTMENT_CREATE | Bound to default hospital; unique code/name per tenant |
-| PUT | `/departments/{id}` | DEPARTMENT_UPDATE | Full replace; unique code/name |
-| DELETE | `/departments/{id}` | DEPARTMENT_DELETE | Soft delete (204); frees code/name uniqueness |
+| Method | Path                | Permission        | Notes                                                          |
+| ------ | ------------------- | ----------------- | -------------------------------------------------------------- |
+| GET    | `/departments`      | DEPARTMENT_READ   | Search `q`, filter `status`/`type`/`hospitalId`, pageable sort |
+| GET    | `/departments/{id}` | DEPARTMENT_READ   | Tenant-scoped get                                              |
+| POST   | `/departments`      | DEPARTMENT_CREATE | Bound to default hospital; unique code/name per tenant         |
+| PUT    | `/departments/{id}` | DEPARTMENT_UPDATE | Full replace; unique code/name                                 |
+| DELETE | `/departments/{id}` | DEPARTMENT_DELETE | Soft delete (204); frees code/name uniqueness                  |
 
 ---
 
@@ -248,13 +248,13 @@ Requires JWT + `X-Tenant-ID` + department permissions.
 
 Staff administration (Phase 4.3). No scheduling/appointment endpoints here.
 
-| Method | Path | Permission |
-| ------ | ---- | ---------- |
-| CRUD | `/api/v1/doctors` | `DOCTOR_*` |
-| CRUD | `/api/v1/nurses` | `STAFF_*` |
-| CRUD | `/api/v1/receptionists` | `STAFF_*` |
-| CRUD | `/api/v1/laboratory-staff` | `STAFF_*` |
-| CRUD | `/api/v1/pharmacists` | `STAFF_*` |
+| Method | Path                       | Permission |
+| ------ | -------------------------- | ---------- |
+| CRUD   | `/api/v1/doctors`          | `DOCTOR_*` |
+| CRUD   | `/api/v1/nurses`           | `STAFF_*`  |
+| CRUD   | `/api/v1/receptionists`    | `STAFF_*`  |
+| CRUD   | `/api/v1/laboratory-staff` | `STAFF_*`  |
+| CRUD   | `/api/v1/pharmacists`      | `STAFF_*`  |
 
 List endpoints support `q`, `employmentStatus`, `departmentId`, and pageable sort.
 Create requires existing tenant `userId` with matching role + `departmentId`.
@@ -268,14 +268,14 @@ Base path: `/api/v1`
 
 Requires JWT + `X-Tenant-ID`.
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| POST | `/staff-assignments` | STAFF_UPDATE | Assign staff with no current department; rejects duplicates |
-| POST | `/staff-assignments/transfers` | STAFF_UPDATE | Transfer between departments; closes open history; clears head if leaving |
-| GET | `/staff-assignments/current` | STAFF_READ | Open assignment for `staffType` + `staffId` |
-| GET | `/staff-assignments` | STAFF_READ | History by `staffType`+`staffId` or `departmentId` |
-| PUT | `/departments/{departmentId}/head` | DEPARTMENT_UPDATE | Staff must currently belong to the department |
-| DELETE | `/departments/{departmentId}/head` | DEPARTMENT_UPDATE | Clear head (staff + user refs) |
+| Method | Path                               | Permission        | Notes                                                                     |
+| ------ | ---------------------------------- | ----------------- | ------------------------------------------------------------------------- |
+| POST   | `/staff-assignments`               | STAFF_UPDATE      | Assign staff with no current department; rejects duplicates               |
+| POST   | `/staff-assignments/transfers`     | STAFF_UPDATE      | Transfer between departments; closes open history; clears head if leaving |
+| GET    | `/staff-assignments/current`       | STAFF_READ        | Open assignment for `staffType` + `staffId`                               |
+| GET    | `/staff-assignments`               | STAFF_READ        | History by `staffType`+`staffId` or `departmentId`                        |
+| PUT    | `/departments/{departmentId}/head` | DEPARTMENT_UPDATE | Staff must currently belong to the department                             |
+| DELETE | `/departments/{departmentId}/head` | DEPARTMENT_UPDATE | Clear head (staff + user refs)                                            |
 
 Assignment history is also written when staff profiles are created/updated/soft-deleted.
 
@@ -283,65 +283,110 @@ Assignment history is also written when staff profiles are created/updated/soft-
 
 # 8. Patients
 
-GET
+Phase 5.2 registration APIs (tenant-scoped). Full contract:
+[PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
 
-/patients
+Base path: `/api/v1/patients`
 
-GET
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| `GET` | `/patients` | `PATIENT_READ` | Search/page/sort/filter (Phase 5.7 Specifications) |
+| `POST` | `/patients` | `PATIENT_CREATE` | Register; MRN + optional national ID unique per tenant; status `ACTIVE` |
+| `GET` | `/patients/{id}` | `PATIENT_READ` | Get profile |
+| `PUT` | `/patients/{id}` | `PATIENT_UPDATE` | Update demographics (not status); MRN / national ID uniqueness enforced |
+| `POST` | `/patients/{id}/deactivate` | `PATIENT_UPDATE` | `ACTIVE` → `INACTIVE`; no physical delete |
+| `POST` | `/patients/{id}/reactivate` | `PATIENT_UPDATE` | `INACTIVE` → `ACTIVE` |
 
-/patients/{id}
+Search filters: `q`, `mrn`, `firstName`, `lastName`, `phone`, `email`, `nationalId`/`cnic`, `status`, `bloodGroup`, `gender`, `dateOfBirth`/`From`/`To`, `ageMin`/`ageMax`, `departmentId`, `doctorId` + Spring `page`/`size`/`sort`.
 
-POST
+Planned (later sub-phases): dashboard, documents, profile UI.
 
-/patients
+There is **no** `DELETE /patients/{id}` in Phase 5.2.
 
-PUT
+### Medical history (Phase 5.3)
 
-/patients/{id}
+Base path: `/api/v1/patients/{patientId}/medical-history`
 
-DELETE
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| `GET` | `/medical-history` | `PATIENT_READ` | Full structured history |
+| `POST` | `/medical-history/past-diseases` | `PATIENT_UPDATE` | Add past disease |
+| `PUT` | `/medical-history/past-diseases/{entryId}` | `PATIENT_UPDATE` | Update |
+| `DELETE` | `/medical-history/past-diseases/{entryId}` | `PATIENT_DELETE` | Soft-delete |
+| `POST` | `/medical-history/surgeries` | `PATIENT_UPDATE` | Add surgery |
+| `PUT` | `/medical-history/surgeries/{entryId}` | `PATIENT_UPDATE` | Update |
+| `DELETE` | `/medical-history/surgeries/{entryId}` | `PATIENT_DELETE` | Soft-delete |
+| `POST` | `/medical-history/chronic-conditions` | `PATIENT_UPDATE` | Add chronic condition |
+| `PUT` | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_UPDATE` | Update |
+| `DELETE` | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_DELETE` | Soft-delete |
 
-/patients/{id}
+Structured fields only (category enums, codes, dates, severity, status, bounded notes).
+No visit APIs in Phase 5.3.
 
-GET
+### Patient allergies (Phase 5.4)
 
-/patients/search
+Base path: `/api/v1/patients/{patientId}/allergies`
 
-GET
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| `GET` | `/allergies` | `PATIENT_READ` | List; optional `?type=DRUG\|FOOD\|ENVIRONMENTAL\|OTHER` |
+| `GET` | `/allergies/banner` | `PATIENT_READ` | Patient banner alerts + NKDA inference |
+| `GET` | `/allergies/critical` | `PATIENT_READ` | Critical / life-threatening alerts |
+| `GET` | `/allergies/{allergyId}` | `PATIENT_READ` | Get one |
+| `POST` | `/allergies` | `PATIENT_UPDATE` | Create (auto critical+banner for LIFE_THREATENING / ANAPHYLAXIS) |
+| `PUT` | `/allergies/{allergyId}` | `PATIENT_UPDATE` | Update |
+| `DELETE` | `/allergies/{allergyId}` | `PATIENT_DELETE` | Soft-delete |
 
-/patients/{id}/timeline
+Structured: `AllergyType`, `Severity`, `Reaction` enums; clinical flags `verified`, `patientReported`, `criticalAlert`, `showOnBanner`.
 
-GET
+### Patient immunizations (Phase 5.5)
 
-/patients/{id}/history
+Base path: `/api/v1/patients/{patientId}/immunizations`
 
-GET
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| `GET` | `/immunizations` | `PATIENT_READ` | List; optional `?status=ADMINISTERED\|SCHEDULED\|REFUSED\|ENTERED_IN_ERROR` |
+| `GET` | `/immunizations/due` | `PATIENT_READ` | Due / overdue next doses (`nextDueDate` ≤ today) |
+| `GET` | `/immunizations/{immunizationId}` | `PATIENT_READ` | Get one |
+| `POST` | `/immunizations` | `PATIENT_UPDATE` | Record vaccination |
+| `PUT` | `/immunizations/{immunizationId}` | `PATIENT_UPDATE` | Update |
+| `DELETE` | `/immunizations/{immunizationId}` | `PATIENT_DELETE` | Soft-delete |
 
-/patients/{id}/dashboard
+Structured: vaccine name/code, dose number, manufacturer, batch number, administration date, next due date, healthcare provider, route, status.
+
+### Patient timeline (Phase 5.6)
+
+Base path: `/api/v1/patients/{patientId}/timeline`
+
+| Method | Path | Permission | Notes |
+| ------ | ---- | ---------- | ----- |
+| `GET` | `/timeline` | `PATIENT_READ` | Cursor-paged chronological feed |
+
+Query: `types` (multi `TimelineEventType`), `cursor`, `size` (default 20, max 100), `direction` (`DESC`\|`ASC`).
+
+Emits summaries for registration, past disease, surgery, chronic condition, allergy, immunization. Reserved types `VISIT`, `PRESCRIPTION`, `LAB_RESULT`, `BILLING` return empty until module providers register. Does **not** replace allergy banner/critical APIs.
 
 ---
 
 # 9. Patient Allergies
 
-GET
-
-/patients/{id}/allergies
-
-POST
-
-/patients/{id}/allergies
-
-PUT
-
-/patients/{id}/allergies/{allergyId}
-
-DELETE
-
-/patients/{id}/allergies/{allergyId}
+See Phase 5.4 table above (implemented).
 
 ---
 
-# 10. Patient Diseases
+# 10. Patient Immunizations
+
+See Phase 5.5 table above (implemented).
+
+---
+
+# 11. Patient Timeline
+
+See Phase 5.6 table above (implemented).
+
+---
+
+# 12. Patient Diseases
 
 GET
 
@@ -361,7 +406,7 @@ DELETE
 
 ---
 
-# 11. Patient Visits
+# 13. Patient Visits
 
 GET
 
@@ -393,7 +438,7 @@ GET
 
 ---
 
-# 12. Vital Signs
+# 13. Vital Signs
 
 GET
 

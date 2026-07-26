@@ -66,10 +66,7 @@ import {
   STAFF_TYPES,
   type RoleType,
 } from '@/features/hospital-admin/types/enums';
-import {
-  STAFF_RESOURCE_LABEL,
-  type StaffProfile,
-} from '@/features/hospital-admin/types/staff';
+import { STAFF_RESOURCE_LABEL, type StaffProfile } from '@/features/hospital-admin/types/staff';
 import {
   staffFormSchema,
   type StaffFormValues,
@@ -141,12 +138,8 @@ function toStaffPayload(values: StaffFormValues, existing?: StaffProfile | null)
         specialization: values.specialization!.trim(),
         licenseNumber: values.licenseNumber!.trim(),
         qualification: emptyToNull(values.qualification),
-        experienceYears: values.experienceYears?.trim()
-          ? Number(values.experienceYears)
-          : null,
-        consultationFee: values.consultationFee?.trim()
-          ? Number(values.consultationFee)
-          : null,
+        experienceYears: values.experienceYears?.trim() ? Number(values.experienceYears) : null,
+        consultationFee: values.consultationFee?.trim() ? Number(values.consultationFee) : null,
       };
     case 'NURSE':
       return {
@@ -244,17 +237,11 @@ export function StaffDirectoryPage() {
   const [deleting, setDeleting] = useState<StaffProfile | null>(null);
 
   const canCreate =
-    ui.staffType === 'DOCTOR'
-      ? can(Permissions.DOCTOR_CREATE)
-      : can(Permissions.STAFF_CREATE);
+    ui.staffType === 'DOCTOR' ? can(Permissions.DOCTOR_CREATE) : can(Permissions.STAFF_CREATE);
   const canUpdate =
-    ui.staffType === 'DOCTOR'
-      ? can(Permissions.DOCTOR_UPDATE)
-      : can(Permissions.STAFF_UPDATE);
+    ui.staffType === 'DOCTOR' ? can(Permissions.DOCTOR_UPDATE) : can(Permissions.STAFF_UPDATE);
   const canDelete =
-    ui.staffType === 'DOCTOR'
-      ? can(Permissions.DOCTOR_DELETE)
-      : can(Permissions.STAFF_DELETE);
+    ui.staffType === 'DOCTOR' ? can(Permissions.DOCTOR_DELETE) : can(Permissions.STAFF_DELETE);
   const canRead =
     ui.staffType === 'DOCTOR' ? can(Permissions.DOCTOR_READ) : can(Permissions.STAFF_READ);
   const canReadDepartments = can(Permissions.DEPARTMENT_READ);
@@ -491,9 +478,7 @@ export function StaffDirectoryPage() {
                         {userLabelById.get(profile.userId) ?? profile.userId.slice(0, 8)}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {departmentNameById.get(profile.departmentId) ?? '—'}
-                    </TableCell>
+                    <TableCell>{departmentNameById.get(profile.departmentId) ?? '—'}</TableCell>
                     <TableCell>{profile.jobTitle || '—'}</TableCell>
                     <TableCell>
                       <StatusBadge status={profile.employmentStatus} />

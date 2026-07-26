@@ -43,10 +43,9 @@ export const QUICK_ACTIONS: QuickActionItem[] = [
     id: 'register-patient',
     label: 'Register patient',
     description: 'Create a new patient record',
-    href: '/app/patients',
+    href: '/app/patients/new',
     permissions: [Permissions.PATIENT_CREATE],
     icon: 'user-plus',
-    comingSoon: true,
   },
   {
     id: 'book-appointment',

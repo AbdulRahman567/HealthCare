@@ -26,8 +26,7 @@ export function useDepartmentsQuery(query: DepartmentListQuery, enabled = true) 
 export function useDepartmentMutation() {
   const queryClient = useQueryClient();
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: departmentKeys.all });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: departmentKeys.all });
 
   return {
     create: useMutation({

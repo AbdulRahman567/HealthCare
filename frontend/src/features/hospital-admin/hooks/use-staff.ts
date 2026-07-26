@@ -22,8 +22,7 @@ export function useStaffQuery(staffType: StaffType, query: StaffListQuery, enabl
 
 export function useStaffMutations(staffType: StaffType) {
   const queryClient = useQueryClient();
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: staffKeys.lists(staffType) });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: staffKeys.lists(staffType) });
 
   return {
     create: useMutation({

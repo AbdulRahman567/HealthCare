@@ -1,9 +1,4 @@
-import type {
-  EmploymentStatus,
-  EmploymentType,
-  StaffShift,
-  StaffType,
-} from './enums';
+import type { EmploymentStatus, EmploymentType, StaffShift, StaffType } from './enums';
 import type { ListQuery } from '@/types/api';
 
 export type StaffBase = {
@@ -113,11 +108,7 @@ export type StaffListQuery = ListQuery & {
 };
 
 export type StaffResourceKey =
-  | 'doctors'
-  | 'nurses'
-  | 'receptionists'
-  | 'laboratory-staff'
-  | 'pharmacists';
+  'doctors' | 'nurses' | 'receptionists' | 'laboratory-staff' | 'pharmacists';
 
 export const STAFF_TYPE_TO_RESOURCE: Record<StaffType, StaffResourceKey> = {
   DOCTOR: 'doctors',

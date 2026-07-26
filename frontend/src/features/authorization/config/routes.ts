@@ -27,6 +27,9 @@ export const PROTECTED_ROUTES: Record<string, AccessRequirement> = {
   '/app/hospital': {
     permissions: [Permissions.HOSPITAL_READ],
   },
+  '/app/patients/new': {
+    permissions: [Permissions.PATIENT_CREATE],
+  },
   '/app/patients': {
     permissions: [Permissions.PATIENT_READ],
   },
@@ -39,8 +42,9 @@ export const PROTECTED_ROUTES: Record<string, AccessRequirement> = {
 };
 
 export type RouteAccessResolution =
-  | { status: 'allow'; requirement: AccessRequirement }
-  | { status: 'deny' };
+  { status: 'allow'; requirement: AccessRequirement } | { status: 'deny' };
+
+const PATIENT_EDIT_PATH = /^\/app\/patients\/[^/]+\/edit$/;
 
 /**
  * Resolves access for a pathname under the protected app shell.
@@ -49,6 +53,13 @@ export type RouteAccessResolution =
 export function resolveRouteAccess(pathname: string): RouteAccessResolution {
   if (PROTECTED_ROUTES[pathname]) {
     return { status: 'allow', requirement: PROTECTED_ROUTES[pathname] };
+  }
+
+  if (PATIENT_EDIT_PATH.test(pathname)) {
+    return {
+      status: 'allow',
+      requirement: { permissions: [Permissions.PATIENT_UPDATE] },
+    };
   }
 
   const match = Object.keys(PROTECTED_ROUTES)

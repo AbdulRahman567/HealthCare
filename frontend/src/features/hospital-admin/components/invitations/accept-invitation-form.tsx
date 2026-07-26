@@ -197,7 +197,12 @@ export function AcceptInvitationForm() {
 
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" autoComplete="new-password" {...register('password')} />
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            {...register('password')}
+          />
           {errors.password ? (
             <p className="text-destructive text-xs">{errors.password.message}</p>
           ) : null}

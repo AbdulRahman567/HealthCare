@@ -200,9 +200,7 @@ export function DepartmentsPage() {
             filters={
               <FilterSelect
                 value={ui.status}
-                onValueChange={(status) =>
-                  dispatch(setListStatus({ key: 'departments', status }))
-                }
+                onValueChange={(status) => dispatch(setListStatus({ key: 'departments', status }))}
                 options={DEPARTMENT_STATUSES}
                 placeholder="Status"
                 allLabel="All statuses"

@@ -168,9 +168,7 @@ export function InvitationsPage() {
             filters={
               <FilterSelect
                 value={ui.status}
-                onValueChange={(status) =>
-                  dispatch(setListStatus({ key: 'invitations', status }))
-                }
+                onValueChange={(status) => dispatch(setListStatus({ key: 'invitations', status }))}
                 options={INVITATION_STATUSES}
                 placeholder="Status"
                 allLabel="All statuses"
@@ -224,9 +222,7 @@ export function InvitationsPage() {
                       </TableCell>
                       <TableCell>{formatEnumLabel(invitation.roleType)}</TableCell>
                       <TableCell>
-                        <StatusBadge
-                          status={invitation.expired ? 'EXPIRED' : invitation.status}
-                        />
+                        <StatusBadge status={invitation.expired ? 'EXPIRED' : invitation.status} />
                       </TableCell>
                       <TableCell className="text-muted-foreground text-xs">
                         {new Date(invitation.expiresAt).toLocaleString()}

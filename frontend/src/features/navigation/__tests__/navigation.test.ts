@@ -36,9 +36,7 @@ describe('filterByPermission', () => {
       Permissions.BILLING_READ,
     ]);
     const ids = items.map((item) => item.id);
-    expect(ids).toEqual(
-      expect.arrayContaining(['hospital', 'users', 'invitations', 'billing']),
-    );
+    expect(ids).toEqual(expect.arrayContaining(['hospital', 'users', 'invitations', 'billing']));
   });
 
   it('shows staff when either STAFF_READ or DOCTOR_READ is granted', () => {

@@ -1,10 +1,12 @@
-import { ComingSoonPage } from '@/features/authorization/components/coming-soon-page';
+import type { Metadata } from 'next';
 
-export default function PatientsPage() {
-  return (
-    <ComingSoonPage
-      title="Patients"
-      description="Patient registration and records will be available here."
-    />
-  );
+import { PatientsListPage } from '@/features/patients';
+
+export const metadata: Metadata = {
+  title: 'Patients | Healthcare HMS',
+  description: 'Search and manage patient records',
+};
+
+export default function PatientsRoutePage() {
+  return <PatientsListPage />;
 }

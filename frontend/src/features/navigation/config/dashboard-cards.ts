@@ -54,7 +54,6 @@ export const DASHBOARD_CARDS: DashboardCardItem[] = [
     href: '/app/patients',
     permissions: [Permissions.PATIENT_READ],
     icon: 'heart-pulse',
-    comingSoon: true,
   },
   {
     id: 'appointments',

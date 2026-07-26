@@ -331,21 +331,21 @@ Domain contract: [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md).
 `Staff` is a `@MappedSuperclass` (not a concrete table). When concrete subtypes
 are introduced, each subtype table inherits:
 
-| Column | Notes |
-| ------ | ----- |
-| id | UUID PK |
-| tenant_id | FK → tenants |
-| hospital_id | FK → hospitals |
-| user_id | FK → users |
-| department_id | FK → departments (nullable until departments exist) |
-| reports_to_staff_id | Self-FK for reporting hierarchy |
-| employee_code | Unique per tenant (enforced on concrete tables) |
-| job_title | Optional |
-| employment_status | PENDING / ACTIVE / ON_LEAVE / SUSPENDED / TERMINATED |
-| employment_type | FULL_TIME / PART_TIME / CONTRACT / TEMPORARY / INTERN / CONSULTANT |
-| hired_at / terminated_at | Employment dates |
-| created_at / updated_at / created_by / updated_by | Audit |
-| deleted / deleted_at / deleted_by / version | Soft delete + optimistic lock |
+| Column                                            | Notes                                                              |
+| ------------------------------------------------- | ------------------------------------------------------------------ |
+| id                                                | UUID PK                                                            |
+| tenant_id                                         | FK → tenants                                                       |
+| hospital_id                                       | FK → hospitals                                                     |
+| user_id                                           | FK → users                                                         |
+| department_id                                     | FK → departments (nullable until departments exist)                |
+| reports_to_staff_id                               | Self-FK for reporting hierarchy                                    |
+| employee_code                                     | Unique per tenant (enforced on concrete tables)                    |
+| job_title                                         | Optional                                                           |
+| employment_status                                 | PENDING / ACTIVE / ON_LEAVE / SUSPENDED / TERMINATED               |
+| employment_type                                   | FULL_TIME / PART_TIME / CONTRACT / TEMPORARY / INTERN / CONSULTANT |
+| hired_at / terminated_at                          | Employment dates                                                   |
+| created_at / updated_at / created_by / updated_by | Audit                                                              |
+| deleted / deleted_at / deleted_by / version       | Soft delete + optimistic lock                                      |
 
 `DepartmentType` enum is ready for the future `departments` table
 (CLINICAL, DIAGNOSTIC, EMERGENCY, ADMINISTRATIVE, SUPPORT, RESEARCH, OTHER).
@@ -358,20 +358,20 @@ are introduced, each subtype table inherits:
 
 Table: `departments` (Flyway `V12__departments.sql`)
 
-| Column | Notes |
-| ------ | ----- |
-| id | UUID PK |
-| tenant_id | FK → tenants |
-| hospital_id | FK → hospitals |
-| name | Unique per tenant |
-| code | Unique per tenant (stored uppercase) |
-| description | Optional |
-| department_type | CLINICAL / DIAGNOSTIC / EMERGENCY / ADMINISTRATIVE / SUPPORT / RESEARCH / OTHER |
-| status | ACTIVE / INACTIVE / SUSPENDED |
-| location | Optional |
-| head_user_id | Optional FK → users (head of department) |
-| created_at / updated_at / created_by / updated_by | Audit |
-| deleted / deleted_at / deleted_by / version | Soft delete + optimistic lock |
+| Column                                            | Notes                                                                           |
+| ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| id                                                | UUID PK                                                                         |
+| tenant_id                                         | FK → tenants                                                                    |
+| hospital_id                                       | FK → hospitals                                                                  |
+| name                                              | Unique per tenant                                                               |
+| code                                              | Unique per tenant (stored uppercase)                                            |
+| description                                       | Optional                                                                        |
+| department_type                                   | CLINICAL / DIAGNOSTIC / EMERGENCY / ADMINISTRATIVE / SUPPORT / RESEARCH / OTHER |
+| status                                            | ACTIVE / INACTIVE / SUSPENDED                                                   |
+| location                                          | Optional                                                                        |
+| head_user_id                                      | Optional FK → users (head of department)                                        |
+| created_at / updated_at / created_by / updated_by | Audit                                                                           |
+| deleted / deleted_at / deleted_by / version       | Soft delete + optimistic lock                                                   |
 
 Indexes: tenant, hospital, status, type, head_user, name, deleted.
 
@@ -449,45 +449,111 @@ license_number, pharmacy_location, qualification (+ Staff columns)
 
 # 8. Patient Module
 
-patients
+## patients (Phase 5.1 — Flyway `V18__patients.sql`)
+
+Tenant-owned patient registration (demographics + identifiers). Full design:
+[PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
 
 Fields
 
-id
+id (UUID)
 tenant_id
 mrn
 first_name
 last_name
-dob
-gender
-blood_group
+date_of_birth
+gender (enum: MALE, FEMALE, OTHER, UNKNOWN)
+blood_group (enum: A_POSITIVE … O_NEGATIVE, UNKNOWN)
+national_id (CNIC or passport — optional)
 phone
 email
 address
-emergency_contact
-marital_status
-occupation
-photo_url
+emergency_contact_name
+emergency_contact_phone
+emergency_contact_relation
+marital_status (enum: SINGLE, MARRIED, DIVORCED, WIDOWED, SEPARATED, UNKNOWN)
+status (enum: ACTIVE, INACTIVE, DECEASED, ARCHIVED)
+created_at / updated_at / created_by / updated_by
+deleted / deleted_at / deleted_by
+version
+active_mrn_slot (generated; soft-delete-aware uniqueness helper)
+active_national_id_slot (generated; Phase 5.10 — soft-delete-aware uniqueness when national_id present)
 
 MRN
 
-Medical Record Number
+Medical Record Number — unique per tenant among live (non-deleted) rows via
+`uk_patients_tenant_active_mrn (tenant_id, mrn, active_mrn_slot)`.
 
-Unique per hospital.
+National ID
+
+Optional CNIC / passport — unique per tenant among live rows when present via
+`uk_patients_tenant_active_national_id (tenant_id, national_id, active_national_id_slot)`
+(Flyway `V24__patient_national_id_unique.sql`). Soft-deleted rows free the slot.
+
+Indexes: tenant, mrn, status, name `(last_name, first_name)`, phone, email,
+national_id (unique slot), date_of_birth, deleted.
+
+Deferred (later patient profile enrichment): `occupation`, `photo_url`.
 
 ---
 
-patient_allergies
+## Medical history (Phase 5.3 — Flyway `V19__medical_history.sql`)
+
+Structured longitudinal chart data. Design: [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
+No free-text history blobs; clinical notes bounded to `VARCHAR(1000)`.
+Visits are out of scope (Phase 7).
+
+### medical_histories
+
+1:1 with `patients` per tenant.
+
+id, tenant_id, patient_id (unique with tenant), last_reviewed_at, last_reviewed_by,
+audit + soft delete + version
+
+### past_diseases
+
+patient_id, medical_history_id,
+disease_name, disease_category (enum), disease_code (optional ICD-like),
+diagnosis_date, recovery_date, severity, condition_status, clinical_notes,
+recorded_by_user_id, audit + soft delete + version
+
+### surgery_histories
+
+patient_id, medical_history_id,
+procedure_name, procedure_category (enum), procedure_code, performing_facility,
+diagnosis_date (procedure date), recovery_date, severity, condition_status, clinical_notes,
+recorded_by_user_id, audit + soft delete + version
+
+### chronic_conditions
+
+patient_id, medical_history_id,
+condition_name, disease_category (enum), condition_code,
+diagnosis_date, recovery_date, severity, condition_status, clinical_notes,
+recorded_by_user_id, audit + soft delete + version
+
+Indexes on tenant + patient, diagnosis_date, condition_status, medical_history_id, deleted.
+
+---
+
+patient_allergies (Phase 5.4 — Flyway `V20__patient_allergies.sql`)
+
+Safety-critical structured allergies. Design: [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
 
 Fields
 
-patient_id
+id, tenant_id, patient_id
+allergen_name, allergen_code
+allergy_type (DRUG, FOOD, ENVIRONMENTAL, OTHER)
+severity (MILD, MODERATE, SEVERE, LIFE_THREATENING)
+reaction (ANAPHYLAXIS, RASH, …)
+status (ACTIVE, INACTIVE, ENTERED_IN_ERROR)
+onset_date
+clinical_notes (VARCHAR 1000)
+verified, patient_reported, critical_alert, show_on_banner
+recorded_by_user_id
+audit + soft delete + version
 
-allergy_name
-
-severity
-
-notes
+Indexes: tenant+patient, type, severity, status, critical_alert, show_on_banner, deleted.
 
 ---
 
@@ -515,15 +581,31 @@ diagnosed_date
 
 ---
 
-patient_vaccinations
+patient_immunizations
 
 patient_id
 
-vaccine
+vaccine_name
 
-date
+vaccine_code
 
-notes
+dose_number
+
+manufacturer
+
+batch_number
+
+administration_date
+
+next_due_date
+
+healthcare_provider
+
+route
+
+status
+
+clinical_notes
 
 ---
 

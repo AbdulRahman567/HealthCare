@@ -74,14 +74,14 @@ organization/
 
 ## 3. Design decisions
 
-| Decision | Choice | Why |
-| -------- | ------ | --- |
-| Module location | Top-level `organization` (not nested under `hospitals`) | Separates hospital **profile/settings** from **org chart + employment**; `hospitals` stays Phase 2.5/2.6 scoped |
-| Staff persistence style | `@MappedSuperclass` | Shared columns without a premature `staff` table; concrete subtypes own tables in 4.2+ |
-| Identity split | `User` ≠ `Staff` | Auth/RBAC stays in `users`; employment/HR attributes live on `Staff` |
-| Department FK | UUID `departmentId` only (no `@ManyToOne`) | Avoids inventing Department entity in 4.1 while reserving the column contract |
-| Reporting line | `reportsToStaffId` UUID | Enables hierarchy without self-referencing JPA until concrete tables exist |
-| Isolation | Extend `TenantOwnedEntity` | Inherits UUID, audit, soft delete, version, Hibernate `tenantFilter` |
+| Decision                | Choice                                                  | Why                                                                                                             |
+| ----------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Module location         | Top-level `organization` (not nested under `hospitals`) | Separates hospital **profile/settings** from **org chart + employment**; `hospitals` stays Phase 2.5/2.6 scoped |
+| Staff persistence style | `@MappedSuperclass`                                     | Shared columns without a premature `staff` table; concrete subtypes own tables in 4.2+                          |
+| Identity split          | `User` ≠ `Staff`                                        | Auth/RBAC stays in `users`; employment/HR attributes live on `Staff`                                            |
+| Department FK           | UUID `departmentId` only (no `@ManyToOne`)              | Avoids inventing Department entity in 4.1 while reserving the column contract                                   |
+| Reporting line          | `reportsToStaffId` UUID                                 | Enables hierarchy without self-referencing JPA until concrete tables exist                                      |
+| Isolation               | Extend `TenantOwnedEntity`                              | Inherits UUID, audit, soft delete, version, Hibernate `tenantFilter`                                            |
 
 ---
 
@@ -129,15 +129,15 @@ Tenant
 
 `DepartmentType` vocabulary (ready for the future entity):
 
-| Type | Examples |
-| ---- | -------- |
-| CLINICAL | Cardiology, Neurology, Orthopedics |
-| DIAGNOSTIC | Laboratory, Radiology |
-| EMERGENCY | ER / Trauma |
-| ADMINISTRATIVE | HR, Finance, Ops |
-| SUPPORT | Facilities, Logistics |
-| RESEARCH | Teaching / research units |
-| OTHER | Tenant-defined |
+| Type           | Examples                           |
+| -------------- | ---------------------------------- |
+| CLINICAL       | Cardiology, Neurology, Orthopedics |
+| DIAGNOSTIC     | Laboratory, Radiology              |
+| EMERGENCY      | ER / Trauma                        |
+| ADMINISTRATIVE | HR, Finance, Ops                   |
+| SUPPORT        | Facilities, Logistics              |
+| RESEARCH       | Teaching / research units          |
+| OTHER          | Tenant-defined                     |
 
 ---
 
@@ -185,14 +185,14 @@ erDiagram
 
 ### Cardinality rules
 
-| Relationship | Rule |
-| ------------ | ---- |
-| Tenant → Hospital | 1 : N (default hospital today) |
-| Hospital → Department | 1 : N (future) |
-| Hospital → Staff | 1 : N |
-| User → Staff | 1 : 0..1 per hospital (enforced when tables land) |
-| Department → Staff | 1 : N (optional affiliation) |
-| Staff → Staff (reports to) | N : 0..1, same tenant |
+| Relationship               | Rule                                              |
+| -------------------------- | ------------------------------------------------- |
+| Tenant → Hospital          | 1 : N (default hospital today)                    |
+| Hospital → Department      | 1 : N (future)                                    |
+| Hospital → Staff           | 1 : N                                             |
+| User → Staff               | 1 : 0..1 per hospital (enforced when tables land) |
+| Department → Staff         | 1 : N (optional affiliation)                      |
+| Staff → Staff (reports to) | N : 0..1, same tenant                             |
 
 ### Shared columns on every organization row
 
@@ -291,27 +291,31 @@ Soft-delete remains orthogonal (logical removal ≠ termination).
 
 ## 10. Next phases (suggested)
 
-| Sub-phase | Scope |
-| --------- | ----- |
-| 4.5+ | Staff UX, scheduling hooks, richer profiles |
+| Sub-phase | Scope                                       |
+| --------- | ------------------------------------------- |
+| 4.5+      | Staff UX, scheduling hooks, richer profiles |
 
 ---
 
 ## 11. Definition of Done
 
 ### 4.1
+
 - [x] `com.healthcare.hms.organization` package exists
 - [x] `Staff` base abstraction is tenant-aware, auditable, soft-delete, UUID-based
 - [x] `EmploymentStatus`, `EmploymentType`, `DepartmentType` defined
 
 ### 4.2
+
 - [x] Department entity, DTOs, repository, service, controller, validation
 - [x] Flyway migration; unique code/name; soft delete; search/page/sort/filter
 
 ### 4.3
+
 - [x] Five staff specialization tables + CRUD APIs
 
 ### 4.4
+
 - [x] Assign / transfer staff between departments
 - [x] Assign department head (Staff FK + synced user id)
 - [x] Prevent duplicate open assignments

@@ -273,6 +273,44 @@ organization
 - Full package layout, ER relationships, and module interaction diagrams:
   [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md).
 
+### Patient Management (Phase 5.1–5.10)
+
+Patient registration, structured medical history, safety-critical allergies,
+immunization records, chronological timeline, directory search, and the
+Patient Management UI live in `com.healthcare.hms.patients` with frontend
+`features/patients`. Phase 5.7 adds `PatientSpecifications` +
+`GET /api/v1/patients` with DB-level pagination/sorting/filtering (Flyway `V23`).
+Phase 5.8 ships list/register/edit/chart surfaces (allergy banner on chart open).
+Phase 5.9 security review hardens soft-delete RBAC, critical-allergy guards,
+PHI logging, and view audit — see
+[PATIENT_PHASE_5_9_SECURITY_REVIEW.md](./PATIENT_PHASE_5_9_SECURITY_REVIEW.md).
+Phase 5.10 production readiness closes remaining High defects (national-ID
+unique constraint, allergy flag patch semantics, FE deactivate confirm /
+search debounce / timeline cache) — see
+[PATIENT_PHASE_5_10_PRODUCTION_READINESS.md](./PATIENT_PHASE_5_10_PRODUCTION_READINESS.md).
+Visits remain Phase 7. See
+[PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
+
+```
+patients
+├── controller/PatientController          # register + search + lifecycle
+├── service(+impl)/PatientService, PatientQueryService
+├── repository/PatientRepository + PatientSpecifications
+├── history/                  # Phase 5.3
+├── allergy/                  # Phase 5.4 — Allergy + banner/critical APIs
+├── immunization/             # Phase 5.5 — Immunization + due API
+├── timeline/                 # Phase 5.6 — Chronological feed + SPI
+├── entity/Patient, EmergencyContact
+└── dto/request|response
+```
+
+- Medical history is structured (enums + codes + dates); notes bounded to 1000 chars.
+- Allergies are safety-critical: type/severity/reaction enums + clinical flags; banner API on chart open.
+- Immunizations track vaccine, dose, manufacturer, batch, administration/next-due dates, and provider.
+- Timeline merges clinical events by date via providers; cursor-paged; no materialised event table.
+- Search uses Specifications only — age converted to DOB range; no in-memory filtering.
+- Visits remain a later phase.
+
 ---
 
 # 6. Frontend Architecture

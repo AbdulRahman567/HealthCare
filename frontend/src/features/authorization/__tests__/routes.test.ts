@@ -20,6 +20,20 @@ describe('resolveRouteAccess', () => {
     });
   });
 
+  it('requires create permission for patient registration', () => {
+    expect(resolveRouteAccess('/app/patients/new')).toEqual({
+      status: 'allow',
+      requirement: { permissions: [Permissions.PATIENT_CREATE] },
+    });
+  });
+
+  it('requires update permission for patient edit', () => {
+    expect(resolveRouteAccess('/app/patients/abc/edit')).toEqual({
+      status: 'allow',
+      requirement: { permissions: [Permissions.PATIENT_UPDATE] },
+    });
+  });
+
   it('denies unknown /app paths (fail-closed)', () => {
     expect(resolveRouteAccess('/app/not-registered')).toEqual({ status: 'deny' });
   });

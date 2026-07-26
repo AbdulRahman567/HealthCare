@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-25  
 **Scope:** Phases 4.1–4.8 (organization, users invitation/management, Hospital Admin UI)  
-**Constraint:** Review + remediation only — no new feature modules  
+**Constraint:** Review + remediation only — no new feature modules
 
 ---
 
@@ -14,24 +14,24 @@ Hospital Administration is **production-ready for the documented Phase 4 lifecyc
 
 ## Verification checklist
 
-| Check | Result | Notes |
-| ----- | ------ | ----- |
-| Compilation (`mvnw -DskipTests compile`) | Pass | |
-| Unit tests (dept/doctor/invite/user mgmt) | Pass | Updated stubs for expiry + lifecycle hooks |
-| Next.js `typecheck` | Pass | |
-| Next.js `build` | Pass | `/accept-invitation` route present |
-| Flyway migrations V1–V17 | Pass (chain complete) | `V17__staff_active_user_unique.sql` added |
-| Docker Compose config | Pass | `docker compose config` valid |
-| Docker daemon / full stack | Blocked locally | Docker Desktop engine not running |
-| Spring Boot startup (local) | Blocked locally | MySQL `hms_user` access denied on host; use Compose MySQL |
-| Swagger / springdoc paths | Configured | `/swagger-ui`, `/api-docs` |
-| Tenant isolation | Pass | `TenantOwnedEntity` + tenant-scoped queries |
-| RBAC | Pass | `@RequirePermission` / `@PublicEndpoint` on Hospital Admin APIs |
-| Search / pagination | Pass | Max page size 100; sort allowlists |
-| Validation / exceptions | Pass | Bean Validation + central handler |
-| Audit logging | Pass | Dept/staff/invite CUD + user lifecycle UPDATE |
-| Package / Clean Architecture | Pass | No `users ↔ organization` repository cycle |
-| SOLID / no circular deps | Pass | Cross-module via QueryServices + lifecycle hook |
+| Check                                     | Result                | Notes                                                           |
+| ----------------------------------------- | --------------------- | --------------------------------------------------------------- |
+| Compilation (`mvnw -DskipTests compile`)  | Pass                  |                                                                 |
+| Unit tests (dept/doctor/invite/user mgmt) | Pass                  | Updated stubs for expiry + lifecycle hooks                      |
+| Next.js `typecheck`                       | Pass                  |                                                                 |
+| Next.js `build`                           | Pass                  | `/accept-invitation` route present                              |
+| Flyway migrations V1–V17                  | Pass (chain complete) | `V17__staff_active_user_unique.sql` added                       |
+| Docker Compose config                     | Pass                  | `docker compose config` valid                                   |
+| Docker daemon / full stack                | Blocked locally       | Docker Desktop engine not running                               |
+| Spring Boot startup (local)               | Blocked locally       | MySQL `hms_user` access denied on host; use Compose MySQL       |
+| Swagger / springdoc paths                 | Configured            | `/swagger-ui`, `/api-docs`                                      |
+| Tenant isolation                          | Pass                  | `TenantOwnedEntity` + tenant-scoped queries                     |
+| RBAC                                      | Pass                  | `@RequirePermission` / `@PublicEndpoint` on Hospital Admin APIs |
+| Search / pagination                       | Pass                  | Max page size 100; sort allowlists                              |
+| Validation / exceptions                   | Pass                  | Bean Validation + central handler                               |
+| Audit logging                             | Pass                  | Dept/staff/invite CUD + user lifecycle UPDATE                   |
+| Package / Clean Architecture              | Pass                  | No `users ↔ organization` repository cycle                      |
+| SOLID / no circular deps                  | Pass                  | Cross-module via QueryServices + lifecycle hook                 |
 
 ---
 
@@ -57,16 +57,16 @@ Previously broken steps (now fixed): invitee accept UI missing; expired invite b
 
 ## Critical / High findings remediated
 
-| Sev | Issue | Fix |
-| --- | ----- | --- |
-| Critical | Soft-deleted staff blocked rehire via `uk_*_tenant_user` | Flyway V17 generated `active_user_slot` unique indexes |
-| Critical | `/accept-invitation` missing — email onboarding 404 | Public FE page + preview/accept/reject API client |
-| High | Expired invites stayed PENDING and blocked re-invite | Persist `EXPIRED` on accept/preview; expire stale on list/invite |
-| High | Department delete left staff affiliated | Reject delete when `hasAffiliatedStaff` |
-| High | Staff soft-delete left department head pointers | `closeOnSoftDelete` clears matching heads |
-| High | Invite token in email query string | Email URL uses URL fragment `#token=` |
-| High | Deactivate/suspend left org heads + ACTIVE employment | `UserAccountLifecycleHook` clears heads + suspends staff |
-| High | Staff user picker ignored role; dept API without `DEPARTMENT_READ`; `reportsToStaffId` wiped; LOCKED restore offered | FE staff/users fixes |
+| Sev      | Issue                                                                                                                | Fix                                                              |
+| -------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Critical | Soft-deleted staff blocked rehire via `uk_*_tenant_user`                                                             | Flyway V17 generated `active_user_slot` unique indexes           |
+| Critical | `/accept-invitation` missing — email onboarding 404                                                                  | Public FE page + preview/accept/reject API client                |
+| High     | Expired invites stayed PENDING and blocked re-invite                                                                 | Persist `EXPIRED` on accept/preview; expire stale on list/invite |
+| High     | Department delete left staff affiliated                                                                              | Reject delete when `hasAffiliatedStaff`                          |
+| High     | Staff soft-delete left department head pointers                                                                      | `closeOnSoftDelete` clears matching heads                        |
+| High     | Invite token in email query string                                                                                   | Email URL uses URL fragment `#token=`                            |
+| High     | Deactivate/suspend left org heads + ACTIVE employment                                                                | `UserAccountLifecycleHook` clears heads + suspends staff         |
+| High     | Staff user picker ignored role; dept API without `DEPARTMENT_READ`; `reportsToStaffId` wiped; LOCKED restore offered | FE staff/users fixes                                             |
 
 ---
 
@@ -122,26 +122,26 @@ Aligns with ENGINEERING_RULES feature packaging under `organization` and `users`
 
 ## Performance report
 
-| Area | Assessment |
-| ---- | ---------- |
-| Pagination | Enforced max size 100 across dept/staff/users/invites |
-| N+1 | User directory fetch-joins roles; staff lists use specs |
-| Indexes | Tenant/status/email indexes present (V12–V15); V17 adds slot uniqueness |
-| Search | Leading-wildcard `LIKE` — acceptable for Phase 4 scale; plan FTS/prefix for large tenants |
-| Email in TX | Invite/resend send email inside write transaction — Medium latency risk under SMTP delay |
+| Area        | Assessment                                                                                |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| Pagination  | Enforced max size 100 across dept/staff/users/invites                                     |
+| N+1         | User directory fetch-joins roles; staff lists use specs                                   |
+| Indexes     | Tenant/status/email indexes present (V12–V15); V17 adds slot uniqueness                   |
+| Search      | Leading-wildcard `LIKE` — acceptable for Phase 4 scale; plan FTS/prefix for large tenants |
+| Email in TX | Invite/resend send email inside write transaction — Medium latency risk under SMTP delay  |
 
 ---
 
 ## Production readiness assessment
 
-| Dimension | Rating | Comment |
-| --------- | ------ | ------- |
-| Functional completeness (Phase 4) | Ready | Full admin + invitee accept path |
-| Security (tenant/RBAC/invite) | Ready | 4.8 + 4.9 hardening |
-| Data integrity | Ready | Soft-delete uniqueness + referential guards |
-| Operability | Ready with Compose | Local host MySQL/Redis/Docker may differ |
-| Observability | Partial | Actuator + Prometheus wired; Redis health intentionally off |
-| Documentation | Updated | This report + ROADMAP / PROJECT_CONTEXT / phasesreadme |
+| Dimension                         | Rating             | Comment                                                     |
+| --------------------------------- | ------------------ | ----------------------------------------------------------- |
+| Functional completeness (Phase 4) | Ready              | Full admin + invitee accept path                            |
+| Security (tenant/RBAC/invite)     | Ready              | 4.8 + 4.9 hardening                                         |
+| Data integrity                    | Ready              | Soft-delete uniqueness + referential guards                 |
+| Operability                       | Ready with Compose | Local host MySQL/Redis/Docker may differ                    |
+| Observability                     | Partial            | Actuator + Prometheus wired; Redis health intentionally off |
+| Documentation                     | Updated            | This report + ROADMAP / PROJECT_CONTEXT / phasesreadme      |
 
 **Go / No-Go:** **GO** for Phase 4 Hospital Administration behind Docker Compose (or equivalent env with Flyway through V17). Defer Phase 5+ clinical modules.
 
