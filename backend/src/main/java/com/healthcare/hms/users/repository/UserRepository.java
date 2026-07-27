@@ -3,6 +3,8 @@ package com.healthcare.hms.users.repository;
 import com.healthcare.hms.users.entity.User;
 import com.healthcare.hms.users.enums.RoleType;
 import com.healthcare.hms.users.enums.UserStatus;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -76,4 +78,6 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     );
 
     long countByTenantIdAndStatus(UUID tenantId, UserStatus status);
+
+    List<User> findByTenantIdAndIdIn(UUID tenantId, Collection<UUID> ids);
 }

@@ -171,8 +171,8 @@ public final class SystemRolePermissionMatrix {
                 PermissionConstants.DASHBOARD_READ
         ));
 
+        // Patient portal: no staff APPOINTMENT_* until a self-scoped portal API exists (Phase 6.9).
         GRANTS.put(RoleType.PATIENT, Set.of(
-                PermissionConstants.APPOINTMENT_READ,
                 PermissionConstants.DOCUMENT_READ,
                 PermissionConstants.NOTIFICATION_READ,
                 PermissionConstants.DASHBOARD_READ

@@ -45,7 +45,10 @@ import {
   VACCINE_ROUTES,
   type ImmunizationStatus,
 } from '@/features/patients/types/enums';
-import type { ImmunizationResponse, UpsertImmunizationPayload } from '@/features/patients/types/immunization';
+import type {
+  ImmunizationResponse,
+  UpsertImmunizationPayload,
+} from '@/features/patients/types/immunization';
 import {
   emptyImmunizationForm,
   immunizationFormSchema,
@@ -110,7 +113,9 @@ export function ImmunizationsPanel({ patientId }: ImmunizationsPanelProps) {
       administrationDate: values.administrationDate,
       nextDueDate: emptyToNull(values.nextDueDate),
       healthcareProvider: values.healthcareProvider.trim(),
-      route: values.route ? (values.route as NonNullable<UpsertImmunizationPayload['route']>) : null,
+      route: values.route
+        ? (values.route as NonNullable<UpsertImmunizationPayload['route']>)
+        : null,
       status: values.status,
       clinicalNotes: emptyToNull(values.clinicalNotes),
     };
@@ -150,7 +155,8 @@ export function ImmunizationsPanel({ patientId }: ImmunizationsPanelProps) {
         <Alert>
           <AlertTitle>Doses due / overdue</AlertTitle>
           <AlertDescription>
-            {dueCount} immunization{dueCount === 1 ? '' : 's'} with next due date on or before today.
+            {dueCount} immunization{dueCount === 1 ? '' : 's'} with next due date on or before
+            today.
           </AlertDescription>
         </Alert>
       ) : null}

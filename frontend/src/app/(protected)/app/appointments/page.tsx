@@ -1,10 +1,12 @@
-import { ComingSoonPage } from '@/features/authorization/components/coming-soon-page';
+import type { Metadata } from 'next';
 
-export default function AppointmentsPage() {
-  return (
-    <ComingSoonPage
-      title="Appointments"
-      description="Scheduling and appointment management will be available here."
-    />
-  );
+import { AppointmentDashboardPage } from '@/features/appointments';
+
+export const metadata: Metadata = {
+  title: 'Appointments | Healthcare HMS',
+  description: 'Appointment scheduling dashboard',
+};
+
+export default function AppointmentsRoutePage() {
+  return <AppointmentDashboardPage />;
 }

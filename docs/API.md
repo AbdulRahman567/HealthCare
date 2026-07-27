@@ -288,14 +288,14 @@ Phase 5.2 registration APIs (tenant-scoped). Full contract:
 
 Base path: `/api/v1/patients`
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| `GET` | `/patients` | `PATIENT_READ` | Search/page/sort/filter (Phase 5.7 Specifications) |
-| `POST` | `/patients` | `PATIENT_CREATE` | Register; MRN + optional national ID unique per tenant; status `ACTIVE` |
-| `GET` | `/patients/{id}` | `PATIENT_READ` | Get profile |
-| `PUT` | `/patients/{id}` | `PATIENT_UPDATE` | Update demographics (not status); MRN / national ID uniqueness enforced |
-| `POST` | `/patients/{id}/deactivate` | `PATIENT_UPDATE` | `ACTIVE` → `INACTIVE`; no physical delete |
-| `POST` | `/patients/{id}/reactivate` | `PATIENT_UPDATE` | `INACTIVE` → `ACTIVE` |
+| Method | Path                        | Permission       | Notes                                                                   |
+| ------ | --------------------------- | ---------------- | ----------------------------------------------------------------------- |
+| `GET`  | `/patients`                 | `PATIENT_READ`   | Search/page/sort/filter (Phase 5.7 Specifications)                      |
+| `POST` | `/patients`                 | `PATIENT_CREATE` | Register; MRN + optional national ID unique per tenant; status `ACTIVE` |
+| `GET`  | `/patients/{id}`            | `PATIENT_READ`   | Get profile                                                             |
+| `PUT`  | `/patients/{id}`            | `PATIENT_UPDATE` | Update demographics (not status); MRN / national ID uniqueness enforced |
+| `POST` | `/patients/{id}/deactivate` | `PATIENT_UPDATE` | `ACTIVE` → `INACTIVE`; no physical delete                               |
+| `POST` | `/patients/{id}/reactivate` | `PATIENT_UPDATE` | `INACTIVE` → `ACTIVE`                                                   |
 
 Search filters: `q`, `mrn`, `firstName`, `lastName`, `phone`, `email`, `nationalId`/`cnic`, `status`, `bloodGroup`, `gender`, `dateOfBirth`/`From`/`To`, `ageMin`/`ageMax`, `departmentId`, `doctorId` + Spring `page`/`size`/`sort`.
 
@@ -307,18 +307,18 @@ There is **no** `DELETE /patients/{id}` in Phase 5.2.
 
 Base path: `/api/v1/patients/{patientId}/medical-history`
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| `GET` | `/medical-history` | `PATIENT_READ` | Full structured history |
-| `POST` | `/medical-history/past-diseases` | `PATIENT_UPDATE` | Add past disease |
-| `PUT` | `/medical-history/past-diseases/{entryId}` | `PATIENT_UPDATE` | Update |
-| `DELETE` | `/medical-history/past-diseases/{entryId}` | `PATIENT_DELETE` | Soft-delete |
-| `POST` | `/medical-history/surgeries` | `PATIENT_UPDATE` | Add surgery |
-| `PUT` | `/medical-history/surgeries/{entryId}` | `PATIENT_UPDATE` | Update |
-| `DELETE` | `/medical-history/surgeries/{entryId}` | `PATIENT_DELETE` | Soft-delete |
-| `POST` | `/medical-history/chronic-conditions` | `PATIENT_UPDATE` | Add chronic condition |
-| `PUT` | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_UPDATE` | Update |
-| `DELETE` | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_DELETE` | Soft-delete |
+| Method   | Path                                            | Permission       | Notes                   |
+| -------- | ----------------------------------------------- | ---------------- | ----------------------- |
+| `GET`    | `/medical-history`                              | `PATIENT_READ`   | Full structured history |
+| `POST`   | `/medical-history/past-diseases`                | `PATIENT_UPDATE` | Add past disease        |
+| `PUT`    | `/medical-history/past-diseases/{entryId}`      | `PATIENT_UPDATE` | Update                  |
+| `DELETE` | `/medical-history/past-diseases/{entryId}`      | `PATIENT_DELETE` | Soft-delete             |
+| `POST`   | `/medical-history/surgeries`                    | `PATIENT_UPDATE` | Add surgery             |
+| `PUT`    | `/medical-history/surgeries/{entryId}`          | `PATIENT_UPDATE` | Update                  |
+| `DELETE` | `/medical-history/surgeries/{entryId}`          | `PATIENT_DELETE` | Soft-delete             |
+| `POST`   | `/medical-history/chronic-conditions`           | `PATIENT_UPDATE` | Add chronic condition   |
+| `PUT`    | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_UPDATE` | Update                  |
+| `DELETE` | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_DELETE` | Soft-delete             |
 
 Structured fields only (category enums, codes, dates, severity, status, bounded notes).
 No visit APIs in Phase 5.3.
@@ -327,15 +327,15 @@ No visit APIs in Phase 5.3.
 
 Base path: `/api/v1/patients/{patientId}/allergies`
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| `GET` | `/allergies` | `PATIENT_READ` | List; optional `?type=DRUG\|FOOD\|ENVIRONMENTAL\|OTHER` |
-| `GET` | `/allergies/banner` | `PATIENT_READ` | Patient banner alerts + NKDA inference |
-| `GET` | `/allergies/critical` | `PATIENT_READ` | Critical / life-threatening alerts |
-| `GET` | `/allergies/{allergyId}` | `PATIENT_READ` | Get one |
-| `POST` | `/allergies` | `PATIENT_UPDATE` | Create (auto critical+banner for LIFE_THREATENING / ANAPHYLAXIS) |
-| `PUT` | `/allergies/{allergyId}` | `PATIENT_UPDATE` | Update |
-| `DELETE` | `/allergies/{allergyId}` | `PATIENT_DELETE` | Soft-delete |
+| Method   | Path                     | Permission       | Notes                                                            |
+| -------- | ------------------------ | ---------------- | ---------------------------------------------------------------- |
+| `GET`    | `/allergies`             | `PATIENT_READ`   | List; optional `?type=DRUG\|FOOD\|ENVIRONMENTAL\|OTHER`          |
+| `GET`    | `/allergies/banner`      | `PATIENT_READ`   | Patient banner alerts + NKDA inference                           |
+| `GET`    | `/allergies/critical`    | `PATIENT_READ`   | Critical / life-threatening alerts                               |
+| `GET`    | `/allergies/{allergyId}` | `PATIENT_READ`   | Get one                                                          |
+| `POST`   | `/allergies`             | `PATIENT_UPDATE` | Create (auto critical+banner for LIFE_THREATENING / ANAPHYLAXIS) |
+| `PUT`    | `/allergies/{allergyId}` | `PATIENT_UPDATE` | Update                                                           |
+| `DELETE` | `/allergies/{allergyId}` | `PATIENT_DELETE` | Soft-delete                                                      |
 
 Structured: `AllergyType`, `Severity`, `Reaction` enums; clinical flags `verified`, `patientReported`, `criticalAlert`, `showOnBanner`.
 
@@ -343,14 +343,14 @@ Structured: `AllergyType`, `Severity`, `Reaction` enums; clinical flags `verifie
 
 Base path: `/api/v1/patients/{patientId}/immunizations`
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| `GET` | `/immunizations` | `PATIENT_READ` | List; optional `?status=ADMINISTERED\|SCHEDULED\|REFUSED\|ENTERED_IN_ERROR` |
-| `GET` | `/immunizations/due` | `PATIENT_READ` | Due / overdue next doses (`nextDueDate` ≤ today) |
-| `GET` | `/immunizations/{immunizationId}` | `PATIENT_READ` | Get one |
-| `POST` | `/immunizations` | `PATIENT_UPDATE` | Record vaccination |
-| `PUT` | `/immunizations/{immunizationId}` | `PATIENT_UPDATE` | Update |
-| `DELETE` | `/immunizations/{immunizationId}` | `PATIENT_DELETE` | Soft-delete |
+| Method   | Path                              | Permission       | Notes                                                                       |
+| -------- | --------------------------------- | ---------------- | --------------------------------------------------------------------------- |
+| `GET`    | `/immunizations`                  | `PATIENT_READ`   | List; optional `?status=ADMINISTERED\|SCHEDULED\|REFUSED\|ENTERED_IN_ERROR` |
+| `GET`    | `/immunizations/due`              | `PATIENT_READ`   | Due / overdue next doses (`nextDueDate` ≤ today)                            |
+| `GET`    | `/immunizations/{immunizationId}` | `PATIENT_READ`   | Get one                                                                     |
+| `POST`   | `/immunizations`                  | `PATIENT_UPDATE` | Record vaccination                                                          |
+| `PUT`    | `/immunizations/{immunizationId}` | `PATIENT_UPDATE` | Update                                                                      |
+| `DELETE` | `/immunizations/{immunizationId}` | `PATIENT_DELETE` | Soft-delete                                                                 |
 
 Structured: vaccine name/code, dose number, manufacturer, batch number, administration date, next due date, healthcare provider, route, status.
 
@@ -358,9 +358,9 @@ Structured: vaccine name/code, dose number, manufacturer, batch number, administ
 
 Base path: `/api/v1/patients/{patientId}/timeline`
 
-| Method | Path | Permission | Notes |
-| ------ | ---- | ---------- | ----- |
-| `GET` | `/timeline` | `PATIENT_READ` | Cursor-paged chronological feed |
+| Method | Path        | Permission     | Notes                           |
+| ------ | ----------- | -------------- | ------------------------------- |
+| `GET`  | `/timeline` | `PATIENT_READ` | Cursor-paged chronological feed |
 
 Query: `types` (multi `TimelineEventType`), `cursor`, `size` (default 20, max 100), `direction` (`DESC`\|`ASC`).
 

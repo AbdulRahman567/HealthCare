@@ -62,7 +62,6 @@ export const DASHBOARD_CARDS: DashboardCardItem[] = [
     href: '/app/appointments',
     permissions: [Permissions.APPOINTMENT_READ],
     icon: 'calendar-days',
-    comingSoon: true,
   },
   {
     id: 'billing',

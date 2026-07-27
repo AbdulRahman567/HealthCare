@@ -77,6 +77,7 @@ export const {
 
 export const patientsUiReducer = patientsUiSlice.reducer;
 
-export const selectPatientsListUi = (state: { patientsUi: PatientsUiState }) => state.patientsUi.list;
+export const selectPatientsListUi = (state: { patientsUi: PatientsUiState }) =>
+  state.patientsUi.list;
 export const selectPatientDetailTab = (state: { patientsUi: PatientsUiState }) =>
   state.patientsUi.detailTab;

@@ -34,10 +34,7 @@ import { FilterSelect } from '@/features/hospital-admin/components/shared/filter
 import { StatusBadge } from '@/features/hospital-admin/components/shared/status-badge';
 import { EnumSelect, FieldError } from '@/features/patients/components/shared/enum-select';
 import { SeverityBadge } from '@/features/patients/components/shared/severity-badge';
-import {
-  useAllergiesQuery,
-  useAllergyMutations,
-} from '@/features/patients/hooks/use-allergies';
+import { useAllergiesQuery, useAllergyMutations } from '@/features/patients/hooks/use-allergies';
 import { emptyToNull, formatDate } from '@/features/patients/lib/patient-format';
 import type { AllergyResponse } from '@/features/patients/types/allergy';
 import {

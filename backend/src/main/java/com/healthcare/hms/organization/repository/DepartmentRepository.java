@@ -2,6 +2,7 @@ package com.healthcare.hms.organization.repository;
 
 import com.healthcare.hms.organization.entity.Department;
 import com.healthcare.hms.organization.enums.StaffType;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,4 +30,6 @@ public interface DepartmentRepository extends JpaRepository<Department, UUID>, J
     );
 
     List<Department> findByTenantIdAndHeadUserId(UUID tenantId, UUID headUserId);
+
+    List<Department> findByTenantIdAndIdIn(UUID tenantId, Collection<UUID> ids);
 }

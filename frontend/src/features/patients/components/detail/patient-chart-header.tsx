@@ -162,7 +162,10 @@ export function DemographicsPanel({ patient }: DemographicsPanelProps) {
     { label: 'National ID', value: patient.nationalId || '—' },
     { label: 'Phone', value: patient.phone || '—' },
     { label: 'Email', value: patient.email || '—' },
-    { label: 'Marital status', value: patient.maritalStatus ? formatEnumLabel(patient.maritalStatus) : '—' },
+    {
+      label: 'Marital status',
+      value: patient.maritalStatus ? formatEnumLabel(patient.maritalStatus) : '—',
+    },
     { label: 'Address', value: patient.address || '—' },
     {
       label: 'Emergency contact',

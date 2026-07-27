@@ -1,5 +1,9 @@
 import { apiClient } from '@/services/http/api-client';
-import type { PatientListQuery, PatientResponse, PatientWritePayload } from '@/features/patients/types/patient';
+import type {
+  PatientListQuery,
+  PatientResponse,
+  PatientWritePayload,
+} from '@/features/patients/types/patient';
 import { toPageParams } from '@/lib/page-query';
 import type { ApiSuccessResponse, PageResponse } from '@/types/api';
 

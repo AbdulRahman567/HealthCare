@@ -17,11 +17,16 @@ function resolveTone(status: string): keyof typeof TONE_CLASS {
     case 'CONTROLLED':
     case 'RECOVERED':
     case 'ADMINISTERED':
+    case 'CONFIRMED':
+    case 'COMPLETED':
+    case 'WAITING':
       return 'success';
     case 'PENDING':
     case 'ON_LEAVE':
     case 'ONGOING':
     case 'SCHEDULED':
+    case 'CHECKED_IN':
+    case 'IN_CONSULTATION':
       return 'warning';
     case 'SUSPENDED':
     case 'LOCKED':
@@ -33,6 +38,7 @@ function resolveTone(status: string): keyof typeof TONE_CLASS {
     case 'DECEASED':
     case 'ENTERED_IN_ERROR':
     case 'REFUSED':
+    case 'MISSED':
       return 'danger';
     default:
       return 'neutral';

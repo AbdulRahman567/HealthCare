@@ -2,11 +2,17 @@ package com.healthcare.hms.patients.repository;
 
 import com.healthcare.hms.patients.entity.Patient;
 import com.healthcare.hms.patients.enums.PatientStatus;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import jakarta.persistence.LockModeType;
 
 /**
  * Persistence port for {@link Patient}.
@@ -22,6 +28,13 @@ public interface PatientRepository extends JpaRepository<Patient, UUID>, JpaSpec
 
     Optional<Patient> findByIdAndTenantId(UUID id, UUID tenantId);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT p FROM Patient p
+            WHERE p.id = :id AND p.tenantId = :tenantId
+            """)
+    Optional<Patient> findByIdAndTenantIdForUpdate(@Param("id") UUID id, @Param("tenantId") UUID tenantId);
+
     Optional<Patient> findByTenantIdAndMrnIgnoreCase(UUID tenantId, String mrn);
 
     boolean existsByTenantIdAndMrnIgnoreCase(UUID tenantId, String mrn);
@@ -35,4 +48,6 @@ public interface PatientRepository extends JpaRepository<Patient, UUID>, JpaSpec
     boolean existsByTenantIdAndPhone(UUID tenantId, String phone);
 
     long countByTenantIdAndStatus(UUID tenantId, PatientStatus status);
+
+    List<Patient> findByTenantIdAndIdIn(UUID tenantId, Collection<UUID> ids);
 }

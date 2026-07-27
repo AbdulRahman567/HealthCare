@@ -78,8 +78,7 @@ export function useMedicalHistoryMutations(patientId: string) {
       onSuccess: invalidate,
     }),
     deleteChronicCondition: useMutation({
-      mutationFn: (entryId: string) =>
-        medicalHistoryApi.deleteChronicCondition(patientId, entryId),
+      mutationFn: (entryId: string) => medicalHistoryApi.deleteChronicCondition(patientId, entryId),
       onSuccess: invalidate,
     }),
   };

@@ -23,7 +23,8 @@ export function useTimelineInfiniteQuery(
         cursor: pageParam,
       }),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => (lastPage.hasNext ? (lastPage.nextCursor ?? undefined) : undefined),
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? (lastPage.nextCursor ?? undefined) : undefined,
     enabled: enabled && Boolean(patientId),
   });
 }

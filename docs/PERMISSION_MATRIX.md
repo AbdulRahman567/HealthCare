@@ -129,7 +129,8 @@ Legend: `✓` granted by default.
 | DASHBOARD_READ      |      ✓      |       ✓        |   ✓    |   ✓   |      ✓       |    ✓     |     ✓      |     ✓      |
 | REPORT_READ         |      ✓      |       ✓        |        |       |              |          |            |     ✓      |
 
-Patient portal defaults (not shown above): `APPOINTMENT_READ`, `DOCUMENT_READ`, `NOTIFICATION_READ`, `DASHBOARD_READ`.
+Patient portal defaults (not shown above): `DOCUMENT_READ`, `NOTIFICATION_READ`, `DASHBOARD_READ`
+(Phase 6.9 revoked staff `APPOINTMENT_READ` — patient self-scoped portal APIs are not shipped yet).
 
 ## Seeding
 

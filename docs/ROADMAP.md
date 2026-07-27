@@ -188,19 +188,19 @@ Create and maintain centralized patient records.
 
 ### Sub-phases
 
-| Sub-phase | Scope                                                                                                         | Status      |
-| --------- | ------------------------------------------------------------------------------------------------------------- | ----------- |
-| 5.1       | Patient domain (entity, enums, repository, unique MRN/tenant, indexes, Flyway V18)                            | Done        |
-| 5.2       | Patient registration APIs (DTOs, validation, service, controller, mapper, Swagger; deactivate/reactivate)     | Done        |
-| 5.3       | Medical history (MedicalHistory, PastDisease, SurgeryHistory, ChronicCondition; structured; Flyway V19)       | Done        |
-| 5.4       | Allergy management (drug/food/environmental; severity/reaction; banner + critical alerts; Flyway V20)         | Done        |
-| 5.5       | Immunization records (vaccine, dose, manufacturer, batch, dates, provider; due API; Flyway V21)               | Done        |
-| 5.6       | Patient timeline (provider SPI, cursor merge, V22 allergy date indexes)                                       | Done        |
-| 5.7       | Patient search (Specifications, pagination/sort/filter, V23 indexes + dept/doctor columns)                    | Done        |
-| 5.8       | Patient Management UI (list, register, edit, chart: history/allergies/vaccinations/timeline)                  | Done        |
-| 5.9       | Patient module security review (tenant/RBAC/PHI/audit; soft-delete + critical allergy hardening)              | Done        |
-| 5.10      | Patient Management production readiness (compile/build/lifecycle review + Critical/High fixes)               | Done        |
-| 5.8+      | Documents upload, dedicated patient dashboard                                                                 | Not started |
+| Sub-phase | Scope                                                                                                     | Status      |
+| --------- | --------------------------------------------------------------------------------------------------------- | ----------- |
+| 5.1       | Patient domain (entity, enums, repository, unique MRN/tenant, indexes, Flyway V18)                        | Done        |
+| 5.2       | Patient registration APIs (DTOs, validation, service, controller, mapper, Swagger; deactivate/reactivate) | Done        |
+| 5.3       | Medical history (MedicalHistory, PastDisease, SurgeryHistory, ChronicCondition; structured; Flyway V19)   | Done        |
+| 5.4       | Allergy management (drug/food/environmental; severity/reaction; banner + critical alerts; Flyway V20)     | Done        |
+| 5.5       | Immunization records (vaccine, dose, manufacturer, batch, dates, provider; due API; Flyway V21)           | Done        |
+| 5.6       | Patient timeline (provider SPI, cursor merge, V22 allergy date indexes)                                   | Done        |
+| 5.7       | Patient search (Specifications, pagination/sort/filter, V23 indexes + dept/doctor columns)                | Done        |
+| 5.8       | Patient Management UI (list, register, edit, chart: history/allergies/vaccinations/timeline)              | Done        |
+| 5.9       | Patient module security review (tenant/RBAC/PHI/audit; soft-delete + critical allergy hardening)          | Done        |
+| 5.10      | Patient Management production readiness (compile/build/lifecycle review + Critical/High fixes)            | Done        |
+| 5.8+      | Documents upload, dedicated patient dashboard                                                             | Not started |
 
 Design reference: [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
 
@@ -229,6 +229,17 @@ Manage patient appointments and scheduling.
 ### Definition of Done
 
 - Appointment lifecycle is fully functional.
+
+### Sub-phases
+
+| Sub-phase | Scope                                                                                                         | Status |
+| --------- | ------------------------------------------------------------------------------------------------------------- | ------ |
+| 6.1–6.8   | Domain, availability, booking, queue, calendar, search, UI, reminders                                         | Done   |
+| 6.9       | Appointment module security review (tenant/RBAC/audit/doctor-scope/patient-portal; no Critical remaining)     | Done   |
+| 6.10      | Appointment module production readiness (lifecycle/queue integrity, locks, availability UI; no Critical/High) | Done   |
+
+Design reference: [APPOINTMENT_PHASE_6_9_SECURITY_REVIEW.md](./APPOINTMENT_PHASE_6_9_SECURITY_REVIEW.md),
+[APPOINTMENT_PHASE_6_10_PRODUCTION_READINESS.md](./APPOINTMENT_PHASE_6_10_PRODUCTION_READINESS.md).
 
 ---
 

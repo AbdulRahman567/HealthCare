@@ -57,7 +57,9 @@ export function formValuesToPatientPayload(values: PatientFormValues): PatientWr
   };
 }
 
-export function patientDisplayName(patient: Pick<PatientResponse, 'firstName' | 'lastName'>): string {
+export function patientDisplayName(
+  patient: Pick<PatientResponse, 'firstName' | 'lastName'>,
+): string {
   return formatPersonName(patient.firstName, patient.lastName);
 }
 

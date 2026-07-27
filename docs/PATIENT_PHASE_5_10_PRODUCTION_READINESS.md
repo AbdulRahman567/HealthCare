@@ -18,27 +18,27 @@ Remaining items are Medium/Low polish (timeline in-memory merge at very large ch
 
 ## Verification checklist
 
-| Check | Result | Notes |
-| ----- | ------ | ----- |
-| Compilation (`mvnw -DskipTests compile`) | Pass | |
-| Unit tests (`patients` package + allergy/patient service) | Pass | Includes Phase 5.10 allergy critical-flag regression |
-| Next.js `typecheck` | Pass | |
-| Next.js `build` | Pass | `/app/patients`, `/new`, `/[id]`, `/[id]/edit` present |
-| Flyway migrations V1–V24 | Pass (chain complete) | `V24__patient_national_id_unique.sql` added |
-| Docker Compose config | Pass | `docker compose config` valid |
-| Docker daemon / full stack | Blocked locally | Docker Desktop engine not running |
-| Spring Boot startup (local host MySQL) | Blocked locally | Use Compose MySQL (`hms_user` / mapped `3306`) |
-| Swagger / springdoc paths | Configured | `/swagger-ui`, `/api-docs`; patient tags annotated |
-| Patient registration / update | Pass | MRN + national ID uniqueness; soft-delete-aware DB indexes |
-| Medical history / allergies / vaccinations | Pass | ACTIVE-patient writes; soft-delete → `PATIENT_DELETE` |
-| Timeline | Pass | SPI merge + cursor page; FE invalidates after clinical CUD |
-| Search / pagination | Pass | Specs + sort allowlist + page cap 100; FE search debounced 300ms |
-| Validation | Pass | Bean Validation + clinical/immunization date constraints |
-| Audit logging | Pass | CUD + patient chart `VIEW` |
-| Tenant isolation | Pass | `TenantOwnedEntity` + explicit tenant predicates |
-| RBAC | Pass | Dual controller/service `@RequirePermission` |
-| Clean Architecture / SOLID / no circular deps | Pass | Feature packages; timeline SPI; no repository cycles |
-| No duplicate Critical/High defects | Pass | After remediation below |
+| Check                                                     | Result                | Notes                                                            |
+| --------------------------------------------------------- | --------------------- | ---------------------------------------------------------------- |
+| Compilation (`mvnw -DskipTests compile`)                  | Pass                  |                                                                  |
+| Unit tests (`patients` package + allergy/patient service) | Pass                  | Includes Phase 5.10 allergy critical-flag regression             |
+| Next.js `typecheck`                                       | Pass                  |                                                                  |
+| Next.js `build`                                           | Pass                  | `/app/patients`, `/new`, `/[id]`, `/[id]/edit` present           |
+| Flyway migrations V1–V24                                  | Pass (chain complete) | `V24__patient_national_id_unique.sql` added                      |
+| Docker Compose config                                     | Pass                  | `docker compose config` valid                                    |
+| Docker daemon / full stack                                | Blocked locally       | Docker Desktop engine not running                                |
+| Spring Boot startup (local host MySQL)                    | Blocked locally       | Use Compose MySQL (`hms_user` / mapped `3306`)                   |
+| Swagger / springdoc paths                                 | Configured            | `/swagger-ui`, `/api-docs`; patient tags annotated               |
+| Patient registration / update                             | Pass                  | MRN + national ID uniqueness; soft-delete-aware DB indexes       |
+| Medical history / allergies / vaccinations                | Pass                  | ACTIVE-patient writes; soft-delete → `PATIENT_DELETE`            |
+| Timeline                                                  | Pass                  | SPI merge + cursor page; FE invalidates after clinical CUD       |
+| Search / pagination                                       | Pass                  | Specs + sort allowlist + page cap 100; FE search debounced 300ms |
+| Validation                                                | Pass                  | Bean Validation + clinical/immunization date constraints         |
+| Audit logging                                             | Pass                  | CUD + patient chart `VIEW`                                       |
+| Tenant isolation                                          | Pass                  | `TenantOwnedEntity` + explicit tenant predicates                 |
+| RBAC                                                      | Pass                  | Dual controller/service `@RequirePermission`                     |
+| Clean Architecture / SOLID / no circular deps             | Pass                  | Feature packages; timeline SPI; no repository cycles             |
+| No duplicate Critical/High defects                        | Pass                  | After remediation below                                          |
 
 ---
 
@@ -64,13 +64,13 @@ All steps are supported by backend APIs + Patient Management UI. Clinical chart 
 
 ## Critical / High findings remediated
 
-| Sev | Issue | Fix |
-| --- | ----- | --- |
+| Sev  | Issue                                                                                                                               | Fix                                                                                                                                   |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | High | Critical allergy `criticalAlert` cleared when omitted on PUT (`null` → `false` in mapper) while guard only blocked explicit `false` | Mapper patch semantics (`resolveFlag` preserves existing); guard still requires `PATIENT_DELETE` for explicit clear; regression tests |
-| High | National ID uniqueness app-only — concurrent register/update race | Flyway `V24` soft-delete-aware `uk_patients_tenant_active_national_id` |
-| High | Deactivate patient with one click (no confirm) | Confirm dialog on chart header (aligned with clinical soft-delete UX) |
-| High | Undebounced PHI search per keystroke | 300ms debounce before Redux/query dispatch |
-| High | Timeline cache stale after allergy/history/immunization CUD | Invalidate `timelineKeys` alongside clinical query keys |
+| High | National ID uniqueness app-only — concurrent register/update race                                                                   | Flyway `V24` soft-delete-aware `uk_patients_tenant_active_national_id`                                                                |
+| High | Deactivate patient with one click (no confirm)                                                                                      | Confirm dialog on chart header (aligned with clinical soft-delete UX)                                                                 |
+| High | Undebounced PHI search per keystroke                                                                                                | 300ms debounce before Redux/query dispatch                                                                                            |
+| High | Timeline cache stale after allergy/history/immunization CUD                                                                         | Invalidate `timelineKeys` alongside clinical query keys                                                                               |
 
 ---
 
@@ -129,27 +129,27 @@ None detected among `patients` subpackages or FE hook graphs (`timelineKeys` imp
 
 ## Performance Review
 
-| Area | Assessment |
-| ---- | ---------- |
-| Search pagination | DB-level Specifications; max page 100; age→DOB range |
-| Indexes | V18–V23 search/timeline indexes; V24 national ID unique |
-| Timeline | In-memory merge — acceptable for Phase 5 chart size; revisit for large longitudinal charts |
-| FE search | Debounced 300ms to cut PHI-bearing request chatter |
-| N+1 | List endpoints return aggregates without nested entity graphs |
+| Area              | Assessment                                                                                 |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| Search pagination | DB-level Specifications; max page 100; age→DOB range                                       |
+| Indexes           | V18–V23 search/timeline indexes; V24 national ID unique                                    |
+| Timeline          | In-memory merge — acceptable for Phase 5 chart size; revisit for large longitudinal charts |
+| FE search         | Debounced 300ms to cut PHI-bearing request chatter                                         |
+| N+1               | List endpoints return aggregates without nested entity graphs                              |
 
 ---
 
 ## Database Review
 
-| Migration | Role |
-| --------- | ---- |
-| V18 | Patients + soft-delete-aware MRN unique |
-| V19 | Medical history root + entries |
-| V20 | Allergies |
-| V21 | Immunizations + dose CHECK |
-| V22 | Allergy timeline date indexes |
-| V23 | Search columns (`primary_department_id` / `primary_doctor_id`) + indexes |
-| **V24** | Soft-delete-aware national ID unique (`active_national_id_slot`) |
+| Migration | Role                                                                     |
+| --------- | ------------------------------------------------------------------------ |
+| V18       | Patients + soft-delete-aware MRN unique                                  |
+| V19       | Medical history root + entries                                           |
+| V20       | Allergies                                                                |
+| V21       | Immunizations + dose CHECK                                               |
+| V22       | Allergy timeline date indexes                                            |
+| V23       | Search columns (`primary_department_id` / `primary_doctor_id`) + indexes |
+| **V24**   | Soft-delete-aware national ID unique (`active_national_id_slot`)         |
 
 Referential integrity: FKs to `tenants` / `patients` / org tables as documented. Soft delete via `@SQLRestriction` + `deleted` columns. No physical delete APIs for patients (lifecycle deactivate/reactivate only).
 
@@ -157,13 +157,13 @@ Referential integrity: FKs to `tenants` / `patients` / org tables as documented.
 
 ## Documentation Mismatches
 
-| Item | Resolution |
-| ---- | ---------- |
-| ROADMAP ended at 5.9 (no 5.10 production readiness) | Added Phase 5.10 Done |
-| `PATIENT_MANAGEMENT.md` status 5.1–5.9 | Extended to 5.10 |
-| `DATABASE.md` national_id non-unique index only | Documented V24 unique slot |
-| Phase 5.9 claimed critical-allergy guard complete | Partial; completed in 5.10 (omit-null bypass) |
-| Swagger 409 said “Duplicate MRN” only | Updated to MRN or national ID |
+| Item                                                | Resolution                                    |
+| --------------------------------------------------- | --------------------------------------------- |
+| ROADMAP ended at 5.9 (no 5.10 production readiness) | Added Phase 5.10 Done                         |
+| `PATIENT_MANAGEMENT.md` status 5.1–5.9              | Extended to 5.10                              |
+| `DATABASE.md` national_id non-unique index only     | Documented V24 unique slot                    |
+| Phase 5.9 claimed critical-allergy guard complete   | Partial; completed in 5.10 (omit-null bypass) |
+| Swagger 409 said “Duplicate MRN” only               | Updated to MRN or national ID                 |
 
 Intentionally deferred (not mismatches): documents upload / dedicated patient dashboard (`5.8+` in ROADMAP).
 
@@ -171,14 +171,14 @@ Intentionally deferred (not mismatches): documents upload / dedicated patient da
 
 ## Production Readiness Assessment
 
-| Dimension | Rating | Comment |
-| --------- | ------ | ------- |
-| Functional completeness (Phase 5) | Ready | Register → chart clinical → search → timeline → deactivate/reactivate |
-| Security (tenant/RBAC/PHI/allergy) | Ready | 5.9 + 5.10 allergy/national-ID hardening |
-| Data integrity | Ready | Soft-delete-aware MRN + national ID uniqueness |
-| Operability | Ready with Compose | Local host MySQL/Docker Desktop may differ |
-| Observability | Partial | Actuator + audit; timeline read not VIEW-audited |
-| Documentation | Updated | This report + ROADMAP / PROJECT_CONTEXT / phasesreadme / DATABASE |
+| Dimension                          | Rating             | Comment                                                               |
+| ---------------------------------- | ------------------ | --------------------------------------------------------------------- |
+| Functional completeness (Phase 5)  | Ready              | Register → chart clinical → search → timeline → deactivate/reactivate |
+| Security (tenant/RBAC/PHI/allergy) | Ready              | 5.9 + 5.10 allergy/national-ID hardening                              |
+| Data integrity                     | Ready              | Soft-delete-aware MRN + national ID uniqueness                        |
+| Operability                        | Ready with Compose | Local host MySQL/Docker Desktop may differ                            |
+| Observability                      | Partial            | Actuator + audit; timeline read not VIEW-audited                      |
+| Documentation                      | Updated            | This report + ROADMAP / PROJECT_CONTEXT / phasesreadme / DATABASE     |
 
 **Go / No-Go:** **GO** for Phase 5 Patient Management behind Docker Compose (or equivalent env with Flyway through **V24**). Defer Phase 6+ (appointments) and `5.8+` documents/dashboard.
 

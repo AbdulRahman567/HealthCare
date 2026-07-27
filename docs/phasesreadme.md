@@ -5,8 +5,9 @@
 **Source of truth companions:** [ROADMAP.md](./ROADMAP.md), [MULTI_TENANCY.md](./MULTI_TENANCY.md), [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md), [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 **Current progress:** Phases **1 → 2.8**, **Phase 3.1–3.8** (RBAC), **Phase 4.1–4.9**
-(Hospital Administration), and **Phase 5.1–5.10** (Patient Management production readiness)
-are delivered. Appointments and later clinical modules remain **not started**.
+(Hospital Administration), **Phase 5.1–5.10** (Patient Management production readiness),
+and **Phase 6.1–6.10** (Appointments through production readiness) are delivered.
+Clinical visits and later modules remain **not started**.
 
 ---
 
@@ -56,8 +57,11 @@ are delivered. Appointments and later clinical modules remain **not started**.
 | 5.8   | Patient Management UI (list/register/edit/chart)   | Done                   |
 | 5.9   | Patient module security review                     | Done                   |
 | 5.10  | Patient Management production readiness            | Done                   |
+| 6.1–6.8 | Appointments domain → UI + reminders             | Done                   |
+| 6.9   | Appointment module security review                 | Done                   |
+| 6.10  | Appointment module production readiness            | Done                   |
 | 5.8+  | Patient documents / dedicated dashboard            | Not started            |
-| 6+    | Appointments, clinical, …                          | Not started            |
+| 7+    | Clinical visits, …                                 | Not started            |
 
 ---
 
@@ -1138,15 +1142,15 @@ issues remain.
 
 ### Findings remediated
 
-| Severity | Issue | Fix |
-| -------- | ----- | --- |
-| High | Soft-delete via `PATIENT_UPDATE` (receptionist could remove clinical rows) | Soft-delete requires `PATIENT_DELETE` |
-| High | Critical allergy deactivate/downgrade via UPDATE | Requires `PATIENT_DELETE` |
-| Medium | Patient view not audited | `AuditAction.VIEW` on chart `getById` |
-| Medium | PHI in app INFO logs / timeline notes | ID-only logs; structured timeline summaries |
-| Medium | Clinical writes on inactive patients; unused national-ID uniqueness | Active-patient guard; enforce unique national ID |
-| Medium | FE create/edit routes inherited `PATIENT_READ` | Fail-closed create/update route guards |
-| Low | Immunization admin date unbounded | `@PastOrPresent` |
+| Severity | Issue                                                                      | Fix                                              |
+| -------- | -------------------------------------------------------------------------- | ------------------------------------------------ |
+| High     | Soft-delete via `PATIENT_UPDATE` (receptionist could remove clinical rows) | Soft-delete requires `PATIENT_DELETE`            |
+| High     | Critical allergy deactivate/downgrade via UPDATE                           | Requires `PATIENT_DELETE`                        |
+| Medium   | Patient view not audited                                                   | `AuditAction.VIEW` on chart `getById`            |
+| Medium   | PHI in app INFO logs / timeline notes                                      | ID-only logs; structured timeline summaries      |
+| Medium   | Clinical writes on inactive patients; unused national-ID uniqueness        | Active-patient guard; enforce unique national ID |
+| Medium   | FE create/edit routes inherited `PATIENT_READ`                             | Fail-closed create/update route guards           |
+| Low      | Immunization admin date unbounded                                          | `@PastOrPresent`                                 |
 
 Full report: [PATIENT_PHASE_5_9_SECURITY_REVIEW.md](./PATIENT_PHASE_5_9_SECURITY_REVIEW.md)
 
@@ -1167,13 +1171,13 @@ issues remain. **No new feature modules.**
 
 ### Findings remediated
 
-| Severity | Issue | Fix |
-| -------- | ----- | --- |
-| High | Critical allergy flag cleared when `criticalAlert` omitted on PUT | Mapper patch semantics + regression tests |
-| High | National ID uniqueness race (app-only) | Flyway `V24` soft-delete-aware unique slot |
-| High | Deactivate without confirmation | Chart header confirm dialog |
-| High | Undebounced PHI search | 300ms debounce on directory search |
-| High | Stale timeline after clinical CUD | Invalidate timeline query keys |
+| Severity | Issue                                                             | Fix                                        |
+| -------- | ----------------------------------------------------------------- | ------------------------------------------ |
+| High     | Critical allergy flag cleared when `criticalAlert` omitted on PUT | Mapper patch semantics + regression tests  |
+| High     | National ID uniqueness race (app-only)                            | Flyway `V24` soft-delete-aware unique slot |
+| High     | Deactivate without confirmation                                   | Chart header confirm dialog                |
+| High     | Undebounced PHI search                                            | 300ms debounce on directory search         |
+| High     | Stale timeline after clinical CUD                                 | Invalidate timeline query keys             |
 
 Full report: [PATIENT_PHASE_5_10_PRODUCTION_READINESS.md](./PATIENT_PHASE_5_10_PRODUCTION_READINESS.md)
 
@@ -1181,6 +1185,58 @@ Full report: [PATIENT_PHASE_5_10_PRODUCTION_READINESS.md](./PATIENT_PHASE_5_10_P
 
 - No Critical or High Patient module production-readiness issues remain
 - Flyway chain through V24; FE/BE builds verified
+
+---
+
+## Phase 6.9 — Appointment module security review
+
+### Objective
+
+Complete security review of Appointment, Availability, Booking, Queue, Calendar, Search,
+and Reminder surfaces covering tenant isolation, RBAC, audit logs, authorization, input
+validation, OWASP, and sensitive data exposure — then remediate until no Critical issues
+remain.
+
+### Findings remediated
+
+| Severity | Issue                                                                      | Fix                                                                 |
+| -------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Critical | Patient portal `APPOINTMENT_READ` without self-scoping                     | Revoke staff grant (matrix + Flyway V31); deny PATIENT on staff APIs |
+| High     | Doctor horizontal access to colleagues’ appointments/queue/calendar        | `AppointmentActorScopeSupport` own-doctor enforcement               |
+| Medium   | Missing VIEW audit; PHI in email logs; schedule INACTIVE via UPDATE        | VIEW audit; mask recipients; DELETE required for deactivate         |
+| Medium   | Reminder queries without explicit tenantId                                 | Tenant-scoped repository methods                                    |
+
+Full report: [APPOINTMENT_PHASE_6_9_SECURITY_REVIEW.md](./APPOINTMENT_PHASE_6_9_SECURITY_REVIEW.md)
+
+### Definition of Done (met)
+
+- No Critical security issues remain in the Appointment module
+
+---
+
+## Phase 6.10 — Appointment module production readiness
+
+### Objective
+
+End-to-end production readiness review of Appointment Management (Phases 6.1–6.9):
+compilation, Flyway, Docker contract, Next.js build, Swagger, Hospital Admin OPD
+lifecycle simulation, tenant/RBAC/audit/Clean Architecture — remediate until no
+Critical or High issues remain. **No new clinical feature modules.**
+
+### Findings remediated
+
+| Severity | Issue | Fix |
+| -------- | ----- | --- |
+| Critical | Appointment cancel left live queue; queue cancel blocked re-check-in | Terminate + soft-delete queue entries; Flyway V32 unique slot |
+| High | Double-booking / double IN_CONSULTATION races | Pessimistic locks on patient/doctor and doctor-day queue |
+| High | No availability UI; queue Missed/Cancel without confirm; PHI fan-out | Availability page; confirm dialog; server label enrichers |
+
+Full report: [APPOINTMENT_PHASE_6_10_PRODUCTION_READINESS.md](./APPOINTMENT_PHASE_6_10_PRODUCTION_READINESS.md)
+
+### Definition of Done (met)
+
+- No Critical or High Appointment module production-readiness issues remain
+- Flyway chain through V32; FE/BE build gates verified
 
 ---
 
@@ -1278,6 +1334,15 @@ gap and Flyway/`HOSPITAL_DELETE` drift were fixed. Full checklist:
 | `V21__patient_immunizations.sql`                 | 5.5   | Patient immunizations (dose, lot, next-due, provider)                     |
 | `V22__patient_timeline_indexes.sql`              | 5.6   | Allergy onset/created_at indexes for timeline fan-out                     |
 | `V23__patient_search.sql`                        | 5.7   | Patient search indexes + primary department/doctor columns                |
+| `V24__patient_national_id_unique.sql`            | 5.10  | Soft-delete-aware unique national ID                                      |
+| `V25__appointments.sql`                          | 6.1   | Appointments table                                                        |
+| `V26__doctor_availability.sql`                   | 6.2   | Doctor schedules, windows, breaks, unavailability                         |
+| `V27__appointment_booking.sql`                   | 6.3   | Booking constraints / indexes                                             |
+| `V28__doctor_queue.sql`                          | 6.4   | Doctor day queue + entries                                                |
+| `V29__appointment_search.sql`                    | 6.6   | Appointment search indexes                                                |
+| `V30__appointment_reminders.sql`                 | 6.8   | Appointment reminder rows + indexes                                       |
+| `V31__revoke_patient_appointment_read.sql`       | 6.9   | Revoke Patient portal staff `APPOINTMENT_READ`                            |
+| `V32__queue_entry_active_appointment_unique.sql` | 6.10  | Soft-delete-aware queue entry ↔ appointment unique slot                   |
 
 ---
 
@@ -1295,7 +1360,7 @@ com.healthcare.hms
 ├── common/        # API envelope, exceptions, persistence bases, email, health
 ├── audit/         # Audit log write path
 ├── config/        # OpenAPI
-├── appointments/  # (empty — Phase 6)
+├── appointments/  # Appointment domain + availability + booking + queue + calendar + search + reminders (6.1–6.9)
 ├── visits/        # (empty — Phase 7)
 ├── prescriptions/ # (empty — later)
 ├── laboratory/    # (empty — later)
@@ -1340,7 +1405,7 @@ Response → TenantContextHolder.clear()
 | 3.x remaining | Multi-hospital ops beyond default hospital                           |
 | 4.10+         | Staff UX, scheduling hooks, richer profiles                          |
 | 5.8+          | Patient documents, dedicated patient dashboard                       |
-| 6             | Appointments                                                         |
+| 6.10+         | Patient portal self-scoped appointments (if needed)                  |
 | 7             | Clinical visits                                                      |
 | 8+            | Prescriptions, lab, imaging, billing, notifications UI, analytics, … |
 | 2.x remaining | Super Admin JWT/platform console, cookie-based sessions              |
@@ -1358,4 +1423,4 @@ Response → TenantContextHolder.clear()
 
 ---
 
-_Last updated: EQB RBAC validation complete (2026-07)._
+_Last updated: Phase 6.10 Appointment production readiness complete (2026-07)._

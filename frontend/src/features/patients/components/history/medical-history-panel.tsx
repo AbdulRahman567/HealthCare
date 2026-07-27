@@ -338,15 +338,30 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
           </TabsList>
           <Can permissions={[Permissions.PATIENT_UPDATE]}>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" size="sm" variant="outline" onClick={() => openCreate('disease')}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => openCreate('disease')}
+              >
                 <PlusIcon data-icon="inline-start" />
                 Disease
               </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => openCreate('surgery')}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => openCreate('surgery')}
+              >
                 <PlusIcon data-icon="inline-start" />
                 Surgery
               </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => openCreate('chronic')}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => openCreate('chronic')}
+              >
                 <PlusIcon data-icon="inline-start" />
                 Chronic
               </Button>
@@ -477,7 +492,9 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isBusy}>
-                  {isBusy ? <Loader2Icon className="animate-spin" data-icon="inline-start" /> : null}
+                  {isBusy ? (
+                    <Loader2Icon className="animate-spin" data-icon="inline-start" />
+                  ) : null}
                   Save
                 </Button>
               </DialogFooter>
@@ -522,7 +539,9 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isBusy}>
-                  {isBusy ? <Loader2Icon className="animate-spin" data-icon="inline-start" /> : null}
+                  {isBusy ? (
+                    <Loader2Icon className="animate-spin" data-icon="inline-start" />
+                  ) : null}
                   Save
                 </Button>
               </DialogFooter>
@@ -563,7 +582,9 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isBusy}>
-                  {isBusy ? <Loader2Icon className="animate-spin" data-icon="inline-start" /> : null}
+                  {isBusy ? (
+                    <Loader2Icon className="animate-spin" data-icon="inline-start" />
+                  ) : null}
                   Save
                 </Button>
               </DialogFooter>
@@ -595,10 +616,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
   );
 }
 
-type HistoryRow =
-  | PastDiseaseResponse
-  | SurgeryHistoryResponse
-  | ChronicConditionResponse;
+type HistoryRow = PastDiseaseResponse | SurgeryHistoryResponse | ChronicConditionResponse;
 
 function HistoryTable({
   rows,
@@ -616,7 +634,9 @@ function HistoryTable({
   onDelete: (row: HistoryRow) => void;
 }) {
   if (rows.length === 0) {
-    return <EmptyState title={emptyTitle} description="Add structured entries to build the chart." />;
+    return (
+      <EmptyState title={emptyTitle} description="Add structured entries to build the chart." />
+    );
   }
 
   return (

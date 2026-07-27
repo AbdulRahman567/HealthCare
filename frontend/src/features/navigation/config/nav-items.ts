@@ -80,7 +80,6 @@ export const WORKSPACE_NAVIGATION: WorkspaceNavItem[] = [
     permissions: [Permissions.APPOINTMENT_READ],
     icon: 'calendar-days',
     section: 'clinical',
-    comingSoon: true,
   },
   {
     id: 'billing',

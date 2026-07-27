@@ -51,10 +51,9 @@ export const QUICK_ACTIONS: QuickActionItem[] = [
     id: 'book-appointment',
     label: 'Book appointment',
     description: 'Schedule a patient visit',
-    href: '/app/appointments',
+    href: '/app/appointments/new',
     permissions: [Permissions.APPOINTMENT_CREATE],
     icon: 'calendar-plus',
-    comingSoon: true,
   },
   {
     id: 'edit-hospital',

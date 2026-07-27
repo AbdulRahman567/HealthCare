@@ -35,6 +35,7 @@ import org.hibernate.annotations.SQLRestriction;
                 @Index(name = "idx_users_tenant_id", columnList = "tenant_id"),
                 @Index(name = "idx_users_email", columnList = "email"),
                 @Index(name = "idx_users_status", columnList = "status"),
+                @Index(name = "idx_users_tenant_last_first", columnList = "tenant_id, last_name, first_name"),
                 @Index(name = "idx_users_deleted", columnList = "deleted")
         }
 )

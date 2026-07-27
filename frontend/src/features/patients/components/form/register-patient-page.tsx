@@ -45,11 +45,7 @@ export function RegisterPatientPage() {
         title="Register patient"
         description="Create a new patient chart with demographics and emergency contact details."
         actions={
-          <Button
-            nativeButton={false}
-            variant="outline"
-            render={<Link href="/app/patients" />}
-          >
+          <Button nativeButton={false} variant="outline" render={<Link href="/app/patients" />}>
             Back to list
           </Button>
         }
@@ -62,11 +58,7 @@ export function RegisterPatientPage() {
       >
         <PatientFormFields form={form} idPrefix="register" />
         <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
-          <Button
-            nativeButton={false}
-            variant="outline"
-            render={<Link href="/app/patients" />}
-          >
+          <Button nativeButton={false} variant="outline" render={<Link href="/app/patients" />}>
             Cancel
           </Button>
           <Button type="submit" disabled={isBusy}>

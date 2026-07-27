@@ -1,10 +1,6 @@
 import { z } from 'zod';
 
-import {
-  BLOOD_GROUPS,
-  GENDERS,
-  MARITAL_STATUSES,
-} from '@/features/patients/types/enums';
+import { BLOOD_GROUPS, GENDERS, MARITAL_STATUSES } from '@/features/patients/types/enums';
 
 const mrnPattern = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 const phonePattern = /^\+?[0-9][0-9\s().-]{6,28}$/;

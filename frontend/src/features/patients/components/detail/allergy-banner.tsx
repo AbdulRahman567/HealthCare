@@ -35,7 +35,10 @@ export function AllergyBanner({ patientId }: AllergyBannerProps) {
         <ShieldAlertIcon />
         <AlertTitle>Allergy banner unavailable</AlertTitle>
         <AlertDescription>
-          {getErrorMessage(bannerQuery.error, 'Unable to load allergy alerts. Do not prescribe until reviewed.')}
+          {getErrorMessage(
+            bannerQuery.error,
+            'Unable to load allergy alerts. Do not prescribe until reviewed.',
+          )}
         </AlertDescription>
       </Alert>
     );
@@ -86,25 +89,16 @@ export function AllergyBanner({ patientId }: AllergyBannerProps) {
           </div>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {banner.hasCriticalAlerts ? (
-            <Badge variant="destructive">Critical</Badge>
-          ) : null}
-          {banner.noKnownDrugAllergies ? (
-            <Badge variant="secondary">NKDA</Badge>
-          ) : null}
-          {banner.hasActiveDrugAllergies ? (
-            <Badge variant="secondary">Drug allergies</Badge>
-          ) : null}
+          {banner.hasCriticalAlerts ? <Badge variant="destructive">Critical</Badge> : null}
+          {banner.noKnownDrugAllergies ? <Badge variant="secondary">NKDA</Badge> : null}
+          {banner.hasActiveDrugAllergies ? <Badge variant="secondary">Drug allergies</Badge> : null}
         </div>
       </div>
 
       {hasBannerAllergies ? (
         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
           {banner.bannerAllergies.map((allergy) => (
-            <li
-              key={allergy.id}
-              className="rounded-lg border bg-background/80 px-3 py-2 text-sm"
-            >
+            <li key={allergy.id} className="rounded-lg border bg-background/80 px-3 py-2 text-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">{allergy.allergenName}</span>
                 <SeverityBadge severity={allergy.severity} />

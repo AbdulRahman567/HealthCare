@@ -33,6 +33,21 @@ export const PROTECTED_ROUTES: Record<string, AccessRequirement> = {
   '/app/patients': {
     permissions: [Permissions.PATIENT_READ],
   },
+  '/app/appointments/new': {
+    permissions: [Permissions.APPOINTMENT_CREATE],
+  },
+  '/app/appointments/list': {
+    permissions: [Permissions.APPOINTMENT_READ],
+  },
+  '/app/appointments/calendar': {
+    permissions: [Permissions.APPOINTMENT_READ],
+  },
+  '/app/appointments/queue': {
+    permissions: [Permissions.APPOINTMENT_READ],
+  },
+  '/app/appointments/availability': {
+    permissions: [Permissions.APPOINTMENT_READ],
+  },
   '/app/appointments': {
     permissions: [Permissions.APPOINTMENT_READ],
   },
@@ -45,6 +60,7 @@ export type RouteAccessResolution =
   { status: 'allow'; requirement: AccessRequirement } | { status: 'deny' };
 
 const PATIENT_EDIT_PATH = /^\/app\/patients\/[^/]+\/edit$/;
+const APPOINTMENT_EDIT_PATH = /^\/app\/appointments\/[^/]+\/edit$/;
 
 /**
  * Resolves access for a pathname under the protected app shell.
@@ -59,6 +75,13 @@ export function resolveRouteAccess(pathname: string): RouteAccessResolution {
     return {
       status: 'allow',
       requirement: { permissions: [Permissions.PATIENT_UPDATE] },
+    };
+  }
+
+  if (APPOINTMENT_EDIT_PATH.test(pathname)) {
+    return {
+      status: 'allow',
+      requirement: { permissions: [Permissions.APPOINTMENT_UPDATE] },
     };
   }
 

@@ -37,9 +37,9 @@ public class SmtpEmailSender implements EmailSender {
             helper.setSubject(message.subject());
             helper.setText(message.textBody(), message.htmlBody());
             javaMailSender.send(mimeMessage);
-            log.info("Email sent to={}", message.to());
+            log.info("Email sent to={}", EmailLogRedaction.maskRecipient(message.to()));
         } catch (final MessagingException | MailException exception) {
-            log.error("Failed to send email to={}", message.to(), exception);
+            log.error("Failed to send email to={}", EmailLogRedaction.maskRecipient(message.to()), exception);
             throw new EmailDeliveryException("Failed to deliver email", exception);
         }
     }

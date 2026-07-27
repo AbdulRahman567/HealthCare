@@ -1,5 +1,7 @@
 // @ts-check
-const nextJest = require('next/jest');
+// next/jest is a default export; under @ts-check + bundler resolution,
+// require('next/jest') is typed as the module namespace (not callable).
+const nextJest = require('next/jest').default;
 
 const createJestConfig = nextJest({
   dir: './',

@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 
+import { appointmentsUiReducer } from '@/features/appointments/store/appointments-ui-slice';
 import { authorizationReducer } from '@/features/authorization/store/authorization-slice';
 import { hospitalAdminUiReducer } from '@/features/hospital-admin/store/hospital-admin-ui-slice';
 import { patientsUiReducer } from '@/features/patients/store/patients-ui-slice';
@@ -9,6 +10,7 @@ export const store = configureStore({
     authorization: authorizationReducer,
     hospitalAdminUi: hospitalAdminUiReducer,
     patientsUi: patientsUiReducer,
+    appointmentsUi: appointmentsUiReducer,
   },
   devTools: process.env.NODE_ENV !== 'production',
 });
