@@ -42,18 +42,22 @@ import {
   CLINICAL_CONDITION_STATUSES,
   CLINICAL_SEVERITIES,
   DISEASE_CATEGORIES,
+  FAMILY_RELATIONS,
   PROCEDURE_CATEGORIES,
 } from '@/features/patients/types/enums';
 import type {
   ChronicConditionResponse,
+  FamilyHistoryResponse,
   PastDiseaseResponse,
   SurgeryHistoryResponse,
 } from '@/features/patients/types/medical-history';
 import {
   chronicConditionFormSchema,
+  familyHistoryFormSchema,
   pastDiseaseFormSchema,
   surgeryFormSchema,
   type ChronicConditionFormValues,
+  type FamilyHistoryFormValues,
   type PastDiseaseFormValues,
   type SurgeryFormValues,
 } from '@/features/patients/validation/medical-history-schema';
@@ -64,7 +68,7 @@ type MedicalHistoryPanelProps = {
   patientId: string;
 };
 
-type HistoryKind = 'disease' | 'surgery' | 'chronic';
+type HistoryKind = 'disease' | 'surgery' | 'chronic' | 'family';
 
 const emptyClinical = {
   diagnosisDate: '',
@@ -82,6 +86,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
   const [editingDisease, setEditingDisease] = useState<PastDiseaseResponse | null>(null);
   const [editingSurgery, setEditingSurgery] = useState<SurgeryHistoryResponse | null>(null);
   const [editingChronic, setEditingChronic] = useState<ChronicConditionResponse | null>(null);
+  const [editingFamily, setEditingFamily] = useState<FamilyHistoryResponse | null>(null);
   const [deleting, setDeleting] = useState<{ kind: HistoryKind; id: string; label: string } | null>(
     null,
   );
@@ -111,6 +116,16 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
       conditionName: '',
       diseaseCategory: 'OTHER',
       conditionCode: '',
+      ...emptyClinical,
+    },
+  });
+  const familyForm = useForm<FamilyHistoryFormValues>({
+    resolver: zodResolver(familyHistoryFormSchema),
+    defaultValues: {
+      diseaseName: '',
+      diseaseCategory: 'OTHER',
+      diseaseCode: '',
+      familyRelation: 'OTHER',
       ...emptyClinical,
     },
   });
@@ -184,15 +199,40 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
             },
       );
     }
+    if (kind === 'family') {
+      familyForm.reset(
+        editingFamily
+          ? {
+              diseaseName: editingFamily.diseaseName,
+              diseaseCategory: editingFamily.diseaseCategory,
+              diseaseCode: editingFamily.diseaseCode ?? '',
+              familyRelation: editingFamily.familyRelation,
+              diagnosisDate: editingFamily.diagnosisDate,
+              recoveryDate: editingFamily.recoveryDate ?? '',
+              severity: editingFamily.severity,
+              conditionStatus: editingFamily.conditionStatus,
+              clinicalNotes: editingFamily.clinicalNotes ?? '',
+            }
+          : {
+              diseaseName: '',
+              diseaseCategory: 'OTHER',
+              diseaseCode: '',
+              familyRelation: 'OTHER',
+              ...emptyClinical,
+            },
+      );
+    }
   }, [
     dialogOpen,
     kind,
     editingDisease,
     editingSurgery,
     editingChronic,
+    editingFamily,
     diseaseForm,
     surgeryForm,
     chronicForm,
+    familyForm,
   ]);
 
   const openCreate = (nextKind: HistoryKind) => {
@@ -200,6 +240,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
     setEditingDisease(null);
     setEditingSurgery(null);
     setEditingChronic(null);
+    setEditingFamily(null);
     setDialogOpen(true);
   };
 
@@ -212,7 +253,10 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
     mutations.deleteSurgery.isPending ||
     mutations.createChronicCondition.isPending ||
     mutations.updateChronicCondition.isPending ||
-    mutations.deleteChronicCondition.isPending;
+    mutations.deleteChronicCondition.isPending ||
+    mutations.createFamilyHistory.isPending ||
+    mutations.updateFamilyHistory.isPending ||
+    mutations.deleteFamilyHistory.isPending;
 
   const onSubmitDisease = diseaseForm.handleSubmit(async (values) => {
     const payload = {
@@ -293,6 +337,36 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
     }
   });
 
+  const onSubmitFamily = familyForm.handleSubmit(async (values) => {
+    const payload = {
+      diseaseName: values.diseaseName.trim(),
+      diseaseCategory: values.diseaseCategory,
+      diseaseCode: emptyToNull(values.diseaseCode),
+      familyRelation: values.familyRelation,
+      diagnosisDate: values.diagnosisDate,
+      recoveryDate: emptyToNull(values.recoveryDate),
+      severity: values.severity,
+      conditionStatus: values.conditionStatus,
+      clinicalNotes: emptyToNull(values.clinicalNotes),
+    };
+    try {
+      if (editingFamily) {
+        await mutations.updateFamilyHistory.mutateAsync({
+          entryId: editingFamily.id,
+          payload,
+        });
+        toast.success('Family history updated');
+      } else {
+        await mutations.createFamilyHistory.mutateAsync(payload);
+        toast.success('Family history added');
+      }
+      setDialogOpen(false);
+      setEditingFamily(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Unable to save family history'));
+    }
+  });
+
   const onDelete = async () => {
     if (!deleting) {
       return;
@@ -302,8 +376,10 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
         await mutations.deletePastDisease.mutateAsync(deleting.id);
       } else if (deleting.kind === 'surgery') {
         await mutations.deleteSurgery.mutateAsync(deleting.id);
-      } else {
+      } else if (deleting.kind === 'chronic') {
         await mutations.deleteChronicCondition.mutateAsync(deleting.id);
+      } else {
+        await mutations.deleteFamilyHistory.mutateAsync(deleting.id);
       }
       toast.success('Entry removed');
       setDeleting(null);
@@ -326,6 +402,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
   }
 
   const history = historyQuery.data;
+  const familyHistories = history?.familyHistories ?? [];
 
   return (
     <div className="space-y-4">
@@ -335,6 +412,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
             <TabsTrigger value="diseases">Past diseases</TabsTrigger>
             <TabsTrigger value="surgeries">Surgeries</TabsTrigger>
             <TabsTrigger value="chronic">Chronic</TabsTrigger>
+            <TabsTrigger value="family">Family</TabsTrigger>
           </TabsList>
           <Can permissions={[Permissions.PATIENT_UPDATE]}>
             <div className="flex flex-wrap gap-2">
@@ -365,6 +443,15 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
                 <PlusIcon data-icon="inline-start" />
                 Chronic
               </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => openCreate('family')}
+              >
+                <PlusIcon data-icon="inline-start" />
+                Family
+              </Button>
             </div>
           </Can>
         </div>
@@ -380,6 +467,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
               setEditingDisease(row as PastDiseaseResponse);
               setEditingSurgery(null);
               setEditingChronic(null);
+              setEditingFamily(null);
               setDialogOpen(true);
             }}
             onDelete={(row) =>
@@ -402,6 +490,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
               setEditingSurgery(row as SurgeryHistoryResponse);
               setEditingDisease(null);
               setEditingChronic(null);
+              setEditingFamily(null);
               setDialogOpen(true);
             }}
             onDelete={(row) =>
@@ -424,6 +513,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
               setEditingChronic(row as ChronicConditionResponse);
               setEditingDisease(null);
               setEditingSurgery(null);
+              setEditingFamily(null);
               setDialogOpen(true);
             }}
             onDelete={(row) =>
@@ -431,6 +521,30 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
                 kind: 'chronic',
                 id: row.id,
                 label: (row as ChronicConditionResponse).conditionName,
+              })
+            }
+          />
+        </TabsContent>
+        <TabsContent value="family" className="mt-4">
+          <HistoryTable
+            emptyTitle="No family history"
+            rows={familyHistories}
+            nameKey="diseaseName"
+            categoryKey="diseaseCategory"
+            relationKey="familyRelation"
+            onEdit={(row) => {
+              setKind('family');
+              setEditingFamily(row as FamilyHistoryResponse);
+              setEditingDisease(null);
+              setEditingSurgery(null);
+              setEditingChronic(null);
+              setDialogOpen(true);
+            }}
+            onDelete={(row) =>
+              setDeleting({
+                kind: 'family',
+                id: row.id,
+                label: (row as FamilyHistoryResponse).diseaseName,
               })
             }
           />
@@ -449,9 +563,13 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
                   ? editingSurgery
                     ? 'Edit surgery'
                     : 'Add surgery'
-                  : editingChronic
-                    ? 'Edit chronic condition'
-                    : 'Add chronic condition'}
+                  : kind === 'chronic'
+                    ? editingChronic
+                      ? 'Edit chronic condition'
+                      : 'Add chronic condition'
+                    : editingFamily
+                      ? 'Edit family history'
+                      : 'Add family history'}
             </DialogTitle>
             <DialogDescription>
               Structured clinical history supports searchable, auditable chart entries.
@@ -590,6 +708,61 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
               </DialogFooter>
             </form>
           ) : null}
+
+          {kind === 'family' ? (
+            <form className="grid gap-4" onSubmit={onSubmitFamily} noValidate>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="family-disease-name">Disease name</Label>
+                  <Input id="family-disease-name" {...familyForm.register('diseaseName')} />
+                  <FieldError message={familyForm.formState.errors.diseaseName?.message} />
+                </div>
+                <EnumSelect
+                  label="Relation"
+                  value={familyForm.watch('familyRelation')}
+                  onValueChange={(value) =>
+                    familyForm.setValue(
+                      'familyRelation',
+                      value as FamilyHistoryFormValues['familyRelation'],
+                      { shouldValidate: true },
+                    )
+                  }
+                  options={FAMILY_RELATIONS}
+                />
+                <EnumSelect
+                  label="Category"
+                  value={familyForm.watch('diseaseCategory')}
+                  onValueChange={(value) =>
+                    familyForm.setValue(
+                      'diseaseCategory',
+                      value as FamilyHistoryFormValues['diseaseCategory'],
+                      { shouldValidate: true },
+                    )
+                  }
+                  options={DISEASE_CATEGORIES}
+                />
+                <div className="space-y-2">
+                  <Label htmlFor="family-disease-code">Clinical code</Label>
+                  <Input id="family-disease-code" {...familyForm.register('diseaseCode')} />
+                </div>
+                <SharedClinicalFields
+                  form={familyForm as unknown as UseFormReturn<SharedClinicalValues>}
+                  idPrefix="family"
+                />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isBusy}>
+                  {isBusy ? (
+                    <Loader2Icon className="animate-spin" data-icon="inline-start" />
+                  ) : null}
+                  Save
+                </Button>
+              </DialogFooter>
+            </form>
+          ) : null}
         </DialogContent>
       </Dialog>
 
@@ -616,13 +789,18 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
   );
 }
 
-type HistoryRow = PastDiseaseResponse | SurgeryHistoryResponse | ChronicConditionResponse;
+type HistoryRow =
+  | PastDiseaseResponse
+  | SurgeryHistoryResponse
+  | ChronicConditionResponse
+  | FamilyHistoryResponse;
 
 function HistoryTable({
   rows,
   emptyTitle,
   nameKey,
   categoryKey,
+  relationKey,
   onEdit,
   onDelete,
 }: {
@@ -630,6 +808,7 @@ function HistoryTable({
   emptyTitle: string;
   nameKey: 'diseaseName' | 'procedureName' | 'conditionName';
   categoryKey: 'diseaseCategory' | 'procedureCategory';
+  relationKey?: 'familyRelation';
   onEdit: (row: HistoryRow) => void;
   onDelete: (row: HistoryRow) => void;
 }) {
@@ -645,6 +824,7 @@ function HistoryTable({
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
+            {relationKey ? <TableHead>Relation</TableHead> : null}
             <TableHead>Category</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Severity</TableHead>
@@ -656,18 +836,25 @@ function HistoryTable({
           {rows.map((row) => {
             const name =
               nameKey === 'diseaseName'
-                ? (row as PastDiseaseResponse).diseaseName
+                ? (row as PastDiseaseResponse | FamilyHistoryResponse).diseaseName
                 : nameKey === 'procedureName'
                   ? (row as SurgeryHistoryResponse).procedureName
                   : (row as ChronicConditionResponse).conditionName;
             const category =
               categoryKey === 'procedureCategory'
                 ? (row as SurgeryHistoryResponse).procedureCategory
-                : (row as PastDiseaseResponse | ChronicConditionResponse).diseaseCategory;
+                : (row as PastDiseaseResponse | ChronicConditionResponse | FamilyHistoryResponse)
+                    .diseaseCategory;
+            const relation = relationKey
+              ? (row as FamilyHistoryResponse).familyRelation
+              : undefined;
 
             return (
               <TableRow key={row.id}>
                 <TableCell className="font-medium">{name}</TableCell>
+                {relationKey ? (
+                  <TableCell>{formatEnumLabel(relation ?? '')}</TableCell>
+                ) : null}
                 <TableCell>{formatEnumLabel(category)}</TableCell>
                 <TableCell>{formatDate(row.diagnosisDate)}</TableCell>
                 <TableCell>

@@ -51,6 +51,18 @@ export const PROTECTED_ROUTES: Record<string, AccessRequirement> = {
   '/app/appointments': {
     permissions: [Permissions.APPOINTMENT_READ],
   },
+  '/app/clinical/new': {
+    permissions: [Permissions.VISIT_CREATE],
+  },
+  '/app/clinical/follow-ups': {
+    permissions: [Permissions.VISIT_READ],
+  },
+  '/app/clinical': {
+    permissions: [Permissions.VISIT_READ],
+  },
+  '/app/prescriptions': {
+    permissions: [Permissions.PRESCRIPTION_READ],
+  },
   '/app/billing': {
     permissions: [Permissions.BILLING_READ],
   },

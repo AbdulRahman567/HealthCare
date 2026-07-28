@@ -133,7 +133,10 @@ export function AvailabilityPage() {
       </div>
 
       {!doctorId ? (
-        <EmptyState title="Select a doctor" description="Choose a doctor to view or publish schedules." />
+        <EmptyState
+          title="Select a doctor"
+          description="Choose a doctor to view or publish schedules."
+        />
       ) : (
         <>
           <Can permissions={[Permissions.APPOINTMENT_CREATE]}>
@@ -193,9 +196,14 @@ export function AvailabilityPage() {
           </Can>
 
           {schedulesQuery.isLoading ? (
-            <div className="text-muted-foreground py-12 text-center text-sm">Loading schedules…</div>
+            <div className="text-muted-foreground py-12 text-center text-sm">
+              Loading schedules…
+            </div>
           ) : schedulesQuery.isError ? (
-            <EmptyState title="Unable to load schedules" description={getErrorMessage(schedulesQuery.error)} />
+            <EmptyState
+              title="Unable to load schedules"
+              description={getErrorMessage(schedulesQuery.error)}
+            />
           ) : (schedulesQuery.data?.length ?? 0) === 0 ? (
             <EmptyState
               title="No schedules published"

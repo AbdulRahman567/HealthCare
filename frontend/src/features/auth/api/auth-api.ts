@@ -11,6 +11,7 @@ import type {
   UserProfile,
   VerifyEmailPayload,
 } from '@/features/auth/types/auth.types';
+import { clearAllClinicalDrafts } from '@/features/clinical/lib/draft-storage';
 import { authTokenStore } from '@/lib/auth-token';
 
 export const authApi = {
@@ -95,6 +96,7 @@ export const authApi = {
       await apiClient.post<ApiSuccessResponse<null>>('/auth/logout', { refreshToken });
     } finally {
       authTokenStore.clear();
+      clearAllClinicalDrafts();
     }
   },
 };

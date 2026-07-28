@@ -252,7 +252,7 @@ Organizational employment and departments live in `com.healthcare.hms.organizati
 separate from the hospital profile module (`hospitals`) and identity/RBAC (`users`).
 Phase 4.9 production readiness: accept-invitation UI, soft-delete-aware staff↔user
 uniqueness (Flyway V17), invitation expiry persistence, and user-lifecycle org hooks.
-See [HOSPITAL_ADMIN_PHASE_4_9_REVIEW.md](./HOSPITAL_ADMIN_PHASE_4_9_REVIEW.md).
+See [HOSPITAL_ORGANIZATION.md](./HOSPITAL_ORGANIZATION.md).
 
 ```
 organization
@@ -281,15 +281,10 @@ Patient Management UI live in `com.healthcare.hms.patients` with frontend
 `features/patients`. Phase 5.7 adds `PatientSpecifications` +
 `GET /api/v1/patients` with DB-level pagination/sorting/filtering (Flyway `V23`).
 Phase 5.8 ships list/register/edit/chart surfaces (allergy banner on chart open).
-Phase 5.9 security review hardens soft-delete RBAC, critical-allergy guards,
-PHI logging, and view audit — see
-[PATIENT_PHASE_5_9_SECURITY_REVIEW.md](./PATIENT_PHASE_5_9_SECURITY_REVIEW.md).
-Phase 5.10 production readiness closes remaining High defects (national-ID
-unique constraint, allergy flag patch semantics, FE deactivate confirm /
-search debounce / timeline cache) — see
-[PATIENT_PHASE_5_10_PRODUCTION_READINESS.md](./PATIENT_PHASE_5_10_PRODUCTION_READINESS.md).
-Visits remain Phase 7. See
-[PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
+Phase 5.9–5.10 security and production hardening (soft-delete RBAC, critical-allergy
+guards, national-ID unique constraint, FE chart UX) and Phase 8 family history
+(`FamilyHistory`, Flyway `V39`) are documented in
+[PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md). Visits remain Phase 7.
 
 ```
 patients
@@ -309,7 +304,24 @@ patients
 - Immunizations track vaccine, dose, manufacturer, batch, administration/next-due dates, and provider.
 - Timeline merges clinical events by date via providers; cursor-paged; no materialised event table.
 - Search uses Specifications only — age converted to DOB range; no in-memory filtering.
-- Visits remain a later phase.
+- Consultation encounters are Phase 7 — see [CLINICAL_WORKFLOW.md](./CLINICAL_WORKFLOW.md).
+
+### Clinical Workflow (Phase 7.1)
+
+Consultation encounters, structured diagnoses, SOAP notes, vitals, and follow-up
+plans live in `com.healthcare.hms.clinical`. Phase 7.1 delivers entities, enums,
+repositories, and Flyway `V33` — no APIs yet.
+
+```
+clinical/
+├── entity/          Consultation (aggregate), Diagnosis, ClinicalNote, VitalSigns, FollowUp
+├── enums/           ConsultationStatus, DiagnosisType, ClinicalNoteType, …
+└── repository/      *Repository interfaces
+```
+
+- `Consultation` links Patient, Doctor, Department, Hospital, and optional Appointment via UUID FKs.
+- Child clinical data hangs off `consultation_id`; vitals support multiple readings per encounter.
+- Prescriptions delivered early as Phase 7.5 in `com.healthcare.hms.prescriptions` (Flyway V35); Phase 9 adds printable Rx UI + patient history chart tab (medicine master / pharmacy dispensing remain later).
 
 ---
 

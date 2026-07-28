@@ -23,6 +23,7 @@ import com.healthcare.hms.patients.history.enums.ClinicalSeverity;
 import com.healthcare.hms.patients.history.enums.DiseaseCategory;
 import com.healthcare.hms.patients.history.mapper.MedicalHistoryMapper;
 import com.healthcare.hms.patients.history.repository.ChronicConditionRepository;
+import com.healthcare.hms.patients.history.repository.FamilyHistoryRepository;
 import com.healthcare.hms.patients.history.repository.MedicalHistoryRepository;
 import com.healthcare.hms.patients.history.repository.PastDiseaseRepository;
 import com.healthcare.hms.patients.history.repository.SurgeryHistoryRepository;
@@ -65,6 +66,8 @@ class MedicalHistoryServiceImplTest {
     private SurgeryHistoryRepository surgeryHistoryRepository;
     @Mock
     private ChronicConditionRepository chronicConditionRepository;
+    @Mock
+    private FamilyHistoryRepository familyHistoryRepository;
     @Mock
     private MedicalHistoryMapper medicalHistoryMapper;
     @Mock
@@ -276,12 +279,15 @@ class MedicalHistoryServiceImplTest {
                 .thenReturn(List.of());
         when(chronicConditionRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId))
                 .thenReturn(List.of());
-        when(medicalHistoryMapper.toMedicalHistoryResponse(eq(history), any(), any(), any()))
+        when(familyHistoryRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId))
+                .thenReturn(List.of());
+        when(medicalHistoryMapper.toMedicalHistoryResponse(eq(history), any(), any(), any(), any()))
                 .thenReturn(new com.healthcare.hms.patients.history.dto.response.MedicalHistoryResponse(
                         history.getId(),
                         patientId,
                         null,
                         null,
+                        List.of(),
                         List.of(),
                         List.of(),
                         List.of(),

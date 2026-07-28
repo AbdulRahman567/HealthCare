@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { medicalHistoryApi } from '@/features/patients/api/medical-history-api';
 import type {
   UpsertChronicConditionPayload,
+  UpsertFamilyHistoryPayload,
   UpsertPastDiseasePayload,
   UpsertSurgeryHistoryPayload,
 } from '@/features/patients/types/medical-history';
@@ -79,6 +80,25 @@ export function useMedicalHistoryMutations(patientId: string) {
     }),
     deleteChronicCondition: useMutation({
       mutationFn: (entryId: string) => medicalHistoryApi.deleteChronicCondition(patientId, entryId),
+      onSuccess: invalidate,
+    }),
+    createFamilyHistory: useMutation({
+      mutationFn: (payload: UpsertFamilyHistoryPayload) =>
+        medicalHistoryApi.createFamilyHistory(patientId, payload),
+      onSuccess: invalidate,
+    }),
+    updateFamilyHistory: useMutation({
+      mutationFn: ({
+        entryId,
+        payload,
+      }: {
+        entryId: string;
+        payload: UpsertFamilyHistoryPayload;
+      }) => medicalHistoryApi.updateFamilyHistory(patientId, entryId, payload),
+      onSuccess: invalidate,
+    }),
+    deleteFamilyHistory: useMutation({
+      mutationFn: (entryId: string) => medicalHistoryApi.deleteFamilyHistory(patientId, entryId),
       onSuccess: invalidate,
     }),
   };

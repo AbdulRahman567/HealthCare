@@ -26,10 +26,18 @@ public class QueueMapper {
     }
 
     public QueueEntryResponse toEntryResponse(final QueueEntry entry) {
-        return toEntryResponse(entry, null);
+        return toEntryResponse(entry, null, null);
     }
 
     public QueueEntryResponse toEntryResponse(final QueueEntry entry, final String patientName) {
+        return toEntryResponse(entry, patientName, null);
+    }
+
+    public QueueEntryResponse toEntryResponse(
+            final QueueEntry entry,
+            final String patientName,
+            final UUID consultationId
+    ) {
         return new QueueEntryResponse(
                 entry.getId(),
                 entry.getQueueId(),
@@ -43,6 +51,7 @@ public class QueueMapper {
                 entry.getCheckedInAt(),
                 entry.getStatusChangedAt(),
                 entry.getNotes(),
+                consultationId,
                 entry.getCreatedAt(),
                 entry.getUpdatedAt(),
                 entry.getVersion()
@@ -51,7 +60,8 @@ public class QueueMapper {
 
     public DoctorDayQueueResponse toQueueResponse(
             final DoctorDayQueue queue,
-            final List<QueueEntry> entries
+            final List<QueueEntry> entries,
+            final Map<UUID, UUID> consultationIdByAppointmentId
     ) {
         final Map<UUID, String> patientNames = resolvePatientNames(queue.getTenantId(), entries);
         final long waiting = entries.stream()
@@ -61,6 +71,8 @@ public class QueueMapper {
         final long inConsult = entries.stream()
                 .filter(e -> e.getStatus() == QueueEntryStatus.IN_CONSULTATION)
                 .count();
+        final Map<UUID, UUID> consultationIds =
+                consultationIdByAppointmentId != null ? consultationIdByAppointmentId : Map.of();
         return new DoctorDayQueueResponse(
                 queue.getId(),
                 queue.getDoctorId(),
@@ -70,7 +82,11 @@ public class QueueMapper {
                 waiting,
                 inConsult,
                 entries.stream()
-                        .map(entry -> toEntryResponse(entry, patientNames.get(entry.getPatientId())))
+                        .map(entry -> toEntryResponse(
+                                entry,
+                                patientNames.get(entry.getPatientId()),
+                                consultationIds.get(entry.getAppointmentId())
+                        ))
                         .toList(),
                 queue.getCreatedAt(),
                 queue.getUpdatedAt(),

@@ -195,7 +195,8 @@ Patient
   (`tenantId == null` **and** `SUPER_ADMIN`).
 - Temporarily disabling Hibernate `tenantFilter` requires platform Super Admin.
 - Frontend unknown `/app/*` routes fail closed; route catalog is independent of navigation UI.
-- Full findings and recommendations: [RBAC_REVIEW_PHASE_3_8.md](./RBAC_REVIEW_PHASE_3_8.md).
+- Full RBAC findings are summarized in [PERMISSION_MATRIX.md](./PERMISSION_MATRIX.md)
+  and [SECURITY.md](./SECURITY.md) (this document).
 
 Every request must verify
 

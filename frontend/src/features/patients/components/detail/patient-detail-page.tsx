@@ -14,6 +14,7 @@ import {
 } from '@/features/patients/components/detail/patient-chart-header';
 import { MedicalHistoryPanel } from '@/features/patients/components/history/medical-history-panel';
 import { ImmunizationsPanel } from '@/features/patients/components/immunizations/immunizations-panel';
+import { PatientPrescriptionsPanel } from '@/features/patients/components/prescriptions/patient-prescriptions-panel';
 import { TimelinePanel } from '@/features/patients/components/timeline/timeline-panel';
 import { usePatientQuery } from '@/features/patients/hooks/use-patients';
 import {
@@ -27,7 +28,14 @@ type PatientDetailPageProps = {
   patientId: string;
 };
 
-const DETAIL_TABS = ['overview', 'history', 'allergies', 'vaccinations', 'timeline'] as const;
+const DETAIL_TABS = [
+  'overview',
+  'history',
+  'allergies',
+  'vaccinations',
+  'prescriptions',
+  'timeline',
+] as const;
 
 export function PatientDetailPage({ patientId }: PatientDetailPageProps) {
   const dispatch = useAppDispatch();
@@ -75,6 +83,7 @@ export function PatientDetailPage({ patientId }: PatientDetailPageProps) {
           <TabsTrigger value="history">Medical history</TabsTrigger>
           <TabsTrigger value="allergies">Allergies</TabsTrigger>
           <TabsTrigger value="vaccinations">Vaccinations</TabsTrigger>
+          <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
         </TabsList>
 
@@ -86,8 +95,8 @@ export function PatientDetailPage({ patientId }: PatientDetailPageProps) {
             </CardHeader>
             <CardContent className="text-muted-foreground text-sm">
               Use the tabs above for structured medical history, allergy management, vaccinations,
-              and the chronological timeline. Allergy alerts remain visible at the top of every
-              chart view.
+              prescription history, and the chronological timeline. Allergy alerts remain visible at
+              the top of every chart view.
             </CardContent>
           </Card>
         </TabsContent>
@@ -121,6 +130,17 @@ export function PatientDetailPage({ patientId }: PatientDetailPageProps) {
             </CardHeader>
             <CardContent>
               <ImmunizationsPanel patientId={patientId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="prescriptions" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Prescription history</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PatientPrescriptionsPanel patientId={patientId} />
             </CardContent>
           </Card>
         </TabsContent>

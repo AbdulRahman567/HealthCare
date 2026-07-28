@@ -15,10 +15,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { minutesBetween } from '@/features/appointments/lib/appointment-format';
 import type { AppointmentFormValues } from '@/features/appointments/validation/appointment-schema';
-import {
-  APPOINTMENT_TYPES,
-  VISIT_TYPES,
-} from '@/features/appointments/types/enums';
+import { APPOINTMENT_TYPES, VISIT_TYPES } from '@/features/appointments/types/enums';
 import { useDepartmentsQuery } from '@/features/hospital-admin/hooks/use-departments';
 import { useStaffQuery } from '@/features/hospital-admin/hooks/use-staff';
 import { useUsersQuery } from '@/features/hospital-admin/hooks/use-users';
@@ -161,14 +158,9 @@ export function AppointmentFormFields({
         <Label htmlFor={`${idPrefix}-department`}>Department</Label>
         <Select
           value={watch('departmentId') || undefined}
-          onValueChange={(value) =>
-            setValue('departmentId', value ?? '', { shouldValidate: true })
-          }
+          onValueChange={(value) => setValue('departmentId', value ?? '', { shouldValidate: true })}
         >
-          <SelectTrigger
-            id={`${idPrefix}-department`}
-            aria-invalid={Boolean(errors.departmentId)}
-          >
+          <SelectTrigger id={`${idPrefix}-department`} aria-invalid={Boolean(errors.departmentId)}>
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
           <SelectContent>

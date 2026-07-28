@@ -2,6 +2,7 @@ import type {
   ClinicalConditionStatus,
   ClinicalSeverity,
   DiseaseCategory,
+  FamilyRelation,
   ProcedureCategory,
 } from './enums';
 
@@ -39,17 +40,25 @@ export type ChronicConditionResponse = ClinicalEntryBase & {
   conditionCode: string | null;
 };
 
+export type FamilyHistoryResponse = ClinicalEntryBase & {
+  diseaseName: string;
+  diseaseCategory: DiseaseCategory;
+  diseaseCode: string | null;
+  familyRelation: FamilyRelation;
+};
+
 export type MedicalHistoryResponse = {
-  id: string;
+  id: string | null;
   patientId: string;
   lastReviewedAt: string | null;
   lastReviewedBy: string | null;
   pastDiseases: PastDiseaseResponse[];
   surgeries: SurgeryHistoryResponse[];
   chronicConditions: ChronicConditionResponse[];
-  createdAt: string;
-  updatedAt: string;
-  version: number;
+  familyHistories: FamilyHistoryResponse[];
+  createdAt: string | null;
+  updatedAt: string | null;
+  version: number | null;
 };
 
 export type UpsertPastDiseasePayload = {
@@ -79,6 +88,18 @@ export type UpsertChronicConditionPayload = {
   conditionName: string;
   diseaseCategory: DiseaseCategory;
   conditionCode?: string | null;
+  diagnosisDate: string;
+  recoveryDate?: string | null;
+  severity: ClinicalSeverity;
+  conditionStatus: ClinicalConditionStatus;
+  clinicalNotes?: string | null;
+};
+
+export type UpsertFamilyHistoryPayload = {
+  diseaseName: string;
+  diseaseCategory: DiseaseCategory;
+  diseaseCode?: string | null;
+  familyRelation: FamilyRelation;
   diagnosisDate: string;
   recoveryDate?: string | null;
   severity: ClinicalSeverity;

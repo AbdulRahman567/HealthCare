@@ -146,7 +146,12 @@ public class QueueController {
     @RequirePermission(PermissionConstants.APPOINTMENT_UPDATE)
     @Operation(
             summary = "Start consultation",
-            description = "WAITING → IN_CONSULTATION. Only one IN_CONSULTATION allowed per doctor/day."
+            description = """
+                    WAITING → IN_CONSULTATION. Ensures a clinical consultation chart exists and is
+                    IN_PROGRESS (creates/resumes via clinical SPI). Returns consultationId.
+                    Only one IN_CONSULTATION allowed per doctor/day. Caller also needs VISIT_CREATE
+                    or VISIT_UPDATE for chart creation.
+                    """
     )
     public ResponseEntity<ApiResponse<QueueEntryResponse>> startConsultation(
             @PathVariable("entryId") final UUID entryId,
@@ -161,7 +166,14 @@ public class QueueController {
 
     @PatchMapping("/queue-entries/{entryId}/complete")
     @RequirePermission(PermissionConstants.APPOINTMENT_UPDATE)
-    @Operation(summary = "Complete consultation", description = "IN_CONSULTATION → COMPLETED; syncs appointment to COMPLETED.")
+    @Operation(
+            summary = "Complete queue entry",
+            description = """
+                    IN_CONSULTATION → COMPLETED. Rejected while a linked clinical consultation is
+                    still editable — complete the chart first. Syncs appointment to COMPLETED when
+                    still bookable.
+                    """
+    )
     public ResponseEntity<ApiResponse<QueueEntryResponse>> complete(
             @PathVariable("entryId") final UUID entryId,
             @Valid @RequestBody(required = false) final QueueStatusUpdateRequest request,

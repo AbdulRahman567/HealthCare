@@ -557,65 +557,21 @@ Indexes: tenant+patient, type, severity, status, critical_alert, show_on_banner,
 
 ---
 
-patient_family_history
+patient_family_history (implemented as `family_histories`, Flyway V39)
 
-patient_id
+id, tenant_id, patient_id, medical_history_id
+disease_name, disease_category, disease_code
+family_relation (MOTHER, FATHER, SIBLING, …)
+diagnosis_date, recovery_date, severity, condition_status
+clinical_notes (VARCHAR 1000)
+recorded_by_user_id
+audit + soft delete + version
 
-disease
-
-relation
-
-notes
-
----
-
-patient_chronic_diseases
-
-patient_id
-
-disease
-
-status
-
-diagnosed_date
+Indexes: tenant+patient, relation, diagnosis_date, deleted.
 
 ---
 
-patient_immunizations
-
-patient_id
-
-vaccine_name
-
-vaccine_code
-
-dose_number
-
-manufacturer
-
-batch_number
-
-administration_date
-
-next_due_date
-
-healthcare_provider
-
-route
-
-status
-
-clinical_notes
-
----
-
-patient_surgeries
-
-patient_id
-
-procedure
-
-hospital
+patient_immunizations (implemented as `immunizations`, Flyway V21)
 
 doctor
 
@@ -625,7 +581,55 @@ notes
 
 ---
 
-# 9. Visit Module
+# 9. Clinical Workflow Module (Phase 7.1)
+
+Consultation encounters replace the legacy `patient_visits` sketch. Design:
+[CLINICAL_WORKFLOW.md](./CLINICAL_WORKFLOW.md). Flyway `V33__clinical_workflow.sql`.
+
+## consultations
+
+Tenant-owned encounter aggregate root.
+
+id, tenant_id, consultation_number (unique per tenant among live rows),
+hospital_id, patient_id, doctor_id, department_id,
+appointment_id (nullable — unique per tenant when set),
+consultation_date, started_at, completed_at, status,
+chief_complaint, advice, summary,
+audit + soft delete + version
+
+## consultation_diagnoses
+
+consultation_id, patient_id, diagnosing_doctor_id,
+diagnosis_name, icd_code, diagnosis_type, diagnosis_status, severity,
+diagnosed_at, sequence_number, clinical_notes,
+audit + soft delete + version
+
+## clinical_notes
+
+consultation_id, patient_id, author_doctor_id,
+note_type (SOAP-aligned), content (VARCHAR 4000), recorded_at,
+audit + soft delete + version
+
+## vital_signs
+
+consultation_id, patient_id, recorded_by_user_id, recorded_at,
+height_cm, weight_kg, temperature_celsius,
+systolic_bp, diastolic_bp, pulse_bpm, respiratory_rate,
+oxygen_saturation_percent, blood_glucose_mg_dl, bmi, pain_scale, notes,
+audit + soft delete + version
+
+## consultation_follow_ups
+
+consultation_id, patient_id, doctor_id,
+scheduled_date, scheduled_time, status, priority,
+reason, instructions, follow_up_appointment_id (nullable),
+audit + soft delete + version
+
+Indexes: tenant, patient+date, doctor+date, consultation children, vitals trends, follow-up due dates.
+
+---
+
+# 10. Visit Module (legacy sketch — superseded by §9)
 
 patient_visits
 

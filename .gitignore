@@ -38,3 +38,7 @@ coverage/
 # Docker
 mysql-data/
 redis-data/
+
+# Local object storage (clinical attachments)
+backend/data/
+data/object-storage/

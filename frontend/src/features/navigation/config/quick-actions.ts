@@ -56,6 +56,14 @@ export const QUICK_ACTIONS: QuickActionItem[] = [
     icon: 'calendar-plus',
   },
   {
+    id: 'start-consultation',
+    label: 'Start consultation',
+    description: 'Open a clinical encounter',
+    href: '/app/clinical/new',
+    permissions: [Permissions.VISIT_CREATE],
+    icon: 'file-plus',
+  },
+  {
     id: 'edit-hospital',
     label: 'Edit hospital settings',
     description: 'Update hospital configuration',

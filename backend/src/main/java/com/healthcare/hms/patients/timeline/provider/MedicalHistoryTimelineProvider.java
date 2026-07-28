@@ -1,9 +1,11 @@
 package com.healthcare.hms.patients.timeline.provider;
 
 import com.healthcare.hms.patients.history.entity.ChronicCondition;
+import com.healthcare.hms.patients.history.entity.FamilyHistory;
 import com.healthcare.hms.patients.history.entity.PastDisease;
 import com.healthcare.hms.patients.history.entity.SurgeryHistory;
 import com.healthcare.hms.patients.history.repository.ChronicConditionRepository;
+import com.healthcare.hms.patients.history.repository.FamilyHistoryRepository;
 import com.healthcare.hms.patients.history.repository.PastDiseaseRepository;
 import com.healthcare.hms.patients.history.repository.SurgeryHistoryRepository;
 import com.healthcare.hms.patients.timeline.dto.response.TimelineEventResponse;
@@ -19,7 +21,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Medical history timeline contributions (past disease, surgery, chronic condition).
+ * Medical history timeline contributions (past disease, surgery, chronic, family).
  */
 @Component
 public class MedicalHistoryTimelineProvider implements TimelineEventProvider {
@@ -27,21 +29,25 @@ public class MedicalHistoryTimelineProvider implements TimelineEventProvider {
     private static final Set<TimelineEventType> TYPES = EnumSet.of(
             TimelineEventType.PAST_DISEASE,
             TimelineEventType.SURGERY,
-            TimelineEventType.CHRONIC_CONDITION
+            TimelineEventType.CHRONIC_CONDITION,
+            TimelineEventType.FAMILY_HISTORY
     );
 
     private final PastDiseaseRepository pastDiseaseRepository;
     private final SurgeryHistoryRepository surgeryHistoryRepository;
     private final ChronicConditionRepository chronicConditionRepository;
+    private final FamilyHistoryRepository familyHistoryRepository;
 
     public MedicalHistoryTimelineProvider(
             final PastDiseaseRepository pastDiseaseRepository,
             final SurgeryHistoryRepository surgeryHistoryRepository,
-            final ChronicConditionRepository chronicConditionRepository
+            final ChronicConditionRepository chronicConditionRepository,
+            final FamilyHistoryRepository familyHistoryRepository
     ) {
         this.pastDiseaseRepository = pastDiseaseRepository;
         this.surgeryHistoryRepository = surgeryHistoryRepository;
         this.chronicConditionRepository = chronicConditionRepository;
+        this.familyHistoryRepository = familyHistoryRepository;
     }
 
     @Override
@@ -67,6 +73,10 @@ public class MedicalHistoryTimelineProvider implements TimelineEventProvider {
         if (include(typeFilter, TimelineEventType.CHRONIC_CONDITION)) {
             chronicConditionRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId)
                     .forEach(entry -> events.add(fromChronic(entry)));
+        }
+        if (include(typeFilter, TimelineEventType.FAMILY_HISTORY)) {
+            familyHistoryRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId)
+                    .forEach(entry -> events.add(fromFamily(entry)));
         }
         return events;
     }
@@ -148,6 +158,34 @@ public class MedicalHistoryTimelineProvider implements TimelineEventProvider {
                 TimelineSummaries.attrs(
                         "category", entry.getDiseaseCategory().name(),
                         "code", entry.getConditionCode(),
+                        "severity", entry.getSeverity().name()
+                )
+        );
+    }
+
+    private TimelineEventResponse fromFamily(final FamilyHistory entry) {
+        return new TimelineEventResponse(
+                TimelineEventType.FAMILY_HISTORY,
+                entry.getId(),
+                entry.getDiagnosisDate(),
+                entry.getCreatedAt(),
+                entry.getDiseaseName(),
+                TimelineSummaries.truncate(
+                        entry.getFamilyRelation().name()
+                                + " · "
+                                + entry.getDiseaseCategory().name()
+                                + " · "
+                                + entry.getSeverity().name()
+                ),
+                entry.getConditionStatus().name(),
+                mapSeverity(entry.getSeverity().name()),
+                false,
+                entry.getRecordedByUserId(),
+                "/api/v1/patients/" + entry.getPatientId() + "/medical-history/family-histories/" + entry.getId(),
+                TimelineSummaries.attrs(
+                        "relation", entry.getFamilyRelation().name(),
+                        "category", entry.getDiseaseCategory().name(),
+                        "code", entry.getDiseaseCode(),
                         "severity", entry.getSeverity().name()
                 )
         );

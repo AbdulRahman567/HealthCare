@@ -15,6 +15,7 @@ public record MedicalHistoryResponse(
         List<PastDiseaseResponse> pastDiseases,
         List<SurgeryHistoryResponse> surgeries,
         List<ChronicConditionResponse> chronicConditions,
+        List<FamilyHistoryResponse> familyHistories,
         Instant createdAt,
         Instant updatedAt,
         Long version

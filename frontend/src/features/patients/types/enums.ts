@@ -96,6 +96,19 @@ export const DISEASE_CATEGORIES = [
 ] as const;
 export type DiseaseCategory = (typeof DISEASE_CATEGORIES)[number];
 
+export const FAMILY_RELATIONS = [
+  'MOTHER',
+  'FATHER',
+  'SIBLING',
+  'CHILD',
+  'GRANDPARENT',
+  'AUNT_UNCLE',
+  'COUSIN',
+  'SPOUSE',
+  'OTHER',
+] as const;
+export type FamilyRelation = (typeof FAMILY_RELATIONS)[number];
+
 export const PROCEDURE_CATEGORIES = [
   'GENERAL',
   'ORTHOPEDIC',
@@ -117,9 +130,11 @@ export const TIMELINE_EVENT_TYPES = [
   'PAST_DISEASE',
   'SURGERY',
   'CHRONIC_CONDITION',
+  'FAMILY_HISTORY',
   'ALLERGY',
   'IMMUNIZATION',
   'VISIT',
+  'FOLLOW_UP',
   'PRESCRIPTION',
   'LAB_RESULT',
   'BILLING',

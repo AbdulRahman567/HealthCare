@@ -64,6 +64,14 @@ export const DASHBOARD_CARDS: DashboardCardItem[] = [
     icon: 'calendar-days',
   },
   {
+    id: 'clinical',
+    title: 'Clinical consultations',
+    description: 'Chart encounters, vitals, diagnoses, and prescriptions.',
+    href: '/app/clinical',
+    permissions: [Permissions.VISIT_READ],
+    icon: 'file-plus',
+  },
+  {
     id: 'billing',
     title: 'Billing',
     description: 'Invoices, payments, and billing queues.',

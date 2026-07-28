@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
-import {
-  APPOINTMENT_TYPES,
-  VISIT_TYPES,
-} from '@/features/appointments/types/enums';
+import { APPOINTMENT_TYPES, VISIT_TYPES } from '@/features/appointments/types/enums';
 
 function parseTimeToMinutes(value: string): number | null {
   const match = /^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/.exec(value);
@@ -19,9 +16,7 @@ export const appointmentFormSchema = z
     doctorId: z.string().uuid('Select a doctor'),
     departmentId: z.string().uuid('Select a department'),
     appointmentDate: z.string().min(1, 'Date is required'),
-    startTime: z
-      .string()
-      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time is required (HH:mm)'),
+    startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Start time is required (HH:mm)'),
     endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'End time is required (HH:mm)'),
     appointmentType: z.enum(APPOINTMENT_TYPES),
     visitType: z.enum(VISIT_TYPES),

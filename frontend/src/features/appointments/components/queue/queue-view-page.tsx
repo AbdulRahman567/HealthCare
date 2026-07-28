@@ -2,6 +2,7 @@
 
 import { Loader2Icon } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -63,15 +64,13 @@ const NEXT_ACTIONS: Partial<Record<QueueEntryStatus, { action: QueueAction; labe
     { action: 'missed', label: 'Missed' },
     { action: 'cancel', label: 'Cancel' },
   ],
-  IN_CONSULTATION: [
-    { action: 'complete', label: 'Complete' },
-    { action: 'cancel', label: 'Cancel' },
-  ],
+  IN_CONSULTATION: [{ action: 'cancel', label: 'Cancel' }],
 };
 
 const DESTRUCTIVE_ACTIONS: QueueAction[] = ['missed', 'cancel'];
 
 export function QueueViewPage() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
   const ui = useAppSelector(selectAppointmentsQueueUi);
   const lookups = useAppointmentLookups([]);
@@ -108,12 +107,22 @@ export function QueueViewPage() {
     }
   }, [dispatch, doctorOptions, ui.doctorId]);
 
-  const queueQuery = useDoctorDayQueueQuery(ui.doctorId, ui.date || undefined, Boolean(ui.doctorId));
+  const queueQuery = useDoctorDayQueueQuery(
+    ui.doctorId,
+    ui.date || undefined,
+    Boolean(ui.doctorId),
+  );
   const entries = queueQuery.data?.entries ?? [];
 
   const runAction = async (entryId: string, action: QueueAction) => {
     try {
-      await mutations.updateStatus.mutateAsync({ entryId, action });
+      const result = await mutations.updateStatus.mutateAsync({ entryId, action });
+      if (action === 'start-consultation' && result.consultationId) {
+        toast.success('Consultation started — opening chart');
+        setPendingAction(null);
+        router.push(`/app/clinical/${result.consultationId}`);
+        return;
+      }
       toast.success('Queue updated');
       setPendingAction(null);
     } catch (error) {
@@ -174,10 +183,7 @@ export function QueueViewPage() {
           description="Choose a doctor to load today’s queue board."
         />
       ) : queueQuery.isError ? (
-        <EmptyState
-          title="Unable to load queue"
-          description={getErrorMessage(queueQuery.error)}
-        />
+        <EmptyState title="Unable to load queue" description={getErrorMessage(queueQuery.error)} />
       ) : queueQuery.isLoading || !queueQuery.data ? (
         <div className="text-muted-foreground py-16 text-center text-sm">Loading queue…</div>
       ) : (
@@ -261,8 +267,22 @@ export function QueueViewPage() {
                           })}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Can permissions={[Permissions.APPOINTMENT_UPDATE]}>
-                            <div className="flex flex-wrap justify-end gap-1">
+                          <div className="flex flex-wrap justify-end gap-1">
+                            {entry.consultationId ? (
+                              <Can permissions={[Permissions.VISIT_READ]}>
+                                <Button
+                                  nativeButton={false}
+                                  size="sm"
+                                  variant="outline"
+                                  render={
+                                    <Link href={`/app/clinical/${entry.consultationId}`} />
+                                  }
+                                >
+                                  Open chart
+                                </Button>
+                              </Can>
+                            ) : null}
+                            <Can permissions={[Permissions.APPOINTMENT_UPDATE]}>
                               {actions.map((item) => (
                                 <Button
                                   key={item.action}
@@ -276,13 +296,16 @@ export function QueueViewPage() {
                                   onClick={() => onAction(entry.id, item.action, item.label)}
                                 >
                                   {mutations.updateStatus.isPending ? (
-                                    <Loader2Icon className="animate-spin" data-icon="inline-start" />
+                                    <Loader2Icon
+                                      className="animate-spin"
+                                      data-icon="inline-start"
+                                    />
                                   ) : null}
                                   {item.label}
                                 </Button>
                               ))}
-                            </div>
-                          </Can>
+                            </Can>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );

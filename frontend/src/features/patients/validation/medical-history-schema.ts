@@ -4,6 +4,7 @@ import {
   CLINICAL_CONDITION_STATUSES,
   CLINICAL_SEVERITIES,
   DISEASE_CATEGORIES,
+  FAMILY_RELATIONS,
   PROCEDURE_CATEGORIES,
 } from '@/features/patients/types/enums';
 
@@ -63,6 +64,21 @@ export const chronicConditionFormSchema = z
   })
   .superRefine(refineRecoveryDate);
 
+export const familyHistoryFormSchema = z
+  .object({
+    diseaseName: z.string().trim().min(1, 'Disease name is required').max(200),
+    diseaseCategory: z.enum(DISEASE_CATEGORIES),
+    diseaseCode: optionalCode,
+    familyRelation: z.enum(FAMILY_RELATIONS),
+    diagnosisDate: z.string().min(1, 'Date is required'),
+    recoveryDate: z.string(),
+    severity: z.enum(CLINICAL_SEVERITIES),
+    conditionStatus: z.enum(CLINICAL_CONDITION_STATUSES),
+    clinicalNotes: optionalNotes,
+  })
+  .superRefine(refineRecoveryDate);
+
 export type PastDiseaseFormValues = z.infer<typeof pastDiseaseFormSchema>;
 export type SurgeryFormValues = z.infer<typeof surgeryFormSchema>;
 export type ChronicConditionFormValues = z.infer<typeof chronicConditionFormSchema>;
+export type FamilyHistoryFormValues = z.infer<typeof familyHistoryFormSchema>;

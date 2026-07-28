@@ -13,6 +13,7 @@ export type QueueEntryResponse = {
   checkedInAt: string;
   statusChangedAt: string;
   notes: string | null;
+  consultationId?: string | null;
   createdAt: string;
   updatedAt: string;
   version: number;
@@ -41,9 +42,4 @@ export type QueueStatusUpdatePayload = {
   notes?: string | null;
 };
 
-export type QueueAction =
-  | 'waiting'
-  | 'start-consultation'
-  | 'complete'
-  | 'missed'
-  | 'cancel';
+export type QueueAction = 'waiting' | 'start-consultation' | 'complete' | 'missed' | 'cancel';

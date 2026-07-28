@@ -1,6 +1,4 @@
-import type {
-  AppointmentFormValues,
-} from '@/features/appointments/validation/appointment-schema';
+import type { AppointmentFormValues } from '@/features/appointments/validation/appointment-schema';
 import type {
   AppointmentResponse,
   CreateAppointmentPayload,
@@ -77,10 +75,6 @@ export function isMutableAppointmentStatus(status: string): boolean {
   return status === 'SCHEDULED' || status === 'CONFIRMED';
 }
 
-export function formatAppointmentSlot(
-  date: string,
-  startTime: string,
-  endTime: string,
-): string {
+export function formatAppointmentSlot(date: string, startTime: string, endTime: string): string {
   return `${date} · ${formatTimeLabel(startTime)}–${formatTimeLabel(endTime)}`;
 }

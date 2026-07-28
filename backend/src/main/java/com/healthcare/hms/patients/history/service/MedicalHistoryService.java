@@ -1,9 +1,11 @@
 package com.healthcare.hms.patients.history.service;
 
 import com.healthcare.hms.patients.history.dto.request.UpsertChronicConditionRequest;
+import com.healthcare.hms.patients.history.dto.request.UpsertFamilyHistoryRequest;
 import com.healthcare.hms.patients.history.dto.request.UpsertPastDiseaseRequest;
 import com.healthcare.hms.patients.history.dto.request.UpsertSurgeryHistoryRequest;
 import com.healthcare.hms.patients.history.dto.response.ChronicConditionResponse;
+import com.healthcare.hms.patients.history.dto.response.FamilyHistoryResponse;
 import com.healthcare.hms.patients.history.dto.response.MedicalHistoryResponse;
 import com.healthcare.hms.patients.history.dto.response.PastDiseaseResponse;
 import com.healthcare.hms.patients.history.dto.response.SurgeryHistoryResponse;
@@ -68,4 +70,21 @@ public interface MedicalHistoryService {
     );
 
     void removeChronicCondition(UUID patientId, UUID entryId, String ipAddress, String userAgent);
+
+    FamilyHistoryResponse addFamilyHistory(
+            UUID patientId,
+            UpsertFamilyHistoryRequest request,
+            String ipAddress,
+            String userAgent
+    );
+
+    FamilyHistoryResponse updateFamilyHistory(
+            UUID patientId,
+            UUID entryId,
+            UpsertFamilyHistoryRequest request,
+            String ipAddress,
+            String userAgent
+    );
+
+    void removeFamilyHistory(UUID patientId, UUID entryId, String ipAddress, String userAgent);
 }

@@ -3,9 +3,11 @@ package com.healthcare.hms.patients.history.controller;
 import com.healthcare.hms.common.api.ApiResponse;
 import com.healthcare.hms.common.web.ClientRequestDetails;
 import com.healthcare.hms.patients.history.dto.request.UpsertChronicConditionRequest;
+import com.healthcare.hms.patients.history.dto.request.UpsertFamilyHistoryRequest;
 import com.healthcare.hms.patients.history.dto.request.UpsertPastDiseaseRequest;
 import com.healthcare.hms.patients.history.dto.request.UpsertSurgeryHistoryRequest;
 import com.healthcare.hms.patients.history.dto.response.ChronicConditionResponse;
+import com.healthcare.hms.patients.history.dto.response.FamilyHistoryResponse;
 import com.healthcare.hms.patients.history.dto.response.MedicalHistoryResponse;
 import com.healthcare.hms.patients.history.dto.response.PastDiseaseResponse;
 import com.healthcare.hms.patients.history.dto.response.SurgeryHistoryResponse;
@@ -39,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/v1/patients/{patientId}/medical-history")
-@Tag(name = "Medical History", description = "Structured past diseases, surgeries, and chronic conditions")
+@Tag(name = "Medical History", description = "Structured past diseases, surgeries, chronic conditions, and family history")
 @SecurityRequirement(name = "bearerAuth")
 @SecurityRequirement(name = "tenantHeader")
 public class MedicalHistoryController {
@@ -235,6 +237,62 @@ public class MedicalHistoryController {
             final HttpServletRequest httpRequest
     ) {
         medicalHistoryService.removeChronicCondition(
+                patientId,
+                entryId,
+                ClientRequestDetails.resolveClientIp(httpRequest),
+                ClientRequestDetails.resolveUserAgent(httpRequest)
+        );
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/family-histories")
+    @RequirePermission(PermissionConstants.PATIENT_UPDATE)
+    @Operation(summary = "Add family history", description = "Records a hereditary / relative disease assertion (Phase 8).")
+    public ResponseEntity<ApiResponse<FamilyHistoryResponse>> addFamilyHistory(
+            @PathVariable("patientId") final UUID patientId,
+            @Valid @RequestBody final UpsertFamilyHistoryRequest request,
+            final HttpServletRequest httpRequest
+    ) {
+        final FamilyHistoryResponse response = medicalHistoryService.addFamilyHistory(
+                patientId,
+                request,
+                ClientRequestDetails.resolveClientIp(httpRequest),
+                ClientRequestDetails.resolveUserAgent(httpRequest)
+        );
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Family history added successfully", response));
+    }
+
+    @PutMapping("/family-histories/{entryId}")
+    @RequirePermission(PermissionConstants.PATIENT_UPDATE)
+    @Operation(summary = "Update family history")
+    public ResponseEntity<ApiResponse<FamilyHistoryResponse>> updateFamilyHistory(
+            @PathVariable("patientId") final UUID patientId,
+            @PathVariable("entryId") final UUID entryId,
+            @Valid @RequestBody final UpsertFamilyHistoryRequest request,
+            final HttpServletRequest httpRequest
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Family history updated successfully",
+                medicalHistoryService.updateFamilyHistory(
+                        patientId,
+                        entryId,
+                        request,
+                        ClientRequestDetails.resolveClientIp(httpRequest),
+                        ClientRequestDetails.resolveUserAgent(httpRequest)
+                )
+        ));
+    }
+
+    @DeleteMapping("/family-histories/{entryId}")
+    @RequirePermission(PermissionConstants.PATIENT_DELETE)
+    @Operation(summary = "Soft-delete family history")
+    public ResponseEntity<Void> removeFamilyHistory(
+            @PathVariable("patientId") final UUID patientId,
+            @PathVariable("entryId") final UUID entryId,
+            final HttpServletRequest httpRequest
+    ) {
+        medicalHistoryService.removeFamilyHistory(
                 patientId,
                 entryId,
                 ClientRequestDetails.resolveClientIp(httpRequest),

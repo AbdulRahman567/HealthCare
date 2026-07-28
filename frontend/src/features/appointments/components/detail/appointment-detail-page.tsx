@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckIcon, Loader2Icon, PencilIcon, UserCheckIcon } from 'lucide-react';
+import { CheckIcon, Loader2Icon, PencilIcon, StethoscopeIcon, UserCheckIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -121,6 +121,20 @@ export function AppointmentDetailPage({ appointmentId }: AppointmentDetailPagePr
                 </Button>
               </Can>
             ) : null}
+            <Can permissions={[Permissions.VISIT_CREATE]}>
+              <Button
+                nativeButton={false}
+                variant="secondary"
+                render={
+                  <Link
+                    href={`/app/clinical/new?appointmentId=${appointment.id}&patientId=${appointment.patientId}&doctorId=${appointment.doctorId}&departmentId=${appointment.departmentId}`}
+                  />
+                }
+              >
+                <StethoscopeIcon data-icon="inline-start" />
+                Start consultation
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -145,11 +159,7 @@ export function AppointmentDetailPage({ appointmentId }: AppointmentDetailPagePr
             label="Duration"
             value={`${appointment.durationMinutes} min (${formatTimeLabel(appointment.startTime)}–${formatTimeLabel(appointment.endTime)})`}
           />
-          <Detail
-            label="Notes"
-            value={appointment.notes || '—'}
-            className="sm:col-span-2"
-          />
+          <Detail label="Notes" value={appointment.notes || '—'} className="sm:col-span-2" />
           {appointment.cancellationReason ? (
             <Detail
               label="Cancellation reason"
@@ -163,10 +173,7 @@ export function AppointmentDetailPage({ appointmentId }: AppointmentDetailPagePr
       <Can permissions={[Permissions.APPOINTMENT_UPDATE]}>
         <div className="flex flex-wrap gap-2">
           {appointment.status === 'SCHEDULED' ? (
-            <Button
-              onClick={onConfirm}
-              disabled={mutations.confirm.isPending}
-            >
+            <Button onClick={onConfirm} disabled={mutations.confirm.isPending}>
               {mutations.confirm.isPending ? (
                 <Loader2Icon className="animate-spin" data-icon="inline-start" />
               ) : (

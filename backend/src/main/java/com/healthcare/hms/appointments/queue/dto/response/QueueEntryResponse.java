@@ -17,6 +17,8 @@ public record QueueEntryResponse(
         Instant checkedInAt,
         Instant statusChangedAt,
         String notes,
+        /** Linked clinical consultation when present (Phase 7.10). */
+        UUID consultationId,
         Instant createdAt,
         Instant updatedAt,
         Long version

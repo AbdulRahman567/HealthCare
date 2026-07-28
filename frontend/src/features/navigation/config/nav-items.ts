@@ -82,6 +82,15 @@ export const WORKSPACE_NAVIGATION: WorkspaceNavItem[] = [
     section: 'clinical',
   },
   {
+    id: 'clinical',
+    label: 'Clinical',
+    href: '/app/clinical',
+    description: 'Consultations and follow-ups',
+    permissions: [Permissions.VISIT_READ],
+    icon: 'file-plus',
+    section: 'clinical',
+  },
+  {
     id: 'billing',
     label: 'Billing',
     href: '/app/billing',

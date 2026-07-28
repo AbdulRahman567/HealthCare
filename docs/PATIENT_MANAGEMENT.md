@@ -2,8 +2,8 @@
 
 # Patient Management — Domain Architecture
 
-**Phase:** 5.1–5.10  
-**Status:** 5.1–5.10 Done (registration, history, allergies, immunizations, timeline, search, UI, security review, production readiness; documents/dashboard deferred)  
+**Phase:** 5.1–5.10 + Phase 8 Medical Records  
+**Status:** Done — registration, history (incl. family history), allergies, immunizations, timeline, search, UI, security/production hardening  
 **Module:** `com.healthcare.hms.patients` / frontend `features/patients`
 
 ---
@@ -12,17 +12,12 @@
 
 Define the Patient aggregate root for multi-tenant registration demographics
 and identifiers, expose registration / lifecycle APIs, and maintain structured
-longitudinal medical history (past diseases, surgeries, chronic conditions).
+longitudinal medical history (past diseases, surgeries, chronic conditions,
+**family history**).
 
-Later clinical modules (appointments, visits, prescriptions)
-reference `patients.id` — visits remain **out of scope** through Phase 5.10.
-Allergies are implemented (Phase 5.4) as a safety-critical chart surface.
-Immunizations are implemented (Phase 5.5) with dose/lot and next-due tracking.
-Timeline (Phase 5.6) is a chronological read-model aggregator over current
-sources, with SPI hooks for future visits / prescriptions / lab / billing.
-Search (Phase 5.7) is a paginated directory with JPA Specifications (DB-only filters).
-Patient Management UI (Phase 5.8) exposes list, registration, edit, and chart
-tabs (history / allergies / vaccinations / timeline) in Next.js.
+Clinical encounters (visits/consultations) live in Phase 7 (`clinical` module).
+Allergies (Phase 5.4), immunizations (Phase 5.5), and timeline (Phase 5.6 + SPI
+providers for visits/Rx/follow-up) complete the longitudinal chart surface.
 
 Companion sources of truth: [ARCHITECTURE.md](./ARCHITECTURE.md),
 [DATABASE.md](./DATABASE.md), [API.md](./API.md),
@@ -109,6 +104,7 @@ Base: `/api/v1/patients/{patientId}/medical-history`
 | `POST`/`PUT`/`DELETE` | `/past-diseases[/{entryId}]`      | `PATIENT_UPDATE` / `PATIENT_DELETE` |
 | `POST`/`PUT`/`DELETE` | `/surgeries[/{entryId}]`          | `PATIENT_UPDATE` / `PATIENT_DELETE` |
 | `POST`/`PUT`/`DELETE` | `/chronic-conditions[/{entryId}]` | `PATIENT_UPDATE` / `PATIENT_DELETE` |
+| `POST`/`PUT`/`DELETE` | `/family-histories[/{entryId}]`   | `PATIENT_UPDATE` / `PATIENT_DELETE` |
 
 `DELETE` is soft-delete only. Medical history root is auto-created on first entry.
 
@@ -123,6 +119,27 @@ Base: `/api/v1/patients/{patientId}/medical-history`
 | `clinicalNotes`   | `VARCHAR(1000)` | Bounded — not a free-text blob         |
 
 Type-specific: category enums + optional clinical codes (`diseaseCode` / `procedureCode` / `conditionCode`).
+Family history adds `familyRelation` (`MOTHER`, `FATHER`, `SIBLING`, …) — Flyway `V39`.
+
+---
+
+## Phase 8 — Medical Records readiness
+
+Roadmap Phase 8 maps onto this module (no separate `medical-records` package):
+
+| Deliverable | Status |
+| ----------- | ------ |
+| Disease history | Done (`PastDisease`) |
+| Chronic diseases | Done (`ChronicCondition`) |
+| Allergies | Done (`Allergy`) |
+| Family history | Done (`FamilyHistory`, V39) |
+| Surgery history | Done (`SurgeryHistory`) |
+| Vaccination history | Done (`Immunization`) |
+| Medical timeline | Done (SPI + `FAMILY_HISTORY` events) |
+
+**Critical/High remaining: none** after Phase 8 family-history close-out.
+
+Security / production notes from Phases 5.9–5.10 remain in force (tenant isolation, nested IDOR guards, soft-delete, critical allergy guards, timeline invalidation).
 
 ---
 
@@ -202,7 +219,8 @@ Query params: `types` (multi), `cursor`, `size` (default 20, max 100), `directio
 | Aggregation    | On-read fan-out via `TimelineEventProvider` SPI — **no** materialised timeline table                     |
 | Ordering       | Clinical event date (`occurredOn`), then `recordedAt`, then type, then `sourceId`                        |
 | Pagination     | Opaque keyset cursor (offset unsuitable for merged feeds)                                                |
-| Future modules | `VISIT` / `PRESCRIPTION` / `LAB_RESULT` / `BILLING` enum values reserved; empty until providers register |
+| Future modules | `LAB_RESULT` / `BILLING` enum values reserved; empty until providers register |
+| Registered timeline | `VISIT` / `PRESCRIPTION` / `FOLLOW_UP` (+ Phase 5 history/allergy/immunization/family) |
 | Safety         | Timeline does **not** replace allergy banner / critical APIs                                             |
 | Indexes        | Flyway `V22__patient_timeline_indexes.sql` adds allergy `onset_date` / `created_at` indexes              |
 
@@ -267,7 +285,7 @@ Chart tabs: Overview · Medical history · Allergies · Vaccinations · Timeline
 
 Documents upload and a dedicated patient dashboard remain later (5.8+ roadmap remainder).
 
-Security review (Phase 5.9): [PATIENT_PHASE_5_9_SECURITY_REVIEW.md](./PATIENT_PHASE_5_9_SECURITY_REVIEW.md).
+Security / production hardening (Phases 5.9–5.10) is summarized in this document under Phase 8 readiness — no separate review markdown.
 Clinical soft-delete requires `PATIENT_DELETE`. Critical allergy downgrade/deactivation also requires `PATIENT_DELETE`.
 
 ---

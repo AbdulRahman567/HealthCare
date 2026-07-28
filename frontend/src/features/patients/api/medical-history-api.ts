@@ -4,9 +4,11 @@ import type {
   PastDiseaseResponse,
   SurgeryHistoryResponse,
   ChronicConditionResponse,
+  FamilyHistoryResponse,
   UpsertPastDiseasePayload,
   UpsertSurgeryHistoryPayload,
   UpsertChronicConditionPayload,
+  UpsertFamilyHistoryPayload,
 } from '@/features/patients/types/medical-history';
 import type { ApiSuccessResponse } from '@/types/api';
 
@@ -99,5 +101,32 @@ export const medicalHistoryApi = {
 
   async deleteChronicCondition(patientId: string, entryId: string): Promise<void> {
     await apiClient.delete(`${base(patientId)}/chronic-conditions/${entryId}`);
+  },
+
+  async createFamilyHistory(
+    patientId: string,
+    payload: UpsertFamilyHistoryPayload,
+  ): Promise<FamilyHistoryResponse> {
+    const { data } = await apiClient.post<ApiSuccessResponse<FamilyHistoryResponse>>(
+      `${base(patientId)}/family-histories`,
+      payload,
+    );
+    return data.data;
+  },
+
+  async updateFamilyHistory(
+    patientId: string,
+    entryId: string,
+    payload: UpsertFamilyHistoryPayload,
+  ): Promise<FamilyHistoryResponse> {
+    const { data } = await apiClient.put<ApiSuccessResponse<FamilyHistoryResponse>>(
+      `${base(patientId)}/family-histories/${entryId}`,
+      payload,
+    );
+    return data.data;
+  },
+
+  async deleteFamilyHistory(patientId: string, entryId: string): Promise<void> {
+    await apiClient.delete(`${base(patientId)}/family-histories/${entryId}`);
   },
 };

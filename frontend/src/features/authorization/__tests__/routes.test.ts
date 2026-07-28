@@ -34,6 +34,28 @@ describe('resolveRouteAccess', () => {
     });
   });
 
+  it('requires create permission for clinical start', () => {
+    expect(resolveRouteAccess('/app/clinical/new')).toEqual({
+      status: 'allow',
+      requirement: { permissions: [Permissions.VISIT_CREATE] },
+    });
+  });
+
+  it('allows clinical workspace under VISIT_READ', () => {
+    expect(resolveRouteAccess('/app/clinical')).toEqual({
+      status: 'allow',
+      requirement: { permissions: [Permissions.VISIT_READ] },
+    });
+    expect(resolveRouteAccess('/app/clinical/abc')).toEqual({
+      status: 'allow',
+      requirement: { permissions: [Permissions.VISIT_READ] },
+    });
+    expect(resolveRouteAccess('/app/clinical/follow-ups')).toEqual({
+      status: 'allow',
+      requirement: { permissions: [Permissions.VISIT_READ] },
+    });
+  });
+
   it('denies unknown /app paths (fail-closed)', () => {
     expect(resolveRouteAccess('/app/not-registered')).toEqual({ status: 'deny' });
   });

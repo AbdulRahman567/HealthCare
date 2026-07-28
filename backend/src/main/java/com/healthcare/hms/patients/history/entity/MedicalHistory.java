@@ -15,7 +15,8 @@ import org.hibernate.annotations.SQLRestriction;
  * Patient medical-history chart root (1:1 with {@code patients}).
  *
  * <p>Holds no free-text summary blob — clinical facts live in structured child
- * entries ({@link PastDisease}, {@link SurgeryHistory}, {@link ChronicCondition}).
+ * entries ({@link PastDisease}, {@link SurgeryHistory}, {@link ChronicCondition},
+ * {@link FamilyHistory}).
  */
 @Entity
 @Table(

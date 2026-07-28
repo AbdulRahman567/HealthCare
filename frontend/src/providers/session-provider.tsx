@@ -12,6 +12,7 @@ import {
 
 import { authApi } from '@/features/auth/api/auth-api';
 import type { AuthResponse, UserProfile } from '@/features/auth/types/auth.types';
+import { clearAllClinicalDrafts } from '@/features/clinical/lib/draft-storage';
 import { onAuthSessionInvalidated } from '@/lib/auth-events';
 import { ApiClientError } from '@/lib/api-error';
 import { authTokenStore } from '@/lib/auth-token';
@@ -51,6 +52,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
   const clearSession = useCallback(() => {
     authTokenStore.clear();
+    clearAllClinicalDrafts();
     setAccessToken(null);
     setUser(null);
     setStatus('unauthenticated');

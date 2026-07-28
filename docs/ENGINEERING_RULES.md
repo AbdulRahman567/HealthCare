@@ -134,7 +134,7 @@ src/
 ├── organization    # Hospital Administration: Staff base + org enums (Phase 4.1+)
 ├── patients
 ├── appointments
-├── visits
+├── clinical
 ├── prescriptions
 ├── laboratory
 ├── reports

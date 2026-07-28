@@ -125,14 +125,14 @@ export function AppointmentsListPage() {
 
   const hasFilters = Boolean(
     ui.appointmentNumber ||
-      ui.patientName ||
-      ui.doctorName ||
-      ui.departmentName ||
-      ui.status ||
-      ui.visitType ||
-      ui.queueStatus ||
-      ui.fromDate ||
-      ui.toDate,
+    ui.patientName ||
+    ui.doctorName ||
+    ui.departmentName ||
+    ui.status ||
+    ui.visitType ||
+    ui.queueStatus ||
+    ui.fromDate ||
+    ui.toDate,
   );
 
   return (
@@ -184,9 +184,7 @@ export function AppointmentsListPage() {
                 />
                 <FilterSelect
                   value={ui.queueStatus}
-                  onValueChange={(queueStatus) =>
-                    dispatch(setAppointmentsQueueStatus(queueStatus))
-                  }
+                  onValueChange={(queueStatus) => dispatch(setAppointmentsQueueStatus(queueStatus))}
                   options={QUEUE_ENTRY_STATUSES}
                   placeholder="Queue status"
                   allLabel="Any queue status"
@@ -280,13 +278,11 @@ export function AppointmentsListPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {appointment.patientName
-                        ?? lookups.patientNameById.get(appointment.patientId)
-                        ?? '—'}
+                      {appointment.patientName ??
+                        lookups.patientNameById.get(appointment.patientId) ??
+                        '—'}
                     </TableCell>
-                    <TableCell>
-                      {lookups.doctorNameById.get(appointment.doctorId) ?? '—'}
-                    </TableCell>
+                    <TableCell>{lookups.doctorNameById.get(appointment.doctorId) ?? '—'}</TableCell>
                     <TableCell>
                       {lookups.departmentNameById.get(appointment.departmentId) ?? '—'}
                     </TableCell>
@@ -311,9 +307,7 @@ export function AppointmentsListPage() {
                               nativeButton={false}
                               variant="ghost"
                               size="icon-sm"
-                              render={
-                                <Link href={`/app/appointments/${appointment.id}/edit`} />
-                              }
+                              render={<Link href={`/app/appointments/${appointment.id}/edit`} />}
                               aria-label="Edit appointment"
                             >
                               <PencilIcon />

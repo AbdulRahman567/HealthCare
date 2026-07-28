@@ -5,20 +5,24 @@ import com.healthcare.hms.audit.service.AuditLogService;
 import com.healthcare.hms.common.exception.BusinessException;
 import com.healthcare.hms.common.exception.ResourceNotFoundException;
 import com.healthcare.hms.patients.history.dto.request.UpsertChronicConditionRequest;
+import com.healthcare.hms.patients.history.dto.request.UpsertFamilyHistoryRequest;
 import com.healthcare.hms.patients.history.dto.request.UpsertPastDiseaseRequest;
 import com.healthcare.hms.patients.history.dto.request.UpsertSurgeryHistoryRequest;
 import com.healthcare.hms.patients.history.dto.response.ChronicConditionResponse;
+import com.healthcare.hms.patients.history.dto.response.FamilyHistoryResponse;
 import com.healthcare.hms.patients.history.dto.response.MedicalHistoryResponse;
 import com.healthcare.hms.patients.history.dto.response.PastDiseaseResponse;
 import com.healthcare.hms.patients.history.dto.response.SurgeryHistoryResponse;
 import com.healthcare.hms.patients.history.entity.ChronicCondition;
 import com.healthcare.hms.patients.history.entity.ClinicalHistoryEntry;
+import com.healthcare.hms.patients.history.entity.FamilyHistory;
 import com.healthcare.hms.patients.history.entity.MedicalHistory;
 import com.healthcare.hms.patients.history.entity.PastDisease;
 import com.healthcare.hms.patients.history.entity.SurgeryHistory;
 import com.healthcare.hms.patients.history.enums.ClinicalConditionStatus;
 import com.healthcare.hms.patients.history.mapper.MedicalHistoryMapper;
 import com.healthcare.hms.patients.history.repository.ChronicConditionRepository;
+import com.healthcare.hms.patients.history.repository.FamilyHistoryRepository;
 import com.healthcare.hms.patients.history.repository.MedicalHistoryRepository;
 import com.healthcare.hms.patients.history.repository.PastDiseaseRepository;
 import com.healthcare.hms.patients.history.repository.SurgeryHistoryRepository;
@@ -51,12 +55,14 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
     private static final String ENTITY_PAST_DISEASE = "PAST_DISEASE";
     private static final String ENTITY_SURGERY_HISTORY = "SURGERY_HISTORY";
     private static final String ENTITY_CHRONIC_CONDITION = "CHRONIC_CONDITION";
+    private static final String ENTITY_FAMILY_HISTORY = "FAMILY_HISTORY";
 
     private final PatientRepository patientRepository;
     private final MedicalHistoryRepository medicalHistoryRepository;
     private final PastDiseaseRepository pastDiseaseRepository;
     private final SurgeryHistoryRepository surgeryHistoryRepository;
     private final ChronicConditionRepository chronicConditionRepository;
+    private final FamilyHistoryRepository familyHistoryRepository;
     private final MedicalHistoryMapper medicalHistoryMapper;
     private final AuditLogService auditLogService;
 
@@ -66,6 +72,7 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
             final PastDiseaseRepository pastDiseaseRepository,
             final SurgeryHistoryRepository surgeryHistoryRepository,
             final ChronicConditionRepository chronicConditionRepository,
+            final FamilyHistoryRepository familyHistoryRepository,
             final MedicalHistoryMapper medicalHistoryMapper,
             final AuditLogService auditLogService
     ) {
@@ -74,6 +81,7 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
         this.pastDiseaseRepository = pastDiseaseRepository;
         this.surgeryHistoryRepository = surgeryHistoryRepository;
         this.chronicConditionRepository = chronicConditionRepository;
+        this.familyHistoryRepository = familyHistoryRepository;
         this.medicalHistoryMapper = medicalHistoryMapper;
         this.auditLogService = auditLogService;
     }
@@ -97,6 +105,7 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
                     List.of(),
                     List.of(),
                     List.of(),
+                    List.of(),
                     null,
                     null,
                     null
@@ -107,7 +116,8 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
                 history,
                 pastDiseaseRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId),
                 surgeryHistoryRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId),
-                chronicConditionRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId)
+                chronicConditionRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId),
+                familyHistoryRepository.findByTenantIdAndPatientIdOrderByDiagnosisDateDesc(tenantId, patientId)
         );
     }
 
@@ -333,6 +343,80 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
         audit(tenantId, actorId, ENTITY_CHRONIC_CONDITION, entry.getId(), AuditAction.DELETE, oldSnapshot, snapshot(entry), ipAddress, userAgent);
     }
 
+    @Override
+    @Transactional
+    @RequirePermission(PermissionConstants.PATIENT_UPDATE)
+    public FamilyHistoryResponse addFamilyHistory(
+            final UUID patientId,
+            final UpsertFamilyHistoryRequest request,
+            final String ipAddress,
+            final String userAgent
+    ) {
+        assertClinicalDates(request.conditionStatus(), request.recoveryDate());
+        final UUID tenantId = TenantContextHolder.requireTenantId();
+        final MedicalHistory history = requireOrCreateHistory(tenantId, patientId);
+        final UUID actorId = SecurityUtils.requireCurrentUser().getUserId();
+
+        final FamilyHistory entry = new FamilyHistory();
+        entry.setPatientId(patientId);
+        entry.setMedicalHistoryId(history.getId());
+        entry.setRecordedByUserId(actorId);
+        medicalHistoryMapper.applyFamilyHistory(request, entry);
+
+        final FamilyHistory saved = familyHistoryRepository.save(entry);
+        history.markReviewed(actorId);
+        medicalHistoryRepository.save(history);
+
+        audit(tenantId, actorId, ENTITY_FAMILY_HISTORY, saved.getId(), AuditAction.CREATE, null, snapshot(saved), ipAddress, userAgent);
+        log.info("Family history added id={} patientId={} tenantId={}", saved.getId(), patientId, tenantId);
+        return medicalHistoryMapper.toFamilyHistoryResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    @RequirePermission(PermissionConstants.PATIENT_UPDATE)
+    public FamilyHistoryResponse updateFamilyHistory(
+            final UUID patientId,
+            final UUID entryId,
+            final UpsertFamilyHistoryRequest request,
+            final String ipAddress,
+            final String userAgent
+    ) {
+        assertClinicalDates(request.conditionStatus(), request.recoveryDate());
+        final UUID tenantId = TenantContextHolder.requireTenantId();
+        PatientAccessSupport.requireActivePatient(patientRepository, tenantId, patientId);
+        final FamilyHistory entry = requireFamilyHistory(tenantId, patientId, entryId);
+        final String oldSnapshot = snapshot(entry);
+        final UUID actorId = SecurityUtils.requireCurrentUser().getUserId();
+
+        medicalHistoryMapper.applyFamilyHistory(request, entry);
+        final FamilyHistory saved = familyHistoryRepository.save(entry);
+        markHistoryReviewed(tenantId, patientId, actorId);
+
+        audit(tenantId, actorId, ENTITY_FAMILY_HISTORY, saved.getId(), AuditAction.UPDATE, oldSnapshot, snapshot(saved), ipAddress, userAgent);
+        return medicalHistoryMapper.toFamilyHistoryResponse(saved);
+    }
+
+    @Override
+    @Transactional
+    @RequirePermission(PermissionConstants.PATIENT_DELETE)
+    public void removeFamilyHistory(
+            final UUID patientId,
+            final UUID entryId,
+            final String ipAddress,
+            final String userAgent
+    ) {
+        final UUID tenantId = TenantContextHolder.requireTenantId();
+        PatientAccessSupport.requireActivePatient(patientRepository, tenantId, patientId);
+        final FamilyHistory entry = requireFamilyHistory(tenantId, patientId, entryId);
+        final String oldSnapshot = snapshot(entry);
+        final UUID actorId = SecurityUtils.requireCurrentUser().getUserId();
+        entry.markDeleted(actorId);
+        familyHistoryRepository.save(entry);
+        markHistoryReviewed(tenantId, patientId, actorId);
+        audit(tenantId, actorId, ENTITY_FAMILY_HISTORY, entry.getId(), AuditAction.DELETE, oldSnapshot, snapshot(entry), ipAddress, userAgent);
+    }
+
     private MedicalHistory requireOrCreateHistory(final UUID tenantId, final UUID patientId) {
         PatientAccessSupport.requireActivePatient(patientRepository, tenantId, patientId);
         return medicalHistoryRepository.findByTenantIdAndPatientId(tenantId, patientId)
@@ -376,6 +460,11 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
     private ChronicCondition requireChronicCondition(final UUID tenantId, final UUID patientId, final UUID entryId) {
         return chronicConditionRepository.findByIdAndTenantIdAndPatientId(entryId, tenantId, patientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Chronic condition not found"));
+    }
+
+    private FamilyHistory requireFamilyHistory(final UUID tenantId, final UUID patientId, final UUID entryId) {
+        return familyHistoryRepository.findByIdAndTenantIdAndPatientId(entryId, tenantId, patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Family history not found"));
     }
 
     private static MedicalHistory emptyHistoryShell(final UUID patientId) {
@@ -438,6 +527,11 @@ public class MedicalHistoryServiceImpl implements MedicalHistoryService {
             fields.put("conditionName", chronic.getConditionName());
             fields.put("diseaseCategory", chronic.getDiseaseCategory());
             fields.put("conditionCode", chronic.getConditionCode());
+        } else if (entry instanceof FamilyHistory family) {
+            fields.put("diseaseName", family.getDiseaseName());
+            fields.put("diseaseCategory", family.getDiseaseCategory());
+            fields.put("diseaseCode", family.getDiseaseCode());
+            fields.put("familyRelation", family.getFamilyRelation());
         }
         return fields.entrySet().stream()
                 .map(e -> e.getKey() + "=" + e.getValue())

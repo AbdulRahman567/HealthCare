@@ -319,6 +319,9 @@ Base path: `/api/v1/patients/{patientId}/medical-history`
 | `POST`   | `/medical-history/chronic-conditions`           | `PATIENT_UPDATE` | Add chronic condition   |
 | `PUT`    | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_UPDATE` | Update                  |
 | `DELETE` | `/medical-history/chronic-conditions/{entryId}` | `PATIENT_DELETE` | Soft-delete             |
+| `POST`   | `/medical-history/family-histories`             | `PATIENT_UPDATE` | Add family history (Phase 8) |
+| `PUT`    | `/medical-history/family-histories/{entryId}`   | `PATIENT_UPDATE` | Update                  |
+| `DELETE` | `/medical-history/family-histories/{entryId}`   | `PATIENT_DELETE` | Soft-delete             |
 
 Structured fields only (category enums, codes, dates, severity, status, bounded notes).
 No visit APIs in Phase 5.3.
@@ -480,37 +483,21 @@ GET
 
 # 14. Prescriptions
 
-GET
+Core CRUD / lifecycle (see also [CLINICAL_WORKFLOW.md](./CLINICAL_WORKFLOW.md) § Phase 7.5 / Phase 9):
 
-/prescriptions
+| Method | Path | Notes |
+| ------ | ---- | ----- |
+| GET | `/prescriptions` | Paginated search |
+| GET | `/prescriptions/{id}` | Detail + items |
+| POST | `/prescriptions` | Create (+ optional issue) |
+| PUT | `/prescriptions/{id}` | Update DRAFT |
+| PATCH | `/prescriptions/{id}/issue` | DRAFT → ISSUED |
+| PATCH | `/prescriptions/{id}/cancel` | Cancel (not when DISPENSED) |
+| DELETE | `/prescriptions/{id}` | Soft-delete DRAFT |
+| GET | `/consultations/{id}/prescriptions` | Encounter list |
+| GET | `/patients/{id}/prescriptions` | Patient history |
 
-GET
-
-/prescriptions/{id}
-
-POST
-
-/prescriptions
-
-PUT
-
-/prescriptions/{id}
-
-DELETE
-
-/prescriptions/{id}
-
-GET
-
-/patients/{id}/prescriptions
-
-POST
-
-/prescriptions/{id}/print
-
-POST
-
-/prescriptions/{id}/email
+Printable prescription is a frontend route (`/app/prescriptions/{id}/print`) using `GET /prescriptions/{id}` — no dedicated print/email API in Phase 9.
 
 ---
 

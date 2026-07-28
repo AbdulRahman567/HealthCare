@@ -1,11 +1,6 @@
 import type { ListQuery } from '@/types/api';
 
-import type {
-  AppointmentStatus,
-  AppointmentType,
-  QueueEntryStatus,
-  VisitType,
-} from './enums';
+import type { AppointmentStatus, AppointmentType, QueueEntryStatus, VisitType } from './enums';
 
 export type AppointmentResponse = {
   id: string;

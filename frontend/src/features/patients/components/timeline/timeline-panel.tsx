@@ -42,7 +42,7 @@ export function TimelinePanel({ patientId }: TimelinePanelProps) {
     return (
       <EmptyState
         title="No timeline events yet"
-        description="Registration, history, allergies, and vaccinations appear here chronologically."
+        description="Registration, history, allergies, vaccinations, follow-ups, and clinical events appear here chronologically."
       />
     );
   }

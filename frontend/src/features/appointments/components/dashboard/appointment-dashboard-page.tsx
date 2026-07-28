@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  CalendarDaysIcon,
-  ClipboardListIcon,
-  ListIcon,
-  PlusIcon,
-} from 'lucide-react';
+import { CalendarDaysIcon, ClipboardListIcon, ListIcon, PlusIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 
@@ -15,7 +10,10 @@ import { Can } from '@/features/authorization/components/can';
 import { Permissions } from '@/features/authorization/constants/permissions';
 import { AppointmentSubnav } from '@/features/appointments/components/shared/appointment-subnav';
 import { useAppointmentsQuery } from '@/features/appointments/hooks/use-appointments';
-import { formatAppointmentSlot, formatTimeLabel } from '@/features/appointments/lib/appointment-format';
+import {
+  formatAppointmentSlot,
+  formatTimeLabel,
+} from '@/features/appointments/lib/appointment-format';
 import { useAppointmentLookups } from '@/features/appointments/hooks/use-appointment-lookups';
 import { AdminPageHeader } from '@/features/hospital-admin/components/shared/admin-page-header';
 import { StatusBadge } from '@/features/hospital-admin/components/shared/status-badge';
@@ -236,9 +234,7 @@ export function AppointmentDashboardPage() {
                         )}
                       </Link>
                     </td>
-                    <td className="px-2 py-2 font-mono text-xs">
-                      {appointment.appointmentNumber}
-                    </td>
+                    <td className="px-2 py-2 font-mono text-xs">{appointment.appointmentNumber}</td>
                     <td className="px-2 py-2">{formatEnumLabel(appointment.appointmentType)}</td>
                     <td className="px-2 py-2">
                       <StatusBadge status={appointment.status} />

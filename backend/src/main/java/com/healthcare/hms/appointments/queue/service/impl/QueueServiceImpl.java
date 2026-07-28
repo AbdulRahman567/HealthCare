@@ -12,6 +12,7 @@ import com.healthcare.hms.appointments.queue.mapper.QueueMapper;
 import com.healthcare.hms.appointments.queue.repository.DoctorDayQueueRepository;
 import com.healthcare.hms.appointments.queue.repository.QueueEntryRepository;
 import com.healthcare.hms.appointments.queue.service.QueueService;
+import com.healthcare.hms.appointments.queue.spi.ConsultationEncounterGateway;
 import com.healthcare.hms.appointments.repository.AppointmentRepository;
 import com.healthcare.hms.appointments.support.AppointmentActorScopeSupport;
 import com.healthcare.hms.audit.enums.AuditAction;
@@ -30,6 +31,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -59,6 +61,7 @@ public class QueueServiceImpl implements QueueService {
     private final QueueMapper queueMapper;
     private final AuditLogService auditLogService;
     private final AppointmentActorScopeSupport actorScopeSupport;
+    private final ConsultationEncounterGateway consultationEncounterGateway;
 
     public QueueServiceImpl(
             final DoctorDayQueueRepository queueRepository,
@@ -67,7 +70,8 @@ public class QueueServiceImpl implements QueueService {
             final DoctorRepository doctorRepository,
             final QueueMapper queueMapper,
             final AuditLogService auditLogService,
-            final AppointmentActorScopeSupport actorScopeSupport
+            final AppointmentActorScopeSupport actorScopeSupport,
+            final ConsultationEncounterGateway consultationEncounterGateway
     ) {
         this.queueRepository = queueRepository;
         this.entryRepository = entryRepository;
@@ -76,6 +80,7 @@ public class QueueServiceImpl implements QueueService {
         this.queueMapper = queueMapper;
         this.auditLogService = auditLogService;
         this.actorScopeSupport = actorScopeSupport;
+        this.consultationEncounterGateway = consultationEncounterGateway;
     }
 
     @Override
@@ -137,7 +142,7 @@ public class QueueServiceImpl implements QueueService {
                     "Queue check-in entryId={} queueNumber={} doctorId={} date={} tenantId={}",
                     saved.getId(), number, doctor.getId(), queueDate, tenantId
             );
-            return queueMapper.toEntryResponse(saved);
+            return toEntryResponse(saved);
         } catch (final DataIntegrityViolationException ex) {
             throw new ConflictException(
                     "ALREADY_CHECKED_IN",
@@ -178,7 +183,7 @@ public class QueueServiceImpl implements QueueService {
         final UUID tenantId = TenantContextHolder.requireTenantId();
         final QueueEntry entry = requireEntry(tenantId, entryId);
         actorScopeSupport.assertDoctorAccessible(tenantId, entry.getDoctorId());
-        return queueMapper.toEntryResponse(entry);
+        return toEntryResponse(entry);
     }
 
     @Override
@@ -225,7 +230,23 @@ public class QueueServiceImpl implements QueueService {
                     "Another patient is already IN_CONSULTATION for this doctor today"
             );
         }
-        return transition(entryId, request, QueueEntry::startConsultation, "IN_CONSULTATION", ipAddress, userAgent, null, false);
+        // Create/resume clinical chart before queue transition (atomic with same TX).
+        final UUID consultationId = consultationEncounterGateway.ensureStartedForAppointment(
+                entry.getAppointmentId(),
+                ipAddress,
+                userAgent
+        );
+        final QueueEntryResponse response = transition(
+                entryId,
+                request,
+                QueueEntry::startConsultation,
+                "IN_CONSULTATION",
+                ipAddress,
+                userAgent,
+                null,
+                false
+        );
+        return withConsultationId(response, consultationId);
     }
 
     @Override
@@ -237,12 +258,24 @@ public class QueueServiceImpl implements QueueService {
             final String ipAddress,
             final String userAgent
     ) {
-        return transition(entryId, request, QueueEntry::complete, "COMPLETED", ipAddress, userAgent, appointment -> {
-            if (appointment.isBookableSlot()) {
-                appointment.complete();
-                appointmentRepository.save(appointment);
-            }
-        }, true);
+        final UUID tenantId = TenantContextHolder.requireTenantId();
+        final QueueEntry entry = requireEntry(tenantId, entryId);
+        if (consultationEncounterGateway.hasOpenConsultation(entry.getAppointmentId())) {
+            throw new BusinessException(
+                    "CONSULTATION_STILL_OPEN",
+                    "Complete the clinical consultation chart before completing the queue entry"
+            );
+        }
+        // Appointment may already be COMPLETED by clinical complete — do not require bookable.
+        return withConsultationId(
+                transition(entryId, request, QueueEntry::complete, "COMPLETED", ipAddress, userAgent, appointment -> {
+                    if (appointment.isBookableSlot()) {
+                        appointment.complete();
+                        appointmentRepository.save(appointment);
+                    }
+                }, false),
+                consultationEncounterGateway.findConsultationIdByAppointment(entry.getAppointmentId()).orElse(null)
+        );
     }
 
     @Override
@@ -329,7 +362,7 @@ public class QueueServiceImpl implements QueueService {
         }
         auditEntry(saved, AuditAction.UPDATE, old, eventName, ipAddress, userAgent);
         log.info("Queue {} entryId={} number={} tenantId={}", eventName, saved.getId(), saved.getQueueNumber(), tenantId);
-        return queueMapper.toEntryResponse(saved);
+        return toEntryResponse(saved);
     }
 
     private void requireBookableAppointment(final UUID tenantId, final UUID appointmentId) {
@@ -372,7 +405,46 @@ public class QueueServiceImpl implements QueueService {
     private DoctorDayQueueResponse toQueueResponse(final UUID tenantId, final DoctorDayQueue queue) {
         final List<QueueEntry> entries =
                 entryRepository.findByTenantIdAndQueueIdOrderByQueueNumberAsc(tenantId, queue.getId());
-        return queueMapper.toQueueResponse(queue, entries);
+        final Set<UUID> appointmentIds = entries.stream()
+                .map(QueueEntry::getAppointmentId)
+                .collect(Collectors.toSet());
+        final Map<UUID, UUID> consultationIds =
+                consultationEncounterGateway.findConsultationIdsByAppointments(appointmentIds);
+        return queueMapper.toQueueResponse(queue, entries, consultationIds);
+    }
+
+    private QueueEntryResponse toEntryResponse(final QueueEntry entry) {
+        final UUID consultationId = consultationEncounterGateway
+                .findConsultationIdByAppointment(entry.getAppointmentId())
+                .orElse(null);
+        return withConsultationId(queueMapper.toEntryResponse(entry), consultationId);
+    }
+
+    private static QueueEntryResponse withConsultationId(
+            final QueueEntryResponse response,
+            final UUID consultationId
+    ) {
+        if (consultationId == null || consultationId.equals(response.consultationId())) {
+            return response;
+        }
+        return new QueueEntryResponse(
+                response.id(),
+                response.queueId(),
+                response.appointmentId(),
+                response.patientId(),
+                response.patientName(),
+                response.doctorId(),
+                response.hospitalId(),
+                response.queueNumber(),
+                response.status(),
+                response.checkedInAt(),
+                response.statusChangedAt(),
+                response.notes(),
+                consultationId,
+                response.createdAt(),
+                response.updatedAt(),
+                response.version()
+        );
     }
 
     private DoctorDayQueue requireQueue(final UUID tenantId, final UUID queueId) {

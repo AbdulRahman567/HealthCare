@@ -238,8 +238,7 @@ Manage patient appointments and scheduling.
 | 6.9       | Appointment module security review (tenant/RBAC/audit/doctor-scope/patient-portal; no Critical remaining)     | Done   |
 | 6.10      | Appointment module production readiness (lifecycle/queue integrity, locks, availability UI; no Critical/High) | Done   |
 
-Design reference: [APPOINTMENT_PHASE_6_9_SECURITY_REVIEW.md](./APPOINTMENT_PHASE_6_9_SECURITY_REVIEW.md),
-[APPOINTMENT_PHASE_6_10_PRODUCTION_READINESS.md](./APPOINTMENT_PHASE_6_10_PRODUCTION_READINESS.md).
+Design reference: appointment security and production readiness are summarized under Phase 6 in this roadmap and [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md).
 
 ---
 
@@ -248,6 +247,15 @@ Design reference: [APPOINTMENT_PHASE_6_9_SECURITY_REVIEW.md](./APPOINTMENT_PHASE
 ## Objective
 
 Digitize doctor consultations.
+
+### Sub-phases
+
+| Sub-phase | Scope                                                                                          | Status      |
+| --------- | ---------------------------------------------------------------------------------------------- | ----------- |
+| 7.1       | Domain model: Consultation, Diagnosis, ClinicalNote, VitalSigns, FollowUp; Flyway V33          | Done        |
+| 7.2       | Consultation APIs: lifecycle (start/pause/resume/complete), clinical documentation, audit      | Done        |
+| 7.3       | Vital signs APIs: append-only measurements, patient history, BMI computation, clinical validation | Done        |
+| 7.4+      | Diagnosis/follow-up APIs, timeline integration, UI, security review                              | Not started |
 
 ### Deliverables
 
@@ -285,6 +293,10 @@ Maintain complete patient medical history.
 
 - Longitudinal patient history is available.
 
+### Status
+
+**Done** (Phase 8 / patients module). Delivered primarily via Phase 5.3–5.6 + Phase 8 family history (`V39`). Design: [PATIENT_MANAGEMENT.md](./PATIENT_MANAGEMENT.md).
+
 ---
 
 # Phase 9 — Prescription Management
@@ -305,6 +317,8 @@ Provide digital prescription capabilities.
 ### Definition of Done
 
 - Doctors can generate and manage prescriptions digitally.
+
+**Done** (Phase 9). Core APIs/UI from Phase 7.5/7.8; Phase 9 closes printable Rx, patient history UI, cancel/manage gates, and issue lifecycle hardening. Design: [CLINICAL_WORKFLOW.md](./CLINICAL_WORKFLOW.md).
 
 ---
 

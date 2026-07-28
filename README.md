@@ -1,12 +1,12 @@
 # Healthcare Management System (HMS)
 
-Enterprise-grade Healthcare Management System monorepo (auth/foundation phase complete; clinical modules phased per ROADMAP).
+Enterprise-grade multi-tenant Healthcare Management System monorepo.
 
 ## Tech Stack
 
 - Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS, shadcn/ui, Redux Toolkit, TanStack Query
 - Backend: Java 21, Spring Boot 3, Spring Security, Spring Data JPA, Flyway, Redis, OpenAPI
-- Infrastructure: Docker, Docker Compose, MySQL 8, Redis 7, Nginx, Prometheus, Grafana
+- Infrastructure: Docker, Docker Compose, MySQL 8, Redis 7, MinIO, Nginx, Prometheus, Grafana
 
 ## Monorepo Structure
 
@@ -15,7 +15,7 @@ frontend/                # Next.js App Router frontend
 backend/                 # Spring Boot backend
 docker/                  # Nginx and monitoring configuration
 docs/                    # Project source-of-truth documents
-.github/workflows/       # CI workflows (skeleton — add pipelines before production)
+.github/workflows/       # CI (frontend lint/tsc + backend unit tests)
 docker-compose.yml       # Local multi-service orchestration
 ```
 
@@ -24,66 +24,82 @@ docker-compose.yml       # Local multi-service orchestration
 - Node.js 22+
 - npm 10+
 - Java 21
-- Maven 3.9+
-- Docker and Docker Compose
+- Docker and Docker Compose (recommended for MySQL/Redis)
 
-## Environment Variables
+Maven Wrapper is included under `backend/` (`mvnw` / `mvnw.cmd`) — system Maven is optional.
 
-Copy and configure environment files:
+## Local setup checklist
 
-- Root: `.env.example`
-- Frontend: `frontend/.env.example`
-- Backend: `backend/.env.example`
+1. **Copy env templates** (never commit real `.env` files):
 
-For Docker builds, `NEXT_PUBLIC_*` values are passed as **build args** (Next.js inlines them at build time). JWT secrets must be overridden for any shared/staging environment; set `JWT_ALLOW_INSECURE_SECRETS=false` in production.
+   ```bash
+   cp .env.example .env
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env.local
+   ```
+
+2. **Start infrastructure** (MySQL + Redis at minimum):
+
+   ```bash
+   npm run docker:up
+   ```
+
+   Or run only data services and start apps with `npm run dev`.
+
+3. **Backend env loading** — `backend/.env` is loaded automatically by
+   `DotenvEnvironmentPostProcessor` when you run Spring Boot from the repo root or
+   `backend/`. OS / Docker / IDE environment variables always win over dotenv.
+   Optional override path: `HMS_DOTENV_LOCATION=/absolute/path/to/.env`.
+
+4. **JWT (local vs shared)**  
+   - Local: placeholder secrets + `JWT_ALLOW_INSECURE_SECRETS=true` (defaults in examples).  
+   - Staging/production: strong random `JWT_SECRET` / `JWT_REFRESH_SECRET` (≥32 chars) and
+     `JWT_ALLOW_INSECURE_SECRETS=false` (also default under Spring profile `prod`).
+
+5. **Email (optional)** — with `MAIL_ENABLED=false` (default), reset/verify/invite links are
+   logged only. For real SMTP set `MAIL_ENABLED=true` plus `SMTP_*` / `MAIL_FROM`.
+
+6. **Object storage** — default `HMS_STORAGE_TYPE=local`. For MinIO in Compose set
+   `HMS_STORAGE_TYPE=s3` and the `HMS_STORAGE_S3_*` values from `.env.example`.
+
+7. **Reminders** — `REMINDERS_SCHEDULER_ENABLED=false` locally by default. SMS/PUSH channels
+   are logging stubs until providers are integrated.
 
 ## Development
-
-Run frontend and backend locally:
 
 ```bash
 npm run dev
 ```
 
-Run services with Docker Compose:
+Docker Compose (full stack):
 
 ```bash
 npm run docker:up
-```
-
-Stop Docker services:
-
-```bash
 npm run docker:down
 ```
 
 ## Quality Scripts
 
-- `npm run lint` - frontend lint checks
-- `npm run format` - prettier check
-- `npm run format:write` - prettier auto-fix
-- `npm run build` - frontend + backend production build
+- `npm run lint` — frontend lint
+- `npm run format` / `npm run format:write` — Prettier
+- `npm run build` — frontend + backend production build
+- Backend tests: `backend/mvnw.cmd -f backend/pom.xml test` (Windows) or `./backend/mvnw test`
 
 ## Endpoints
 
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- Backend API: [http://localhost:8080/api/v1/system/health](http://localhost:8080/api/v1/system/health)
-- Swagger UI: [http://localhost:8080/swagger-ui](http://localhost:8080/swagger-ui)
-- Actuator Health: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
-- Nginx: [http://localhost](http://localhost)
-- Prometheus: [http://localhost:9090](http://localhost:9090)
-- Grafana: [http://localhost:3001](http://localhost:3001)
+- Frontend: http://localhost:3000
+- Backend health: http://localhost:8080/api/v1/system/health
+- Swagger UI: http://localhost:8080/swagger-ui
+- Actuator: http://localhost:8080/actuator/health
+- Nginx: http://localhost
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3001 (change default admin password for shared hosts)
+- MinIO console: http://localhost:9001
 
 ## Current Scope
 
-Implemented (Phases 1–2 foundation + authentication):
+**Done (ROADMAP Phases 1–9):** auth/RBAC, multi-tenant hospitals, users/staff, patients + medical records (incl. family history), appointments/queue, clinical consultations (vitals, diagnosis, notes, follow-ups), digital prescriptions + printable Rx + patient Rx history.
 
-- Monorepo, Docker, Flyway, Actuator, OpenAPI
-- JWT access tokens + opaque refresh tokens (rotation + reuse detection)
-- Hospital registration + initial admin onboarding (tenant stays `PENDING` until admin email verification)
-- Login / logout / refresh / profile
-- Password reset + email verification flows
-- RBAC scaffolding (roles/permissions seeded; clinical modules not yet exposed)
-- Protected frontend routes (`/app`)
+**Not yet (Phase 10+):** laboratory & imaging, full notification productization, dashboards/analytics, deeper audit/security hardening phases, performance pass, full QA matrix, production cloud deployment.
 
-Not yet implemented (later ROADMAP phases): patient, appointment, visit, prescription, laboratory, billing, and other clinical modules.
+Authoritative docs: `docs/ROADMAP.md`, `docs/PROJECT_CONTEXT.md`, `docs/CLINICAL_WORKFLOW.md`, `docs/PATIENT_MANAGEMENT.md`, `docs/DEPLOYMENT.md`.

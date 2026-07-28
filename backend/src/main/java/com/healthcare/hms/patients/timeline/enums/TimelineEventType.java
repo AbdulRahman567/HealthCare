@@ -3,10 +3,9 @@ package com.healthcare.hms.patients.timeline.enums;
 /**
  * Clinical timeline event categories.
  *
- * <p>Implemented sources emit events today. {@link #VISIT}, {@link #PRESCRIPTION},
- * {@link #LAB_RESULT}, and {@link #BILLING} are reserved for later modules — they
- * appear in the API contract so clients can filter ahead of time, but produce no
- * rows until a {@code TimelineEventProvider} registers for them.
+ * <p>Implemented sources emit events today. {@link #LAB_RESULT} and {@link #BILLING}
+ * are reserved for later modules — they appear in the API contract so clients can filter
+ * ahead of time, but produce no rows until a {@code TimelineEventProvider} registers for them.
  */
 public enum TimelineEventType {
 
@@ -22,16 +21,22 @@ public enum TimelineEventType {
     /** Chronic condition first documented. */
     CHRONIC_CONDITION,
 
+    /** Family / hereditary history entry (Phase 8). */
+    FAMILY_HISTORY,
+
     /** Allergy assertion recorded. */
     ALLERGY,
 
     /** Vaccination / immunization dose. */
     IMMUNIZATION,
 
-    /** Encounter visit (Phase 7+). */
+    /** Encounter visit / consultation (Phase 7). */
     VISIT,
 
-    /** Prescription lifecycle event (Phase 9+). */
+    /** Planned follow-up visit (Phase 7.7). */
+    FOLLOW_UP,
+
+    /** Prescription lifecycle event (Phase 7.5 / 7.10). */
     PRESCRIPTION,
 
     /** Laboratory result (later phase). */

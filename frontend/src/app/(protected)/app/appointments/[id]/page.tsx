@@ -11,9 +11,7 @@ type AppointmentDetailRouteProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function AppointmentDetailRoutePage({
-  params,
-}: AppointmentDetailRouteProps) {
+export default async function AppointmentDetailRoutePage({ params }: AppointmentDetailRouteProps) {
   const { id } = await params;
   return <AppointmentDetailPage appointmentId={id} />;
 }
