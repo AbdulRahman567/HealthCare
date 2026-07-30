@@ -88,7 +88,7 @@ public class StaffDepartmentAssignment extends TenantOwnedEntity {
      * Generated column — mapped read-only for Hibernate schema awareness.
      * Do not set in application code.
      */
-    @Column(name = "open_slot", length = 1, insertable = false, updatable = false)
+    @Column(name = "open_slot", columnDefinition = "CHAR(1)", insertable = false, updatable = false)
     private String openSlot;
 
     public UUID getHospitalId() {

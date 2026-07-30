@@ -16,17 +16,17 @@ documented defaults; **never** ship them to a shared host.
 
 ## 0.1 Secrets & config
 
-| Item | Required action |
-| ---- | --------------- |
-| `JWT_SECRET` / `JWT_REFRESH_SECRET` | Random ≥32 characters; no `change-me` |
-| `JWT_ALLOW_INSECURE_SECRETS` | `false` (Spring profile `prod` defaults this) |
-| `DATABASE_PASSWORD` / `MYSQL_ROOT_PASSWORD` | Strong unique passwords |
-| `GF_SECURITY_ADMIN_PASSWORD` | Change Grafana admin password |
-| `MINIO_ROOT_*` / `HMS_STORAGE_S3_*` | Non-default if MinIO/S3 is exposed |
-| `CORS_ALLOWED_ORIGINS` / `FRONTEND_URL` | Exact production origins only |
-| `MAIL_ENABLED` + `SMTP_*` | Enable if auth/invite/reminder email must deliver |
-| `REMINDERS_SCHEDULER_ENABLED` | `true` only when email/SMS routing is ready |
-| `SPRING_PROFILES_ACTIVE` | `prod` (or staging profile) for non-local |
+| Item                                        | Required action                                   |
+| ------------------------------------------- | ------------------------------------------------- |
+| `JWT_SECRET` / `JWT_REFRESH_SECRET`         | Random ≥32 characters; no `change-me`             |
+| `JWT_ALLOW_INSECURE_SECRETS`                | `false` (Spring profile `prod` defaults this)     |
+| `DATABASE_PASSWORD` / `MYSQL_ROOT_PASSWORD` | Strong unique passwords                           |
+| `GF_SECURITY_ADMIN_PASSWORD`                | Change Grafana admin password                     |
+| `MINIO_ROOT_*` / `HMS_STORAGE_S3_*`         | Non-default if MinIO/S3 is exposed                |
+| `CORS_ALLOWED_ORIGINS` / `FRONTEND_URL`     | Exact production origins only                     |
+| `MAIL_ENABLED` + `SMTP_*`                   | Enable if auth/invite/reminder email must deliver |
+| `REMINDERS_SCHEDULER_ENABLED`               | `true` only when email/SMS routing is ready       |
+| `SPRING_PROFILES_ACTIVE`                    | `prod` (or staging profile) for non-local         |
 
 Copy from `.env.example` → `.env` / `backend/.env` / `frontend/.env.local`. Backend loads
 `backend/.env` via `DotenvEnvironmentPostProcessor` for local runs; Compose injects env into
@@ -42,10 +42,10 @@ containers from the root `.env`.
 
 ## 0.3 Smoke checks
 
-1. `GET /actuator/health/liveness` → UP  
-2. Login + refresh token rotation  
-3. Create consultation → issue prescription → open `/app/prescriptions/{id}/print`  
-4. Patient chart **Prescriptions** tab lists history  
+1. `GET /actuator/health/liveness` → UP
+2. Login + refresh token rotation
+3. Create consultation → issue prescription → open `/app/prescriptions/{id}/print`
+4. Patient chart **Prescriptions** tab lists history
 5. Soft-delete / RBAC denial returns 403 with stable `errorCode`
 
 ## 0.4 Out of scope until Phase 10+ / Phase 16

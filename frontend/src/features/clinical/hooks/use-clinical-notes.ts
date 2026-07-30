@@ -44,13 +44,8 @@ export function useClinicalNoteMutations(consultationId: string, patientId?: str
       onSuccess: invalidate,
     }),
     update: useMutation({
-      mutationFn: ({
-        noteId,
-        payload,
-      }: {
-        noteId: string;
-        payload: UpdateClinicalNotePayload;
-      }) => clinicalNotesApi.update(consultationId, noteId, payload),
+      mutationFn: ({ noteId, payload }: { noteId: string; payload: UpdateClinicalNotePayload }) =>
+        clinicalNotesApi.update(consultationId, noteId, payload),
       onSuccess: invalidate,
     }),
     remove: useMutation({

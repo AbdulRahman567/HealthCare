@@ -37,7 +37,8 @@ export function usePatientPrescriptionsQuery(
 ) {
   return useQuery({
     queryKey: prescriptionKeys.patientList(patientId, page, size),
-    queryFn: () => prescriptionsApi.listForPatient(patientId, { page, size, sort: 'prescriptionDate,desc' }),
+    queryFn: () =>
+      prescriptionsApi.listForPatient(patientId, { page, size, sort: 'prescriptionDate,desc' }),
     enabled: enabled && Boolean(patientId),
   });
 }

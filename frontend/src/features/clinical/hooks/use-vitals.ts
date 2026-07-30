@@ -49,8 +49,7 @@ export function useVitalsMutations(consultationId: string, patientId?: string) {
 
   return {
     record: useMutation({
-      mutationFn: (payload: RecordVitalSignsPayload) =>
-        vitalsApi.record(consultationId, payload),
+      mutationFn: (payload: RecordVitalSignsPayload) => vitalsApi.record(consultationId, payload),
       onSuccess: invalidate,
     }),
     update: useMutation({

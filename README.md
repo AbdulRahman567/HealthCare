@@ -51,8 +51,8 @@ Maven Wrapper is included under `backend/` (`mvnw` / `mvnw.cmd`) — system Mave
    `backend/`. OS / Docker / IDE environment variables always win over dotenv.
    Optional override path: `HMS_DOTENV_LOCATION=/absolute/path/to/.env`.
 
-4. **JWT (local vs shared)**  
-   - Local: placeholder secrets + `JWT_ALLOW_INSECURE_SECRETS=true` (defaults in examples).  
+4. **JWT (local vs shared)**
+   - Local: placeholder secrets + `JWT_ALLOW_INSECURE_SECRETS=true` (defaults in examples).
    - Staging/production: strong random `JWT_SECRET` / `JWT_REFRESH_SECRET` (≥32 chars) and
      `JWT_ALLOW_INSECURE_SECRETS=false` (also default under Spring profile `prod`).
 

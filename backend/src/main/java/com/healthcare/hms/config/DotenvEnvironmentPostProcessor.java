@@ -5,8 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -25,8 +27,7 @@ import org.springframework.core.env.MapPropertySource;
  *
  * <p>Search order (later files override earlier keys within dotenv only):
  * <ol>
- *   <li>{@code .env} under {@code user.dir}</li>
- *   <li>{@code backend/.env} under {@code user.dir} (monorepo root)</li>
+ *   <li>{@code .env} and {@code backend/.env} under {@code user.dir} and parents</li>
  *   <li>optional {@code hms.dotenv.location} system property / env {@code HMS_DOTENV_LOCATION}</li>
  * </ol>
  */
@@ -35,6 +36,7 @@ public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor 
 
     private static final Logger log = LoggerFactory.getLogger(DotenvEnvironmentPostProcessor.class);
     private static final String PROPERTY_SOURCE_NAME = "hmsDotenv";
+    private static final int MAX_PARENT_WALK = 6;
 
     @Override
     public void postProcessEnvironment(
@@ -44,8 +46,9 @@ public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor 
         final Path cwd = Path.of(System.getProperty("user.dir", ".")).toAbsolutePath().normalize();
         final Map<String, Object> values = new LinkedHashMap<>();
 
-        mergeFile(values, cwd.resolve(".env"));
-        mergeFile(values, cwd.resolve("backend").resolve(".env"));
+        for (final Path candidate : discoverEnvFiles(cwd)) {
+            mergeFile(values, candidate);
+        }
 
         final String explicit = firstNonBlank(
                 System.getProperty("hms.dotenv.location"),
@@ -62,6 +65,17 @@ public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor 
 
         environment.getPropertySources().addLast(new MapPropertySource(PROPERTY_SOURCE_NAME, values));
         log.info("Loaded {} dotenv entries from local .env file(s) (OS env still wins)", values.size());
+    }
+
+    private static Set<Path> discoverEnvFiles(final Path start) {
+        final Set<Path> files = new LinkedHashSet<>();
+        Path current = start;
+        for (int i = 0; i <= MAX_PARENT_WALK && current != null; i++) {
+            files.add(current.resolve(".env"));
+            files.add(current.resolve("backend").resolve(".env"));
+            current = current.getParent();
+        }
+        return files;
     }
 
     private static void mergeFile(final Map<String, Object> target, final Path file) {

@@ -239,9 +239,7 @@ export function StartConsultationPage({
                 {...register('appointmentId')}
               />
               {initialAppointmentId ? (
-                <p className="text-muted-foreground text-xs">
-                  Prefilled from appointment detail.
-                </p>
+                <p className="text-muted-foreground text-xs">Prefilled from appointment detail.</p>
               ) : null}
               <FieldError message={errors.appointmentId?.message} />
             </div>
@@ -269,11 +267,7 @@ export function StartConsultationPage({
           </div>
 
           <div className="flex flex-col-reverse gap-2 border-t pt-4 sm:flex-row sm:justify-end">
-            <Button
-              nativeButton={false}
-              variant="outline"
-              render={<Link href="/app/clinical" />}
-            >
+            <Button nativeButton={false} variant="outline" render={<Link href="/app/clinical" />}>
               Cancel
             </Button>
             <Button type="submit" disabled={isBusy}>

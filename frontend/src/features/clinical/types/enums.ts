@@ -16,21 +16,10 @@ export const EDITABLE_CONSULTATION_STATUSES: readonly ConsultationStatus[] = [
 export const DIAGNOSIS_TYPES = ['PRIMARY', 'SECONDARY', 'DIFFERENTIAL'] as const;
 export type DiagnosisType = (typeof DIAGNOSIS_TYPES)[number];
 
-export const DIAGNOSIS_STATUSES = [
-  'PROVISIONAL',
-  'CONFIRMED',
-  'RULED_OUT',
-  'RESOLVED',
-] as const;
+export const DIAGNOSIS_STATUSES = ['PROVISIONAL', 'CONFIRMED', 'RULED_OUT', 'RESOLVED'] as const;
 export type DiagnosisStatus = (typeof DIAGNOSIS_STATUSES)[number];
 
-export const DIAGNOSIS_SEVERITIES = [
-  'MILD',
-  'MODERATE',
-  'SEVERE',
-  'CRITICAL',
-  'UNKNOWN',
-] as const;
+export const DIAGNOSIS_SEVERITIES = ['MILD', 'MODERATE', 'SEVERE', 'CRITICAL', 'UNKNOWN'] as const;
 export type DiagnosisSeverity = (typeof DIAGNOSIS_SEVERITIES)[number];
 
 export const CLINICAL_NOTE_TYPES = [

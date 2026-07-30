@@ -9,6 +9,8 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -24,7 +26,8 @@ public abstract class BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false, updatable = false, columnDefinition = "CHAR(36)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", nullable = false, updatable = false, length = 36, columnDefinition = "CHAR(36)")
     private UUID id;
 
     @CreatedDate
@@ -36,11 +39,13 @@ public abstract class BaseEntity {
     private Instant updatedAt;
 
     @CreatedBy
-    @Column(name = "created_by", columnDefinition = "CHAR(36)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "created_by", length = 36, columnDefinition = "CHAR(36)")
     private UUID createdBy;
 
     @LastModifiedBy
-    @Column(name = "updated_by", columnDefinition = "CHAR(36)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "updated_by", length = 36, columnDefinition = "CHAR(36)")
     private UUID updatedBy;
 
     @Column(name = "deleted", nullable = false)
@@ -49,7 +54,8 @@ public abstract class BaseEntity {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
-    @Column(name = "deleted_by", columnDefinition = "CHAR(36)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "deleted_by", length = 36, columnDefinition = "CHAR(36)")
     private UUID deletedBy;
 
     @Version

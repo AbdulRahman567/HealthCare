@@ -30,10 +30,7 @@ export function PatientPrescriptionsPanel({ patientId }: PatientPrescriptionsPan
 
   if (query.isError) {
     return (
-      <EmptyState
-        title="Unable to load prescriptions"
-        description={getErrorMessage(query.error)}
-      />
+      <EmptyState title="Unable to load prescriptions" description={getErrorMessage(query.error)} />
     );
   }
 
@@ -101,9 +98,7 @@ export function PatientPrescriptionsPanel({ patientId }: PatientPrescriptionsPan
                         nativeButton={false}
                         size="sm"
                         variant="outline"
-                        render={
-                          <Link href={`/app/prescriptions/${rx.id}/print`} target="_blank" />
-                        }
+                        render={<Link href={`/app/prescriptions/${rx.id}/print`} target="_blank" />}
                       >
                         <PrinterIcon data-icon="inline-start" />
                         Print

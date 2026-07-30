@@ -250,12 +250,12 @@ Digitize doctor consultations.
 
 ### Sub-phases
 
-| Sub-phase | Scope                                                                                          | Status      |
-| --------- | ---------------------------------------------------------------------------------------------- | ----------- |
-| 7.1       | Domain model: Consultation, Diagnosis, ClinicalNote, VitalSigns, FollowUp; Flyway V33          | Done        |
-| 7.2       | Consultation APIs: lifecycle (start/pause/resume/complete), clinical documentation, audit      | Done        |
+| Sub-phase | Scope                                                                                             | Status      |
+| --------- | ------------------------------------------------------------------------------------------------- | ----------- |
+| 7.1       | Domain model: Consultation, Diagnosis, ClinicalNote, VitalSigns, FollowUp; Flyway V33             | Done        |
+| 7.2       | Consultation APIs: lifecycle (start/pause/resume/complete), clinical documentation, audit         | Done        |
 | 7.3       | Vital signs APIs: append-only measurements, patient history, BMI computation, clinical validation | Done        |
-| 7.4+      | Diagnosis/follow-up APIs, timeline integration, UI, security review                              | Not started |
+| 7.4+      | Diagnosis/follow-up APIs, timeline integration, UI, security review                               | Not started |
 
 ### Deliverables
 

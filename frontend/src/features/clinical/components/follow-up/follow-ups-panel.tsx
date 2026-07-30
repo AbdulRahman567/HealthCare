@@ -112,11 +112,7 @@ export function FollowUpsPanel({ consultationId, patientId, editable }: FollowUp
 
       <Can permissions={[Permissions.VISIT_UPDATE]}>
         {editable ? (
-          <form
-            onSubmit={onSubmit}
-            noValidate
-            className="space-y-4 rounded-xl border bg-card p-4"
-          >
+          <form onSubmit={onSubmit} noValidate className="space-y-4 rounded-xl border bg-card p-4">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-medium">Plan follow-up</h3>
               <DraftSaveIndicator status={status} lastSavedAt={lastSavedAt} />
@@ -174,9 +170,7 @@ export function FollowUpsPanel({ consultationId, patientId, editable }: FollowUp
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox
                   checked={watch('reminderEnabled')}
-                  onCheckedChange={(checked) =>
-                    setValue('reminderEnabled', checked === true)
-                  }
+                  onCheckedChange={(checked) => setValue('reminderEnabled', checked === true)}
                 />
                 Enable reminder
               </label>

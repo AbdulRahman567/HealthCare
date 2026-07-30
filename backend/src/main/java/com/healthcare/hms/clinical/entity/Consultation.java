@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -112,15 +113,18 @@ public class Consultation extends TenantOwnedEntity {
     private String summary;
 
     @Size(max = 4000)
-    @Column(name = "history_of_present_illness", length = 4000)
+    @Lob
+    @Column(name = "history_of_present_illness", columnDefinition = "TEXT")
     private String historyOfPresentIllness;
 
     @Size(max = 4000)
-    @Column(name = "physical_examination", length = 4000)
+    @Lob
+    @Column(name = "physical_examination", columnDefinition = "TEXT")
     private String physicalExamination;
 
     @Size(max = 4000)
-    @Column(name = "doctor_notes", length = 4000)
+    @Lob
+    @Column(name = "doctor_notes", columnDefinition = "TEXT")
     private String doctorNotes;
 
     @Column(name = "paused_at")

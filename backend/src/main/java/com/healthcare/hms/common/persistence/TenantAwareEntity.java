@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * Base type for every row that may carry a hospital tenant under the
@@ -23,7 +25,8 @@ import java.util.UUID;
 @EntityListeners(TenantEntityListener.class)
 public abstract class TenantAwareEntity extends BaseEntity {
 
-    @Column(name = "tenant_id", updatable = false, columnDefinition = "CHAR(36)")
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "tenant_id", updatable = false, length = 36, columnDefinition = "CHAR(36)")
     private UUID tenantId;
 
     public UUID getTenantId() {

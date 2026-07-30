@@ -32,13 +32,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Atomic hospital registration: tenant, default hospital, roles/permissions, initial admin.
  *
- * <p>The entire method runs in one transaction — any persistence failure rolls back all steps.
- * Verification email delivery failures are logged and do not roll back registration.
+ * <p>DB operations run in a single transaction. Verification email delivery is deferred
+ * until after the transaction commits, keeping the transaction boundary tight and
+ * preventing any FK lock contention from REQUIRES_NEW sub-transactions.
  */
 @Service
 public class HospitalRegistrationServiceImpl implements HospitalRegistrationService {
@@ -60,6 +62,7 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
     private final AuditLogService auditLogService;
     private final EmailVerificationService emailVerificationService;
     private final EmailVerificationEmailService emailVerificationEmailService;
+    private final TransactionTemplate transactionTemplate;
 
     public HospitalRegistrationServiceImpl(
             final TenantRepository tenantRepository,
@@ -70,7 +73,8 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
             final HospitalRegistrationMapper hospitalRegistrationMapper,
             final AuditLogService auditLogService,
             final EmailVerificationService emailVerificationService,
-            final EmailVerificationEmailService emailVerificationEmailService
+            final EmailVerificationEmailService emailVerificationEmailService,
+            final PlatformTransactionManager transactionManager
     ) {
         this.tenantRepository = tenantRepository;
         this.hospitalRepository = hospitalRepository;
@@ -81,10 +85,10 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         this.auditLogService = auditLogService;
         this.emailVerificationService = emailVerificationService;
         this.emailVerificationEmailService = emailVerificationEmailService;
+        this.transactionTemplate = new TransactionTemplate(transactionManager);
     }
 
     @Override
-    @Transactional
     public HospitalRegistrationResponse register(
             final HospitalRegistrationRequest request,
             final String ipAddress,
@@ -101,64 +105,61 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
             );
         }
 
-        final Tenant tenant = createTenant(request, hospitalEmail);
-        final Hospital hospital = createDefaultHospital(tenant, request, hospitalEmail);
-        final List<Role> roles = tenantRoleProvisioner.provisionDefaultRoles(tenant.getId());
-        final Role hospitalAdminRole = roles.stream()
-                .filter(role -> role.getType() == RoleType.HOSPITAL_ADMIN)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Hospital Admin role was not provisioned"));
-        final User admin = createInitialAdmin(tenant, request, adminEmail, hospitalAdminRole);
+        // All DB writes run inside a single transaction that commits before we
+        // proceed to send the verification email (avoids FK lock contention from
+        // REQUIRES_NEW sub-transactions and keeps the transaction boundary tight).
+        final RegistrationContext ctx = transactionTemplate.execute(status -> {
+            final Tenant tenant = createTenant(request, hospitalEmail);
+            final Hospital hospital = createDefaultHospital(tenant, request, hospitalEmail);
+            final List<Role> roles = tenantRoleProvisioner.provisionDefaultRoles(tenant.getId());
+            final Role hospitalAdminRole = roles.stream()
+                    .filter(role -> role.getType() == RoleType.HOSPITAL_ADMIN)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Hospital Admin role was not provisioned"));
+            final User admin = createInitialAdmin(tenant, request, adminEmail, hospitalAdminRole);
 
-        auditLogService.record(
-                tenant.getId(),
-                admin.getId(),
-                ENTITY_TENANT,
-                tenant.getId().toString(),
-                AuditAction.CREATE,
-                null,
-                "Hospital tenant registered: " + tenant.getName(),
-                ipAddress,
-                userAgent
-        );
-        auditLogService.record(
-                tenant.getId(),
-                admin.getId(),
-                ENTITY_HOSPITAL,
-                hospital.getId().toString(),
-                AuditAction.CREATE,
-                null,
-                "Default hospital created: " + hospital.getName(),
-                ipAddress,
-                userAgent
-        );
-        auditLogService.record(
-                tenant.getId(),
-                admin.getId(),
-                ENTITY_USER,
-                admin.getId().toString(),
-                AuditAction.CREATE,
-                null,
-                "Initial hospital admin registered (email verification pending)",
-                ipAddress,
-                userAgent
-        );
+            auditLogService.record(
+                    tenant.getId(), admin.getId(),
+                    ENTITY_TENANT, tenant.getId().toString(),
+                    AuditAction.CREATE, null,
+                    "Hospital tenant registered: " + tenant.getName(),
+                    ipAddress, userAgent
+            );
+            auditLogService.record(
+                    tenant.getId(), admin.getId(),
+                    ENTITY_HOSPITAL, hospital.getId().toString(),
+                    AuditAction.CREATE, null,
+                    "Default hospital created: " + hospital.getName(),
+                    ipAddress, userAgent
+            );
+            auditLogService.record(
+                    tenant.getId(), admin.getId(),
+                    ENTITY_USER, admin.getId().toString(),
+                    AuditAction.CREATE, null,
+                    "Initial hospital admin registered (email verification pending)",
+                    ipAddress, userAgent
+            );
 
-        sendVerificationEmail(admin, ipAddress, userAgent);
+            return new RegistrationContext(tenant, hospital, admin, roles);
+        });
 
-        final List<String> provisionedRoleNames = roles.stream()
+        // At this point the transaction has committed — all DB locks released.
+        // Send verification email in its own transaction context.
+        sendVerificationEmail(ctx.admin, ipAddress, userAgent);
+
+        final List<String> provisionedRoleNames = ctx.roles.stream()
                 .map(role -> role.getType().name())
                 .toList();
 
         log.info(
                 "Hospital registration completed tenantId={} hospitalId={} adminUserId={} roles={}",
-                tenant.getId(),
-                hospital.getId(),
-                admin.getId(),
+                ctx.tenant.getId(),
+                ctx.hospital.getId(),
+                ctx.admin.getId(),
                 provisionedRoleNames
         );
 
-        return hospitalRegistrationMapper.toResponse(tenant, hospital, admin, provisionedRoleNames);
+        return hospitalRegistrationMapper.toResponse(ctx.tenant, ctx.hospital, ctx.admin, provisionedRoleNames);
     }
 
     private Tenant createTenant(final HospitalRegistrationRequest request, final String hospitalEmail) {
@@ -169,11 +170,9 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         tenant.setEmail(hospitalEmail);
         tenant.setPhone(trimToNull(request.hospitalPhone()));
         tenant.setAddress(trimToNull(request.hospitalAddress()));
-        // Public registration always starts on BASIC; paid plans require billing upgrade later.
         tenant.setSubscriptionPlan(SubscriptionPlan.BASIC);
-        // PENDING until the initial admin verifies email — prevents open tenant takeover.
         tenant.setStatus(TenantStatus.PENDING);
-        return tenantRepository.saveAndFlush(tenant);
+        return tenantRepository.save(tenant);
     }
 
     private Hospital createDefaultHospital(
@@ -193,7 +192,7 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         hospital.setLanguage(Hospital.DEFAULT_LANGUAGE);
         hospital.setDefaultHospital(true);
         hospital.setStatus(HospitalStatus.PENDING);
-        return hospitalRepository.saveAndFlush(hospital);
+        return hospitalRepository.save(hospital);
     }
 
     private User createInitialAdmin(
@@ -212,7 +211,7 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         admin.setStatus(UserStatus.ACTIVE);
         admin.setEmailVerified(false);
         admin.addRole(hospitalAdminRole);
-        return userRepository.saveAndFlush(admin);
+        return userRepository.save(admin);
     }
 
     private void sendVerificationEmail(final User admin, final String ipAddress, final String userAgent) {
@@ -274,4 +273,7 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         final String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
     }
+
+    /** Holder for objects created inside the transaction callback. */
+    private record RegistrationContext(Tenant tenant, Hospital hospital, User admin, List<Role> roles) {}
 }

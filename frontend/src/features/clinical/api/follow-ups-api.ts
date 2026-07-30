@@ -78,9 +78,7 @@ export const followUpsApi = {
   },
 
   async getGlobalById(id: string): Promise<FollowUpResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<FollowUpResponse>>(
-      `/follow-ups/${id}`,
-    );
+    const { data } = await apiClient.get<ApiSuccessResponse<FollowUpResponse>>(`/follow-ups/${id}`);
     return data.data;
   },
 

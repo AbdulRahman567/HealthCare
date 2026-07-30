@@ -99,11 +99,7 @@ export function VitalsPanel({ consultationId, patientId, editable }: VitalsPanel
 
       <Can permissions={[Permissions.VISIT_UPDATE]}>
         {editable ? (
-          <form
-            onSubmit={onSubmit}
-            noValidate
-            className="space-y-4 rounded-xl border bg-card p-4"
-          >
+          <form onSubmit={onSubmit} noValidate className="space-y-4 rounded-xl border bg-card p-4">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-medium">Record measurement</h3>
               <DraftSaveIndicator status={status} lastSavedAt={lastSavedAt} />
@@ -215,10 +211,7 @@ export function VitalsPanel({ consultationId, patientId, editable }: VitalsPanel
                   <TableCell>{row.temperatureCelsius ?? '—'}</TableCell>
                   <TableCell>{row.heartRateBpm ?? '—'}</TableCell>
                   <TableCell>
-                    {formatBp(
-                      row.bloodPressure?.systolicMmHg,
-                      row.bloodPressure?.diastolicMmHg,
-                    )}
+                    {formatBp(row.bloodPressure?.systolicMmHg, row.bloodPressure?.diastolicMmHg)}
                   </TableCell>
                   <TableCell>{row.oxygenSaturationPercent ?? '—'}</TableCell>
                   <TableCell>{row.bmi ?? '—'}</TableCell>

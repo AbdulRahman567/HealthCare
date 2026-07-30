@@ -17,19 +17,19 @@ with child data for diagnoses, SOAP-aligned notes, vital signs, and follow-up pl
 
 This module is the encounter layer between Appointment Management (Phase 6) and Prescription
 Management (Phase 9). Patient longitudinal history (Phase 5.3) remains separate — consultation
-diagnoses capture the *encounter assertion*, not the full chronic disease registry.
+diagnoses capture the _encounter assertion_, not the full chronic disease registry.
 
 ---
 
 ## 2. Aggregate design
 
-| Entity | Table | Role |
-| ------ | ----- | ---- |
-| `Consultation` | `consultations` | Aggregate root — encounter lifecycle |
-| `Diagnosis` | `consultation_diagnoses` | Structured ICD-capable diagnoses per encounter |
-| `ClinicalNote` | `clinical_notes` | SOAP-typed bounded clinical documentation |
-| `VitalSigns` | `vital_signs` | Typed numeric vitals (time-series per patient) |
-| `FollowUp` | `consultation_follow_ups` | Planned return visits with optional appointment link |
+| Entity         | Table                     | Role                                                 |
+| -------------- | ------------------------- | ---------------------------------------------------- |
+| `Consultation` | `consultations`           | Aggregate root — encounter lifecycle                 |
+| `Diagnosis`    | `consultation_diagnoses`  | Structured ICD-capable diagnoses per encounter       |
+| `ClinicalNote` | `clinical_notes`          | SOAP-typed bounded clinical documentation            |
+| `VitalSigns`   | `vital_signs`             | Typed numeric vitals (time-series per patient)       |
+| `FollowUp`     | `consultation_follow_ups` | Planned return visits with optional appointment link |
 
 All tables include: UUID PK, `tenant_id`, audit fields (`created_at`, `updated_at`, `created_by`, `updated_by`), soft delete (`deleted`, `deleted_at`, `deleted_by`), and optimistic locking (`version`).
 
@@ -163,27 +163,27 @@ stateDiagram-v2
     CANCELLED --> [*]
 ```
 
-| Status | Meaning |
-| ------ | ------- |
-| `DRAFT` | Created, pre-charting |
-| `IN_PROGRESS` | Active encounter |
-| `PAUSED` | Temporarily suspended |
-| `COMPLETED` | Closed chart (read-only unless amended in later phase) |
-| `CANCELLED` | Voided encounter |
+| Status        | Meaning                                                |
+| ------------- | ------------------------------------------------------ |
+| `DRAFT`       | Created, pre-charting                                  |
+| `IN_PROGRESS` | Active encounter                                       |
+| `PAUSED`      | Temporarily suspended                                  |
+| `COMPLETED`   | Closed chart (read-only unless amended in later phase) |
+| `CANCELLED`   | Voided encounter                                       |
 
 ---
 
 ## 6. Enums
 
-| Enum | Values | Used by |
-| ---- | ------ | ------- |
-| `ConsultationStatus` | DRAFT, IN_PROGRESS, COMPLETED, CANCELLED | Consultation |
-| `DiagnosisType` | PRIMARY, SECONDARY, DIFFERENTIAL | Diagnosis |
-| `DiagnosisStatus` | PROVISIONAL, CONFIRMED, RULED_OUT, RESOLVED | Diagnosis |
-| `DiagnosisSeverity` | MILD, MODERATE, SEVERE, CRITICAL, UNKNOWN | Diagnosis |
-| `ClinicalNoteType` | SUBJECTIVE, OBJECTIVE, ASSESSMENT, PLAN, PROGRESS, PROCEDURE, DISCHARGE, ADVICE, GENERAL | ClinicalNote |
-| `FollowUpStatus` | PENDING, SCHEDULED, COMPLETED, CANCELLED, MISSED | FollowUp |
-| `FollowUpPriority` | ROUTINE, URGENT | FollowUp |
+| Enum                 | Values                                                                                   | Used by      |
+| -------------------- | ---------------------------------------------------------------------------------------- | ------------ |
+| `ConsultationStatus` | DRAFT, IN_PROGRESS, COMPLETED, CANCELLED                                                 | Consultation |
+| `DiagnosisType`      | PRIMARY, SECONDARY, DIFFERENTIAL                                                         | Diagnosis    |
+| `DiagnosisStatus`    | PROVISIONAL, CONFIRMED, RULED_OUT, RESOLVED                                              | Diagnosis    |
+| `DiagnosisSeverity`  | MILD, MODERATE, SEVERE, CRITICAL, UNKNOWN                                                | Diagnosis    |
+| `ClinicalNoteType`   | SUBJECTIVE, OBJECTIVE, ASSESSMENT, PLAN, PROGRESS, PROCEDURE, DISCHARGE, ADVICE, GENERAL | ClinicalNote |
+| `FollowUpStatus`     | PENDING, SCHEDULED, COMPLETED, CANCELLED, MISSED                                         | FollowUp     |
+| `FollowUpPriority`   | ROUTINE, URGENT                                                                          | FollowUp     |
 
 ---
 
@@ -233,18 +233,18 @@ clinical/
 
 ## 8. Cross-module relationships
 
-| From | To | FK column | Notes |
-| ---- | -- | --------- | ----- |
-| Consultation | Patient | `patient_id` | Required |
-| Consultation | Doctor | `doctor_id` | Required; clinical authorship |
-| Consultation | Department | `department_id` | Required |
-| Consultation | Hospital | `hospital_id` | Required |
-| Consultation | Appointment | `appointment_id` | Optional; unique per tenant when set |
-| Diagnosis | Consultation | `consultation_id` | Required |
-| Diagnosis | Doctor | `diagnosing_doctor_id` | Required |
-| ClinicalNote | Doctor | `author_doctor_id` | Required |
-| VitalSigns | User | `recorded_by_user_id` | Optional; nurses may record |
-| FollowUp | Appointment | `follow_up_appointment_id` | Optional; set when booked |
+| From         | To           | FK column                  | Notes                                |
+| ------------ | ------------ | -------------------------- | ------------------------------------ |
+| Consultation | Patient      | `patient_id`               | Required                             |
+| Consultation | Doctor       | `doctor_id`                | Required; clinical authorship        |
+| Consultation | Department   | `department_id`            | Required                             |
+| Consultation | Hospital     | `hospital_id`              | Required                             |
+| Consultation | Appointment  | `appointment_id`           | Optional; unique per tenant when set |
+| Diagnosis    | Consultation | `consultation_id`          | Required                             |
+| Diagnosis    | Doctor       | `diagnosing_doctor_id`     | Required                             |
+| ClinicalNote | Doctor       | `author_doctor_id`         | Required                             |
+| VitalSigns   | User         | `recorded_by_user_id`      | Optional; nurses may record          |
+| FollowUp     | Appointment  | `follow_up_appointment_id` | Optional; set when booked            |
 
 All cross-module references are **UUID FKs only** — no JPA `@ManyToOne` across module boundaries.
 
@@ -252,15 +252,15 @@ All cross-module references are **UUID FKs only** — no JPA `@ManyToOne` across
 
 ## 9. Indexing strategy
 
-| Pattern | Index |
-| ------- | ----- |
-| Tenant isolation | `tenant_id` on every table |
-| Patient chart history | `(tenant_id, patient_id, consultation_date)` |
-| Doctor daily list | `(tenant_id, doctor_id, consultation_date)` |
-| Appointment linkage | Unique `(tenant_id, appointment_id)` among live rows |
-| Consultation number | Unique `(tenant_id, consultation_number)` among live rows |
-| Vitals trends | `(tenant_id, patient_id, recorded_at)` |
-| Follow-up due list | `(tenant_id, status, scheduled_date)` |
+| Pattern               | Index                                                     |
+| --------------------- | --------------------------------------------------------- |
+| Tenant isolation      | `tenant_id` on every table                                |
+| Patient chart history | `(tenant_id, patient_id, consultation_date)`              |
+| Doctor daily list     | `(tenant_id, doctor_id, consultation_date)`               |
+| Appointment linkage   | Unique `(tenant_id, appointment_id)` among live rows      |
+| Consultation number   | Unique `(tenant_id, consultation_number)` among live rows |
+| Vitals trends         | `(tenant_id, patient_id, recorded_at)`                    |
+| Follow-up due list    | `(tenant_id, status, scheduled_date)`                     |
 
 Soft-delete-aware uniqueness uses generated slot columns (`active_consultation_number_slot`, `active_appointment_slot`) matching the Appointment module pattern.
 
@@ -288,35 +288,35 @@ Diagnosis / vitals / follow-up child-entity APIs delivered in Phases 7.3–7.4. 
 
 Base path: `/api/v1/consultations` — permissions: `VISIT_READ`, `VISIT_CREATE`, `VISIT_UPDATE`.
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| POST | `/` | Create consultation (optional `startImmediately`) |
-| GET | `/` | Search / list (paginated) |
-| GET | `/{id}` | Get consultation (audit VIEW) |
-| GET | `/{id}/clinical-summary` | Clinical summary only (audit VIEW) |
-| PUT | `/{id}/documentation` | Update chief complaint, HPI, exam, notes, summary, advice |
-| PATCH | `/{id}/start` | DRAFT → IN_PROGRESS |
-| PATCH | `/{id}/pause` | IN_PROGRESS → PAUSED |
-| PATCH | `/{id}/resume` | PAUSED → IN_PROGRESS |
-| PATCH | `/{id}/complete` | IN_PROGRESS/PAUSED → COMPLETED |
+| Method | Path                     | Description                                               |
+| ------ | ------------------------ | --------------------------------------------------------- |
+| POST   | `/`                      | Create consultation (optional `startImmediately`)         |
+| GET    | `/`                      | Search / list (paginated)                                 |
+| GET    | `/{id}`                  | Get consultation (audit VIEW)                             |
+| GET    | `/{id}/clinical-summary` | Clinical summary only (audit VIEW)                        |
+| PUT    | `/{id}/documentation`    | Update chief complaint, HPI, exam, notes, summary, advice |
+| PATCH  | `/{id}/start`            | DRAFT → IN_PROGRESS                                       |
+| PATCH  | `/{id}/pause`            | IN_PROGRESS → PAUSED                                      |
+| PATCH  | `/{id}/resume`           | PAUSED → IN_PROGRESS                                      |
+| PATCH  | `/{id}/complete`         | IN_PROGRESS/PAUSED → COMPLETED                            |
 
 ### Phase 7.3 Vital signs API surface
 
 Consultation-scoped (`/api/v1/consultations/{consultationId}/vital-signs`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| POST | `/` | Append new measurement row |
-| GET | `/` | List all readings for consultation (chronological) |
-| GET | `/{id}` | Get single measurement (audit VIEW) |
-| PUT | `/{id}` | Correct row while consultation editable |
-| DELETE | `/{id}` | Soft-delete entered-in-error row |
+| Method | Path    | Description                                        |
+| ------ | ------- | -------------------------------------------------- |
+| POST   | `/`     | Append new measurement row                         |
+| GET    | `/`     | List all readings for consultation (chronological) |
+| GET    | `/{id}` | Get single measurement (audit VIEW)                |
+| PUT    | `/{id}` | Correct row while consultation editable            |
+| DELETE | `/{id}` | Soft-delete entered-in-error row                   |
 
 Patient history (`/api/v1/patients/{patientId}/vital-signs`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/` | Paginated cross-consultation time series (newest first) |
+| Method | Path | Description                                             |
+| ------ | ---- | ------------------------------------------------------- |
+| GET    | `/`  | Paginated cross-consultation time series (newest first) |
 
 Clinical rules: BP requires systolic+diastolic pair with systolic &gt; diastolic; BMI computed server-side; pain scale 0–10 NRS; append-only history for trends.
 
@@ -324,19 +324,19 @@ Clinical rules: BP requires systolic+diastolic pair with systolic &gt; diastolic
 
 Consultation-scoped (`/api/v1/consultations/{consultationId}/diagnoses`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| POST | `/` | Add structured diagnosis row |
-| GET | `/` | List diagnoses (sequenceNumber ascending) |
-| GET | `/{id}` | Get single diagnosis (audit VIEW) |
-| PUT | `/{id}` | Update while consultation editable |
-| DELETE | `/{id}` | Soft-delete diagnosis |
+| Method | Path    | Description                               |
+| ------ | ------- | ----------------------------------------- |
+| POST   | `/`     | Add structured diagnosis row              |
+| GET    | `/`     | List diagnoses (sequenceNumber ascending) |
+| GET    | `/{id}` | Get single diagnosis (audit VIEW)         |
+| PUT    | `/{id}` | Update while consultation editable        |
+| DELETE | `/{id}` | Soft-delete diagnosis                     |
 
 Patient history (`/api/v1/patients/{patientId}/diagnoses`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/` | Paginated cross-consultation diagnoses (newest diagnosedAt first) |
+| Method | Path | Description                                                       |
+| ------ | ---- | ----------------------------------------------------------------- |
+| GET    | `/`  | Paginated cross-consultation diagnoses (newest diagnosedAt first) |
 
 Clinical rules: at most one `PRIMARY` per consultation; ICD-10 optional validation; `DIFFERENTIAL` = working diagnosis; `CONFIRMED` = final diagnosis; clinical notes redacted in audit snapshots; writes only while consultation is `DRAFT` \| `IN_PROGRESS` \| `PAUSED`.
 
@@ -344,19 +344,19 @@ Clinical rules: at most one `PRIMARY` per consultation; ICD-10 optional validati
 
 Consultation-scoped (`/api/v1/consultations/{consultationId}/follow-ups`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| POST | `/` | Plan follow-up visit |
-| GET | `/` | List follow-ups (scheduledDate ascending) |
-| GET | `/{id}` | Get single follow-up (audit VIEW) |
-| PUT | `/{id}` | Update plan/status while consultation editable |
-| DELETE | `/{id}` | Soft-delete follow-up |
+| Method | Path    | Description                                    |
+| ------ | ------- | ---------------------------------------------- |
+| POST   | `/`     | Plan follow-up visit                           |
+| GET    | `/`     | List follow-ups (scheduledDate ascending)      |
+| GET    | `/{id}` | Get single follow-up (audit VIEW)              |
+| PUT    | `/{id}` | Update plan/status while consultation editable |
+| DELETE | `/{id}` | Soft-delete follow-up                          |
 
 Patient history (`/api/v1/patients/{patientId}/follow-ups`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/` | Paginated follow-up plans (newest scheduledDate first; filter by status/date) |
+| Method | Path | Description                                                                   |
+| ------ | ---- | ----------------------------------------------------------------------------- |
+| GET    | `/`  | Paginated follow-up plans (newest scheduledDate first; filter by status/date) |
 
 Clinical rules: scheduled date must not be in the past; `follow_up_appointment_id` must match same tenant/patient/doctor; reason/instructions redacted in audit snapshots.
 
@@ -368,22 +368,22 @@ Permissions: `PRESCRIPTION_READ`, `PRESCRIPTION_CREATE`, `PRESCRIPTION_UPDATE`, 
 
 Top-level (`/api/v1/prescriptions`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| POST | `/` | Create prescription with medicine lines (optional `issueImmediately`) |
-| GET | `/` | Search / list (paginated) |
-| GET | `/{id}` | Get prescription + items (audit VIEW) |
-| PUT | `/{id}` | Update DRAFT header / replace items |
-| PATCH | `/{id}/issue` | DRAFT → ISSUED |
-| PATCH | `/{id}/cancel` | Cancel (not when DISPENSED) |
-| DELETE | `/{id}` | Soft-delete DRAFT + items |
+| Method | Path           | Description                                                           |
+| ------ | -------------- | --------------------------------------------------------------------- |
+| POST   | `/`            | Create prescription with medicine lines (optional `issueImmediately`) |
+| GET    | `/`            | Search / list (paginated)                                             |
+| GET    | `/{id}`        | Get prescription + items (audit VIEW)                                 |
+| PUT    | `/{id}`        | Update DRAFT header / replace items                                   |
+| PATCH  | `/{id}/issue`  | DRAFT → ISSUED                                                        |
+| PATCH  | `/{id}/cancel` | Cancel (not when DISPENSED)                                           |
+| DELETE | `/{id}`        | Soft-delete DRAFT + items                                             |
 
 Consultation / patient:
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/api/v1/consultations/{consultationId}/prescriptions` | List for encounter |
-| GET | `/api/v1/patients/{patientId}/prescriptions` | Paginated history (cross-doctor) |
+| Method | Path                                                   | Description                      |
+| ------ | ------------------------------------------------------ | -------------------------------- |
+| GET    | `/api/v1/consultations/{consultationId}/prescriptions` | List for encounter               |
+| GET    | `/api/v1/patients/{patientId}/prescriptions`           | Paginated history (cross-doctor) |
 
 **Line item fields:** medicine name, dosage, frequency, route, duration, instructions, quantity, refills; optional `medicine_id` / `medicine_code` for future catalog/pharmacy.
 
@@ -395,12 +395,12 @@ Consultation / patient:
 
 Closes Phase 9 DoD on top of 7.5/7.8:
 
-| Surface | Detail |
-| ------- | ------ |
-| Printable Rx | App route `/app/prescriptions/{id}/print` (`PRESCRIPTION_READ`) — browser print layout; Print actions on encounter Rx panel and patient chart history |
-| Patient history | Chart tab **Prescriptions** uses `GET /patients/{id}/prescriptions` |
-| Manage gates | FE Issue / Cancel / Delete only while consultation `editable`; Cancel for `DRAFT` / `ISSUED` / `PARTIALLY_DISPENSED` |
-| Lifecycle | Backend `issue` calls `requirePrescribableConsultation` (aligned with create/update) |
+| Surface         | Detail                                                                                                                                                |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Printable Rx    | App route `/app/prescriptions/{id}/print` (`PRESCRIPTION_READ`) — browser print layout; Print actions on encounter Rx panel and patient chart history |
+| Patient history | Chart tab **Prescriptions** uses `GET /patients/{id}/prescriptions`                                                                                   |
+| Manage gates    | FE Issue / Cancel / Delete only while consultation `editable`; Cancel for `DRAFT` / `ISSUED` / `PARTIALLY_DISPENSED`                                  |
+| Lifecycle       | Backend `issue` calls `requirePrescribableConsultation` (aligned with create/update)                                                                  |
 
 Medicine **name** selection remains free-text with dosage/frequency/duration/route lines (catalog/pharmacy master is out of Phase 9 scope). Email/PDF server endpoints remain future enhancements — printable DoD is met via dedicated print UI.
 
@@ -413,18 +413,18 @@ Permissions: `VISIT_READ`, `VISIT_UPDATE`, `VISIT_DELETE`.
 
 Consultation-scoped (`/api/v1/consultations/{consultationId}/clinical-notes`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| POST | `/` | Create note (SOAP / progress / procedure / discharge / …) |
-| GET | `/` | List notes (optional `noteType` filter) |
-| GET | `/{noteId}` | Get note + attachment metadata (audit VIEW) |
-| PUT | `/{noteId}` | Update while consultation editable |
-| DELETE | `/{noteId}` | Soft-delete note + attachments |
-| POST | `/{noteId}/attachments` | Multipart upload (image/PDF) |
-| GET | `/{noteId}/attachments` | List attachment metadata |
-| GET | `/{noteId}/attachments/{id}` | Attachment metadata |
-| GET | `/{noteId}/attachments/{id}/download` | Stream binary from object storage |
-| DELETE | `/{noteId}/attachments/{id}` | Soft-delete + remove object |
+| Method | Path                                  | Description                                               |
+| ------ | ------------------------------------- | --------------------------------------------------------- |
+| POST   | `/`                                   | Create note (SOAP / progress / procedure / discharge / …) |
+| GET    | `/`                                   | List notes (optional `noteType` filter)                   |
+| GET    | `/{noteId}`                           | Get note + attachment metadata (audit VIEW)               |
+| PUT    | `/{noteId}`                           | Update while consultation editable                        |
+| DELETE | `/{noteId}`                           | Soft-delete note + attachments                            |
+| POST   | `/{noteId}/attachments`               | Multipart upload (image/PDF)                              |
+| GET    | `/{noteId}/attachments`               | List attachment metadata                                  |
+| GET    | `/{noteId}/attachments/{id}`          | Attachment metadata                                       |
+| GET    | `/{noteId}/attachments/{id}/download` | Stream binary from object storage                         |
+| DELETE | `/{noteId}/attachments/{id}`          | Soft-delete + remove object                               |
 
 Patient history: `GET /api/v1/patients/{patientId}/clinical-notes` (paginated).
 
@@ -442,17 +442,17 @@ Builds on Phase 7.4 follow-up CRUD. Flyway `V37__follow_up_management.sql`.
 
 Consultation-scoped (existing + status):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| PATCH | `/{id}/status` | Status transition (works after consultation completed) |
+| Method | Path           | Description                                            |
+| ------ | -------------- | ------------------------------------------------------ |
+| PATCH  | `/{id}/status` | Status transition (works after consultation completed) |
 
 Optimized APIs (`/api/v1/follow-ups`):
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET | `/` | Search (filters: patient/doctor/status/priority/date, `overdueOnly`, `dueSoonOnly`) |
-| GET | `/due` | Doctor worklist — open follow-ups due/overdue (default 14 days) |
-| GET | `/{id}` | Direct lookup by id |
+| Method | Path    | Description                                                                         |
+| ------ | ------- | ----------------------------------------------------------------------------------- |
+| GET    | `/`     | Search (filters: patient/doctor/status/priority/date, `overdueOnly`, `dueSoonOnly`) |
+| GET    | `/due`  | Doctor worklist — open follow-ups due/overdue (default 14 days)                     |
+| GET    | `/{id}` | Direct lookup by id                                                                 |
 
 **Timeline:** `FollowUpTimelineProvider` emits `FOLLOW_UP`; Phase 7.10 adds `ConsultationTimelineProvider` (`VISIT`) and `PrescriptionTimelineProvider` (`PRESCRIPTION`) — PHI-light summaries; full detail via clinical/Rx APIs.
 
@@ -466,13 +466,13 @@ Frontend feature module: `frontend/src/features/clinical`.
 
 Routes (permission-gated):
 
-| Path | Permission | Screen |
-| ---- | ---------- | ------ |
-| `/app/clinical` | `VISIT_READ` | Consultation list |
-| `/app/clinical/new` | `VISIT_CREATE` | Start consultation |
-| `/app/clinical/[id]` | `VISIT_READ` | Consultation workspace |
-| `/app/clinical/follow-ups` | `VISIT_READ` | Follow-up worklist / due list |
-| `/app/prescriptions/[id]/print` | `PRESCRIPTION_READ` | Printable prescription |
+| Path                            | Permission          | Screen                        |
+| ------------------------------- | ------------------- | ----------------------------- |
+| `/app/clinical`                 | `VISIT_READ`        | Consultation list             |
+| `/app/clinical/new`             | `VISIT_CREATE`      | Start consultation            |
+| `/app/clinical/[id]`            | `VISIT_READ`        | Consultation workspace        |
+| `/app/clinical/follow-ups`      | `VISIT_READ`        | Follow-up worklist / due list |
+| `/app/prescriptions/[id]/print` | `PRESCRIPTION_READ` | Printable prescription        |
 
 **Workspace tabs:** Chart (documentation) · Vitals · Diagnosis · Prescriptions · Clinical notes · Follow-up · Patient timeline.
 
@@ -484,17 +484,17 @@ Routes (permission-gated):
 
 ## 12. Next sub-phases (roadmap)
 
-| Sub-phase | Scope |
-| --------- | ----- |
-| 7.2 | Consultation CRUD APIs + lifecycle service ✅ |
-| 7.3 | Vital signs APIs + patient history ✅ |
-| 7.4 | Diagnosis / follow-up APIs ✅ |
-| 7.5 | Prescription APIs (pharmacy-ready) ✅ |
-| 7.6 | Clinical notes + attachments + object storage ✅ |
-| 7.7 | Follow-up management + timeline + reminder-ready APIs ✅ |
-| 7.8 | Clinical Workflow UI ✅ |
-| 7.9 | Security review ✅ |
-| 7.10 | Production readiness (queue↔chart sync, cancel, VISIT/Rx timeline, V38) ✅ |
+| Sub-phase | Scope                                                                      |
+| --------- | -------------------------------------------------------------------------- |
+| 7.2       | Consultation CRUD APIs + lifecycle service ✅                              |
+| 7.3       | Vital signs APIs + patient history ✅                                      |
+| 7.4       | Diagnosis / follow-up APIs ✅                                              |
+| 7.5       | Prescription APIs (pharmacy-ready) ✅                                      |
+| 7.6       | Clinical notes + attachments + object storage ✅                           |
+| 7.7       | Follow-up management + timeline + reminder-ready APIs ✅                   |
+| 7.8       | Clinical Workflow UI ✅                                                    |
+| 7.9       | Security review ✅                                                         |
+| 7.10      | Production readiness (queue↔chart sync, cancel, VISIT/Rx timeline, V38) ✅ |
 
 ### Queue ↔ consultation bridge (Phase 7.10)
 

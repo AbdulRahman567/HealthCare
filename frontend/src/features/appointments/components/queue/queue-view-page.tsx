@@ -274,9 +274,7 @@ export function QueueViewPage() {
                                   nativeButton={false}
                                   size="sm"
                                   variant="outline"
-                                  render={
-                                    <Link href={`/app/clinical/${entry.consultationId}`} />
-                                  }
+                                  render={<Link href={`/app/clinical/${entry.consultationId}`} />}
                                 >
                                   Open chart
                                 </Button>

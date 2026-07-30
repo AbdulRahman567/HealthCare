@@ -14,8 +14,7 @@ export const followUpKeys = {
   all: ['follow-ups'] as const,
   consultation: (consultationId: string) =>
     [...consultationKeys.detail(consultationId), 'follow-ups'] as const,
-  list: (consultationId: string) =>
-    [...followUpKeys.consultation(consultationId), 'list'] as const,
+  list: (consultationId: string) => [...followUpKeys.consultation(consultationId), 'list'] as const,
   search: (query: FollowUpSearchQuery) => [...followUpKeys.all, 'search', query] as const,
   due: (withinDays: number) => [...followUpKeys.all, 'due', withinDays] as const,
 };
@@ -59,8 +58,7 @@ export function useFollowUpMutations(consultationId: string, patientId?: string)
 
   return {
     create: useMutation({
-      mutationFn: (payload: CreateFollowUpPayload) =>
-        followUpsApi.create(consultationId, payload),
+      mutationFn: (payload: CreateFollowUpPayload) => followUpsApi.create(consultationId, payload),
       onSuccess: invalidate,
     }),
     update: useMutation({

@@ -127,15 +127,15 @@ Family history adds `familyRelation` (`MOTHER`, `FATHER`, `SIBLING`, …) — Fl
 
 Roadmap Phase 8 maps onto this module (no separate `medical-records` package):
 
-| Deliverable | Status |
-| ----------- | ------ |
-| Disease history | Done (`PastDisease`) |
-| Chronic diseases | Done (`ChronicCondition`) |
-| Allergies | Done (`Allergy`) |
-| Family history | Done (`FamilyHistory`, V39) |
-| Surgery history | Done (`SurgeryHistory`) |
-| Vaccination history | Done (`Immunization`) |
-| Medical timeline | Done (SPI + `FAMILY_HISTORY` events) |
+| Deliverable         | Status                               |
+| ------------------- | ------------------------------------ |
+| Disease history     | Done (`PastDisease`)                 |
+| Chronic diseases    | Done (`ChronicCondition`)            |
+| Allergies           | Done (`Allergy`)                     |
+| Family history      | Done (`FamilyHistory`, V39)          |
+| Surgery history     | Done (`SurgeryHistory`)              |
+| Vaccination history | Done (`Immunization`)                |
+| Medical timeline    | Done (SPI + `FAMILY_HISTORY` events) |
 
 **Critical/High remaining: none** after Phase 8 family-history close-out.
 
@@ -214,15 +214,15 @@ Query params: `types` (multi), `cursor`, `size` (default 20, max 100), `directio
 
 ### Design (reviewed)
 
-| Concern        | Decision                                                                                                 |
-| -------------- | -------------------------------------------------------------------------------------------------------- |
-| Aggregation    | On-read fan-out via `TimelineEventProvider` SPI — **no** materialised timeline table                     |
-| Ordering       | Clinical event date (`occurredOn`), then `recordedAt`, then type, then `sourceId`                        |
-| Pagination     | Opaque keyset cursor (offset unsuitable for merged feeds)                                                |
-| Future modules | `LAB_RESULT` / `BILLING` enum values reserved; empty until providers register |
-| Registered timeline | `VISIT` / `PRESCRIPTION` / `FOLLOW_UP` (+ Phase 5 history/allergy/immunization/family) |
-| Safety         | Timeline does **not** replace allergy banner / critical APIs                                             |
-| Indexes        | Flyway `V22__patient_timeline_indexes.sql` adds allergy `onset_date` / `created_at` indexes              |
+| Concern             | Decision                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| Aggregation         | On-read fan-out via `TimelineEventProvider` SPI — **no** materialised timeline table        |
+| Ordering            | Clinical event date (`occurredOn`), then `recordedAt`, then type, then `sourceId`           |
+| Pagination          | Opaque keyset cursor (offset unsuitable for merged feeds)                                   |
+| Future modules      | `LAB_RESULT` / `BILLING` enum values reserved; empty until providers register               |
+| Registered timeline | `VISIT` / `PRESCRIPTION` / `FOLLOW_UP` (+ Phase 5 history/allergy/immunization/family)      |
+| Safety              | Timeline does **not** replace allergy banner / critical APIs                                |
+| Indexes             | Flyway `V22__patient_timeline_indexes.sql` adds allergy `onset_date` / `created_at` indexes |
 
 ### `occurredOn` mapping
 

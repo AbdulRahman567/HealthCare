@@ -790,10 +790,7 @@ export function MedicalHistoryPanel({ patientId }: MedicalHistoryPanelProps) {
 }
 
 type HistoryRow =
-  | PastDiseaseResponse
-  | SurgeryHistoryResponse
-  | ChronicConditionResponse
-  | FamilyHistoryResponse;
+  PastDiseaseResponse | SurgeryHistoryResponse | ChronicConditionResponse | FamilyHistoryResponse;
 
 function HistoryTable({
   rows,
@@ -852,9 +849,7 @@ function HistoryTable({
             return (
               <TableRow key={row.id}>
                 <TableCell className="font-medium">{name}</TableCell>
-                {relationKey ? (
-                  <TableCell>{formatEnumLabel(relation ?? '')}</TableCell>
-                ) : null}
+                {relationKey ? <TableCell>{formatEnumLabel(relation ?? '')}</TableCell> : null}
                 <TableCell>{formatEnumLabel(category)}</TableCell>
                 <TableCell>{formatDate(row.diagnosisDate)}</TableCell>
                 <TableCell>

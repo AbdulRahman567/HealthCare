@@ -20,6 +20,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 /**
  * Startup fail-fast: every {@code /api/**} REST handler must declare an access
  * classification annotation (Phase 3.8).
+ *
+ * <p>Paths such as {@code /api-docs} (SpringDoc) are intentionally excluded — they
+ * start with the characters {@code /api} but are not application REST controllers.
  */
 @Component
 public class ControllerAuthorizationCoverageGuard implements ApplicationRunner {
@@ -63,27 +66,39 @@ public class ControllerAuthorizationCoverageGuard implements ApplicationRunner {
     }
 
     private static boolean isApiHandler(final RequestMappingInfo info, final HandlerMethod handler) {
-        if (AnnotationUtils.findAnnotation(handler.getBeanType(), RestController.class) == null) {
+        final Class<?> beanType = handler.getBeanType();
+        if (AnnotationUtils.findAnnotation(beanType, RestController.class) == null) {
             return false;
         }
-        if (info.getPatternValues().stream().anyMatch(pattern -> pattern.startsWith("/api"))) {
+        // Framework / OpenAPI controllers are not HMS business APIs.
+        if (beanType.getName().startsWith("org.springdoc.")) {
+            return false;
+        }
+        if (info.getPatternValues().stream().anyMatch(ControllerAuthorizationCoverageGuard::isApplicationApiPath)) {
             return true;
         }
         final RequestMapping typeMapping =
-                AnnotationUtils.findAnnotation(handler.getBeanType(), RequestMapping.class);
+                AnnotationUtils.findAnnotation(beanType, RequestMapping.class);
         if (typeMapping == null) {
             return false;
         }
         for (final String path : typeMapping.path()) {
-            if (path.startsWith("/api")) {
+            if (isApplicationApiPath(path)) {
                 return true;
             }
         }
         for (final String path : typeMapping.value()) {
-            if (path.startsWith("/api")) {
+            if (isApplicationApiPath(path)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * True for {@code /api} and {@code /api/...} only — not {@code /api-docs}.
+     */
+    static boolean isApplicationApiPath(final String pattern) {
+        return "/api".equals(pattern) || pattern.startsWith("/api/");
     }
 }

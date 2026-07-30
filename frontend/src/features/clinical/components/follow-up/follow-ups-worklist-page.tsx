@@ -93,7 +93,9 @@ export function FollowUpsWorklistPage() {
             className="w-28"
             value={ui.withinDays}
             onChange={(event) =>
-              dispatch(setFollowUpWithinDays(Math.min(90, Math.max(1, Number(event.target.value) || 14))))
+              dispatch(
+                setFollowUpWithinDays(Math.min(90, Math.max(1, Number(event.target.value) || 14))),
+              )
             }
             aria-label="Due within days"
           />
@@ -198,7 +200,10 @@ export function FollowUpsWorklistPage() {
       ) : listQuery.isLoading ? (
         <div className="text-muted-foreground py-10 text-center text-sm">Searching…</div>
       ) : rows.length === 0 ? (
-        <EmptyState title="No follow-ups match" description="Adjust filters or widen the date window." />
+        <EmptyState
+          title="No follow-ups match"
+          description="Adjust filters or widen the date window."
+        />
       ) : (
         <div className="overflow-x-auto rounded-xl border">
           <Table>

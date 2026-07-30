@@ -110,7 +110,7 @@ public class UserInvitation extends TenantOwnedEntity {
     /**
      * Generated column for unique pending invitation per tenant email — read-only.
      */
-    @Column(name = "pending_slot", length = 1, insertable = false, updatable = false)
+    @Column(name = "pending_slot", columnDefinition = "CHAR(1)", insertable = false, updatable = false)
     private String pendingSlot;
 
     public UUID getHospitalId() {

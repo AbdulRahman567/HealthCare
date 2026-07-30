@@ -11,9 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Can } from '@/features/authorization/components/can';
 import { Permissions } from '@/features/authorization/constants/permissions';
-import {
-  DraftSaveIndicator,
-} from '@/features/clinical/components/shared/draft-save-indicator';
+import { DraftSaveIndicator } from '@/features/clinical/components/shared/draft-save-indicator';
 import { useAutoSaveDraft } from '@/features/clinical/hooks/use-auto-save-draft';
 import { useConsultationMutations } from '@/features/clinical/hooks/use-consultations';
 import {
@@ -133,12 +131,7 @@ export function DocumentationPanel({ consultation, editable }: DocumentationPane
         ).map(([name, label, rows]) => (
           <div key={name} className="space-y-2">
             <Label htmlFor={`doc-${name}`}>{label}</Label>
-            <Textarea
-              id={`doc-${name}`}
-              rows={rows}
-              disabled={!editable}
-              {...register(name)}
-            />
+            <Textarea id={`doc-${name}`} rows={rows} disabled={!editable} {...register(name)} />
             <FieldError message={errors[name]?.message} />
           </div>
         ))}

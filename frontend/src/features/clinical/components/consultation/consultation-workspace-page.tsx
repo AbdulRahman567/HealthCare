@@ -1,14 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  CheckIcon,
-  Loader2Icon,
-  PauseIcon,
-  PlayIcon,
-  RotateCcwIcon,
-  XIcon,
-} from 'lucide-react';
+import { CheckIcon, Loader2Icon, PauseIcon, PlayIcon, RotateCcwIcon, XIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -86,9 +79,7 @@ export function ConsultationWorkspacePage({ consultationId }: ConsultationWorksp
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       const typing =
-        target?.tagName === 'INPUT' ||
-        target?.tagName === 'TEXTAREA' ||
-        target?.isContentEditable;
+        target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.isContentEditable;
       if (typing || event.ctrlKey || event.metaKey || event.altKey) {
         return;
       }
@@ -135,10 +126,7 @@ export function ConsultationWorkspacePage({ consultationId }: ConsultationWorksp
     mutations.complete.isPending ||
     mutations.cancel.isPending;
 
-  const runLifecycle = async (
-    action: 'start' | 'pause' | 'resume',
-    successMessage: string,
-  ) => {
+  const runLifecycle = async (action: 'start' | 'pause' | 'resume', successMessage: string) => {
     try {
       await mutations[action].mutateAsync(consultation.id);
       toast.success(successMessage);
@@ -229,7 +217,11 @@ export function ConsultationWorkspacePage({ consultationId }: ConsultationWorksp
                 </Button>
               ) : null}
               {consultation.status === 'IN_PROGRESS' || consultation.status === 'PAUSED' ? (
-                <Button type="button" disabled={lifecycleBusy} onClick={() => setCompleteOpen(true)}>
+                <Button
+                  type="button"
+                  disabled={lifecycleBusy}
+                  onClick={() => setCompleteOpen(true)}
+                >
                   <CheckIcon data-icon="inline-start" />
                   Complete
                 </Button>
@@ -390,8 +382,8 @@ export function ConsultationWorkspacePage({ consultationId }: ConsultationWorksp
           <DialogHeader>
             <DialogTitle>Complete consultation</DialogTitle>
             <DialogDescription>
-              Closing the chart makes clinical documentation read-only. Optionally set final
-              summary and advice.
+              Closing the chart makes clinical documentation read-only. Optionally set final summary
+              and advice.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-3">
@@ -418,7 +410,11 @@ export function ConsultationWorkspacePage({ consultationId }: ConsultationWorksp
             <Button type="button" variant="outline" onClick={() => setCompleteOpen(false)}>
               Cancel
             </Button>
-            <Button type="button" disabled={mutations.complete.isPending} onClick={() => void onComplete()}>
+            <Button
+              type="button"
+              disabled={mutations.complete.isPending}
+              onClick={() => void onComplete()}
+            >
               {mutations.complete.isPending ? (
                 <Loader2Icon className="animate-spin" data-icon="inline-start" />
               ) : null}

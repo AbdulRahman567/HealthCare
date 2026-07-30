@@ -49,8 +49,7 @@ export function useDiagnosisMutations(consultationId: string, patientId?: string
 
   return {
     create: useMutation({
-      mutationFn: (payload: CreateDiagnosisPayload) =>
-        diagnosesApi.create(consultationId, payload),
+      mutationFn: (payload: CreateDiagnosisPayload) => diagnosesApi.create(consultationId, payload),
       onSuccess: invalidate,
     }),
     update: useMutation({

@@ -106,11 +106,7 @@ export function DiagnosisPanel({ consultationId, patientId, editable }: Diagnosi
 
       <Can permissions={[Permissions.VISIT_UPDATE]}>
         {editable ? (
-          <form
-            onSubmit={onSubmit}
-            noValidate
-            className="space-y-4 rounded-xl border bg-card p-4"
-          >
+          <form onSubmit={onSubmit} noValidate className="space-y-4 rounded-xl border bg-card p-4">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-medium">Add diagnosis</h3>
               <DraftSaveIndicator status={status} lastSavedAt={lastSavedAt} />

@@ -29,10 +29,7 @@ import {
   setClinicalStatus,
   setClinicalToDate,
 } from '@/features/clinical/store/clinical-ui-slice';
-import {
-  CONSULTATION_STATUSES,
-  type ConsultationStatus,
-} from '@/features/clinical/types/enums';
+import { CONSULTATION_STATUSES, type ConsultationStatus } from '@/features/clinical/types/enums';
 import { AdminPageHeader } from '@/features/hospital-admin/components/shared/admin-page-header';
 import { EmptyState } from '@/features/hospital-admin/components/shared/empty-state';
 import { FilterSelect } from '@/features/hospital-admin/components/shared/filter-select';
@@ -169,7 +166,9 @@ export function ConsultationsListPage() {
           description={getErrorMessage(listQuery.error)}
         />
       ) : listQuery.isLoading ? (
-        <div className="text-muted-foreground py-16 text-center text-sm">Loading consultations…</div>
+        <div className="text-muted-foreground py-16 text-center text-sm">
+          Loading consultations…
+        </div>
       ) : rows.length === 0 ? (
         <EmptyState
           title="No consultations found"

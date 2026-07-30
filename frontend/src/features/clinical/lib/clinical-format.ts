@@ -21,7 +21,9 @@ export function isEditableConsultationStatus(status: ConsultationStatus): boolea
   return EDITABLE_CONSULTATION_STATUSES.includes(status);
 }
 
-export function documentationFromSummary(summary: ClinicalSummaryResponse): DocumentationFormValues {
+export function documentationFromSummary(
+  summary: ClinicalSummaryResponse,
+): DocumentationFormValues {
   return {
     chiefComplaint: summary.chiefComplaint ?? '',
     historyOfPresentIllness: summary.historyOfPresentIllness ?? '',

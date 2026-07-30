@@ -130,11 +130,7 @@ export function ClinicalNotesPanel({
 
       <Can permissions={[Permissions.VISIT_UPDATE]}>
         {editable ? (
-          <form
-            onSubmit={onSubmit}
-            noValidate
-            className="space-y-4 rounded-xl border bg-card p-4"
-          >
+          <form onSubmit={onSubmit} noValidate className="space-y-4 rounded-xl border bg-card p-4">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-medium">Add note</h3>
               <DraftSaveIndicator status={status} lastSavedAt={lastSavedAt} />
@@ -176,10 +172,7 @@ export function ClinicalNotesPanel({
       </Can>
 
       {listQuery.isError ? (
-        <EmptyState
-          title="Unable to load notes"
-          description={getErrorMessage(listQuery.error)}
-        />
+        <EmptyState title="Unable to load notes" description={getErrorMessage(listQuery.error)} />
       ) : listQuery.isLoading ? (
         <div className="text-muted-foreground py-8 text-center text-sm">Loading notes…</div>
       ) : rows.length === 0 ? (

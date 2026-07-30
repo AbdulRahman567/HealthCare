@@ -24,10 +24,7 @@ export function DraftSaveIndicator({ status, lastSavedAt, className }: DraftSave
 
   return (
     <div
-      className={cn(
-        'text-muted-foreground inline-flex items-center gap-1.5 text-xs',
-        className,
-      )}
+      className={cn('text-muted-foreground inline-flex items-center gap-1.5 text-xs', className)}
       role="status"
       aria-live="polite"
     >

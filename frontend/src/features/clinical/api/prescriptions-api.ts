@@ -55,10 +55,7 @@ export const prescriptionsApi = {
     return data.data;
   },
 
-  async cancel(
-    id: string,
-    payload: CancelPrescriptionPayload = {},
-  ): Promise<PrescriptionResponse> {
+  async cancel(id: string, payload: CancelPrescriptionPayload = {}): Promise<PrescriptionResponse> {
     const { data } = await apiClient.patch<ApiSuccessResponse<PrescriptionResponse>>(
       `/prescriptions/${id}/cancel`,
       payload,

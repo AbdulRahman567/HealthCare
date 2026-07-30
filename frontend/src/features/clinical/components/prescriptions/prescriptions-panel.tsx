@@ -139,11 +139,7 @@ export function PrescriptionsPanel({
 
       <Can permissions={[Permissions.PRESCRIPTION_CREATE]}>
         {editable ? (
-          <form
-            onSubmit={onSubmit}
-            noValidate
-            className="space-y-4 rounded-xl border bg-card p-4"
-          >
+          <form onSubmit={onSubmit} noValidate className="space-y-4 rounded-xl border bg-card p-4">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-medium">New prescription</h3>
               <DraftSaveIndicator status={status} lastSavedAt={lastSavedAt} />
@@ -170,10 +166,7 @@ export function PrescriptionsPanel({
                         </Button>
                       ) : null}
                     </div>
-                    <Input
-                      id={`rx-med-${index}`}
-                      {...register(`items.${index}.medicineName`)}
-                    />
+                    <Input id={`rx-med-${index}`} {...register(`items.${index}.medicineName`)} />
                     <FieldError message={errors.items?.[index]?.medicineName?.message} />
                   </div>
                   <div className="space-y-2">
@@ -255,9 +248,7 @@ export function PrescriptionsPanel({
               <label className="flex items-center gap-2 text-sm">
                 <Checkbox
                   checked={watch('issueImmediately')}
-                  onCheckedChange={(checked) =>
-                    setValue('issueImmediately', checked === true)
-                  }
+                  onCheckedChange={(checked) => setValue('issueImmediately', checked === true)}
                 />
                 Issue immediately
               </label>
@@ -288,9 +279,7 @@ export function PrescriptionsPanel({
           description={getErrorMessage(listQuery.error)}
         />
       ) : listQuery.isLoading ? (
-        <div className="text-muted-foreground py-8 text-center text-sm">
-          Loading prescriptions…
-        </div>
+        <div className="text-muted-foreground py-8 text-center text-sm">Loading prescriptions…</div>
       ) : rows.length === 0 ? (
         <EmptyState
           title="No prescriptions yet"
@@ -385,9 +374,7 @@ export function PrescriptionsPanel({
                   </TableBody>
                 </Table>
               </div>
-              {rx.notes ? (
-                <p className="text-muted-foreground mt-2 text-xs">{rx.notes}</p>
-              ) : null}
+              {rx.notes ? <p className="text-muted-foreground mt-2 text-xs">{rx.notes}</p> : null}
             </div>
           ))}
         </div>
