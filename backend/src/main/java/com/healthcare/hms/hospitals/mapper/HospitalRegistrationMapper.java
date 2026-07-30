@@ -27,6 +27,7 @@ public interface HospitalRegistrationMapper {
     @Mapping(target = "hospitalPhone", source = "hospital.phone")
     @Mapping(target = "hospitalAddress", source = "hospital.address")
     @Mapping(target = "subscriptionPlan", source = "tenant.subscriptionPlan")
+    @Mapping(target = "trialEndsAt", source = "tenant.trialEndsAt")
     @Mapping(target = "adminUserId", source = "admin.id")
     @Mapping(target = "adminEmail", source = "admin.email")
     @Mapping(target = "adminEmailVerified", source = "admin.emailVerified")

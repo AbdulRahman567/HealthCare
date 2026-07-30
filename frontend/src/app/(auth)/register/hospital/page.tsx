@@ -9,7 +9,15 @@ export const metadata: Metadata = {
   description: 'Create your hospital tenant and administrator account',
 };
 
-export default function RegisterHospitalPage() {
+type Props = {
+  searchParams: Promise<{ plan?: string }>;
+};
+
+export default async function RegisterHospitalPage({ searchParams }: Props) {
+  const { plan } = await searchParams;
+  const validPlans = ['BASIC', 'STANDARD', 'PREMIUM', 'ENTERPRISE'];
+  const defaultPlan = plan && validPlans.includes(plan.toUpperCase()) ? plan.toUpperCase() : undefined;
+
   return (
     <AuthShell
       title="Create your account"
@@ -23,7 +31,7 @@ export default function RegisterHospitalPage() {
         </p>
       }
     >
-      <MultiStepRegistrationForm />
+      <MultiStepRegistrationForm defaultPlan={defaultPlan} />
     </AuthShell>
   );
 }

@@ -22,13 +22,20 @@ import {
   type AdminAccountValues,
   type HospitalDetailsValues,
 } from '@/features/auth/validation/registration-steps';
+import { getPlanById } from '@/features/pricing/data/plans';
 import { getErrorMessage } from '@/lib/api-error';
+import { cn } from '@/lib/utils';
+
+type MultiStepRegistrationFormProps = {
+  defaultPlan?: string;
+};
 
 type StepState = AdminAccountValues & HospitalDetailsValues & {
+  subscriptionPlan: string;
   registrationToken?: string;
 };
 
-const initialStepState: StepState = {
+const initialStepState = (plan: string): StepState => ({
   adminFirstName: '',
   adminLastName: '',
   adminEmail: '',
@@ -38,13 +45,21 @@ const initialStepState: StepState = {
   hospitalEmail: '',
   hospitalPhone: '',
   hospitalAddress: '',
-  subscriptionPlan: 'BASIC',
+  subscriptionPlan: plan,
   registrationToken: undefined,
+});
+
+const PLAN_LABELS: Record<string, string> = {
+  BASIC: 'Basic (Free)',
+  STANDARD: 'Standard',
+  PREMIUM: 'Premium',
+  ENTERPRISE: 'Enterprise',
 };
 
-export function MultiStepRegistrationForm() {
+export function MultiStepRegistrationForm({ defaultPlan }: MultiStepRegistrationFormProps) {
+  const selectedPlan = defaultPlan || 'BASIC';
   const [currentStep, setCurrentStep] = useState<StepNumber>(0);
-  const [accumulated, setAccumulated] = useState<StepState>(initialStepState);
+  const [accumulated, setAccumulated] = useState<StepState>(initialStepState(selectedPlan));
   const [registration, setRegistration] = useState<HospitalRegistrationResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
@@ -53,6 +68,9 @@ export function MultiStepRegistrationForm() {
     setStepError(null);
     setCurrentStep(step);
   };
+
+  const planInfo = getPlanById(accumulated.subscriptionPlan);
+  const planLabel = PLAN_LABELS[accumulated.subscriptionPlan] ?? accumulated.subscriptionPlan;
 
   // --- Step 0: Admin Account ---
 
@@ -96,7 +114,6 @@ export function MultiStepRegistrationForm() {
       hospitalEmail: '',
       hospitalPhone: '',
       hospitalAddress: '',
-      subscriptionPlan: 'BASIC',
     },
   });
 
@@ -117,7 +134,7 @@ export function MultiStepRegistrationForm() {
         hospitalEmail: accumulated.hospitalEmail,
         hospitalPhone: accumulated.hospitalPhone?.trim() || undefined,
         hospitalAddress: accumulated.hospitalAddress?.trim() || undefined,
-        subscriptionPlan: accumulated.subscriptionPlan,
+        subscriptionPlan: accumulated.subscriptionPlan as 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE',
       });
       setRegistration(result);
       toast.success('Hospital registered successfully');
@@ -156,6 +173,18 @@ export function MultiStepRegistrationForm() {
   return (
     <div className="space-y-6">
       <RegistrationProgressBar currentStep={currentStep} />
+
+      {/* Plan selection banner — shown when a plan was picked from /pricing */}
+      {currentStep === 0 && selectedPlan !== 'BASIC' ? (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
+          <span className="font-medium text-foreground">Selected plan: {planLabel}</span>
+          {planInfo?.trialDays ? (
+            <span className="ml-2 text-muted-foreground">
+              — {planInfo.trialDays}-day free trial, no credit card required
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {stepError ? (
         <AuthFormMessage variant="error" title="Something went wrong" description={stepError} />
@@ -277,6 +306,19 @@ export function MultiStepRegistrationForm() {
             </p>
           </div>
 
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm">
+            <span className="font-medium text-foreground">Plan: {planLabel}</span>
+            {planInfo?.trialDays ? (
+              <span className="ml-2 text-muted-foreground">
+                — {planInfo.trialDays}-day free trial, no credit card required
+              </span>
+            ) : (
+              <span className="ml-2 text-muted-foreground">
+                — <a href="/pricing" className="underline">Change plan</a>
+              </span>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="hospitalName">Hospital name</Label>
             <Input
@@ -342,19 +384,7 @@ export function MultiStepRegistrationForm() {
             ) : null}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="subscriptionPlan">Subscription plan</Label>
-            <select
-              id="subscriptionPlan"
-              className="border-input bg-background h-8 w-full rounded-lg border px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50"
-              {...hospitalForm.register('subscriptionPlan')}
-            >
-              <option value="BASIC">Basic</option>
-              <option value="STANDARD">Standard</option>
-              <option value="PREMIUM">Premium</option>
-              <option value="ENTERPRISE">Enterprise</option>
-            </select>
-          </div>
+          {/* Plan is no longer a dropdown here — it's selected on the /pricing page */}
 
           <div className="flex gap-3">
             <Button type="button" variant="outline" className="h-10 flex-1" onClick={() => advanceTo(0)}>
@@ -377,6 +407,30 @@ export function MultiStepRegistrationForm() {
             <p className="text-sm text-muted-foreground">
               Please verify your details before creating the account.
             </p>
+          </div>
+
+          {/* Plan summary card */}
+          <div className={cn(
+            'rounded-lg border p-4',
+            planInfo?.popular ? 'border-primary/30 bg-primary/5' : '',
+          )}>
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground">Plan</h3>
+                <p className="mt-1 text-lg font-semibold">{planLabel}</p>
+              </div>
+              <a
+                href="/pricing"
+                className="text-primary text-xs font-medium underline-offset-2 hover:underline"
+              >
+                Change
+              </a>
+            </div>
+            {planInfo?.trialDays ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {planInfo.trialDays}-day free trial. No credit card required.
+              </p>
+            ) : null}
           </div>
 
           <div className="rounded-lg border p-4">
@@ -424,10 +478,6 @@ export function MultiStepRegistrationForm() {
                   <dd>{accumulated.hospitalAddress}</dd>
                 </div>
               ) : null}
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Plan</dt>
-                <dd className="font-medium">{accumulated.subscriptionPlan}</dd>
-              </div>
             </dl>
           </div>
 

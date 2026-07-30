@@ -25,6 +25,8 @@ import com.healthcare.hms.users.enums.RoleType;
 import com.healthcare.hms.users.enums.UserStatus;
 import com.healthcare.hms.users.repository.UserRepository;
 import java.text.Normalizer;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -52,6 +54,13 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
     private static final String DEFAULT_HOSPITAL_CODE = "DEFAULT";
     private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-z0-9]+");
     private static final Pattern MULTI_DASH = Pattern.compile("-{2,}");
+    private static final long TRIAL_DURATION_DAYS = 14;
+
+    /** Plans that qualify for a free trial period. */
+    private static final List<SubscriptionPlan> TRIAL_ELIGIBLE_PLANS = List.of(
+            SubscriptionPlan.STANDARD,
+            SubscriptionPlan.PREMIUM
+    );
 
     private final TenantRepository tenantRepository;
     private final HospitalRepository hospitalRepository;
@@ -163,6 +172,10 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
     }
 
     private Tenant createTenant(final HospitalRegistrationRequest request, final String hospitalEmail) {
+        final SubscriptionPlan plan = request.subscriptionPlan() != null
+                ? request.subscriptionPlan()
+                : SubscriptionPlan.BASIC;
+
         final Tenant tenant = new Tenant();
         tenant.setName(request.hospitalName().trim());
         tenant.setSlug(generateUniqueSlug(request.hospitalName()));
@@ -170,7 +183,13 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
         tenant.setEmail(hospitalEmail);
         tenant.setPhone(trimToNull(request.hospitalPhone()));
         tenant.setAddress(trimToNull(request.hospitalAddress()));
-        tenant.setSubscriptionPlan(SubscriptionPlan.BASIC);
+        tenant.setSubscriptionPlan(plan);
+
+        // Set free trial for eligible paid plans
+        if (TRIAL_ELIGIBLE_PLANS.contains(plan)) {
+            tenant.setTrialEndsAt(Instant.now().plus(TRIAL_DURATION_DAYS, ChronoUnit.DAYS));
+        }
+
         tenant.setStatus(TenantStatus.PENDING);
         return tenantRepository.save(tenant);
     }

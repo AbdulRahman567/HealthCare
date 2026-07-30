@@ -69,6 +69,7 @@ export type HospitalRegistrationResponse = {
   hospitalPhone: string | null;
   hospitalAddress: string | null;
   subscriptionPlan: SubscriptionPlan;
+  trialEndsAt: string | null;
   adminUserId: string;
   adminEmail: string;
   adminEmailVerified: boolean;

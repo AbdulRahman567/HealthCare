@@ -23,6 +23,9 @@ export default function LandingPage() {
           <span className="text-sm font-semibold tracking-wide">Healthcare HMS</span>
         </div>
         <nav className="flex items-center gap-3">
+          <Link href="/pricing" className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 px-3')}>
+            Pricing
+          </Link>
           <Link href="/login" className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 px-3')}>
             Sign in
           </Link>

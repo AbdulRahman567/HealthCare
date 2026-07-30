@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SubscriptionPlan } from '@/features/auth/types/auth.types';
 
 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$/;
 
@@ -33,7 +34,7 @@ export const adminAccountSchema = z.object({
 
 export type AdminAccountValues = z.infer<typeof adminAccountSchema>;
 
-/** Step 2: Hospital details */
+/** Step 2: Hospital details (plan is now selected on the /pricing page) */
 export const hospitalDetailsSchema = z.object({
   hospitalName: z
     .string()
@@ -48,7 +49,10 @@ export const hospitalDetailsSchema = z.object({
     .max(255, 'Email must not exceed 255 characters'),
   hospitalPhone: z.string().trim().max(30, 'Phone must not exceed 30 characters').optional(),
   hospitalAddress: z.string().trim().max(500, 'Address must not exceed 500 characters').optional(),
-  subscriptionPlan: z.enum(['BASIC', 'STANDARD', 'PREMIUM', 'ENTERPRISE']),
 });
 
 export type HospitalDetailsValues = z.infer<typeof hospitalDetailsSchema>;
+
+/** Valid subscription plan values — kept here for reuse across the app */
+export const SUBSCRIPTION_PLANS = ['BASIC', 'STANDARD', 'PREMIUM', 'ENTERPRISE'] as const;
+export type SubscriptionPlanValue = (typeof SUBSCRIPTION_PLANS)[number];

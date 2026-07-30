@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import java.util.UUID;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -83,6 +84,13 @@ public class Tenant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "subscription_plan", nullable = false, length = 50)
     private SubscriptionPlan subscriptionPlan = SubscriptionPlan.BASIC;
+
+    /**
+     * When the free trial period ends, if applicable.
+     * Null means no active trial (e.g. Basic plan or post-trial).
+     */
+    @Column(name = "trial_ends_at")
+    private Instant trialEndsAt;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -200,6 +208,21 @@ public class Tenant extends BaseEntity {
 
     public void setSubscriptionPlan(final SubscriptionPlan subscriptionPlan) {
         this.subscriptionPlan = subscriptionPlan;
+    }
+
+    public Instant getTrialEndsAt() {
+        return trialEndsAt;
+    }
+
+    public void setTrialEndsAt(final Instant trialEndsAt) {
+        this.trialEndsAt = trialEndsAt;
+    }
+
+    /**
+     * Returns {@code true} if the tenant is within its free trial period.
+     */
+    public boolean isOnTrial() {
+        return trialEndsAt != null && Instant.now().isBefore(trialEndsAt);
     }
 
     public TenantStatus getStatus() {

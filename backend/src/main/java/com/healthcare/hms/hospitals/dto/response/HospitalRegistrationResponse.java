@@ -23,6 +23,7 @@ public record HospitalRegistrationResponse(
         String hospitalPhone,
         String hospitalAddress,
         SubscriptionPlan subscriptionPlan,
+        Instant trialEndsAt,
         UUID adminUserId,
         String adminEmail,
         boolean adminEmailVerified,
