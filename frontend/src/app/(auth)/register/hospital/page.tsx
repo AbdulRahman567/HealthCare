@@ -2,18 +2,18 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { AuthShell } from '@/components/layouts/auth-shell';
-import { RegisterHospitalForm } from '@/features/auth/components/register-hospital-form';
+import { MultiStepRegistrationForm } from '@/features/auth/components/multi-step-registration-form';
 
 export const metadata: Metadata = {
   title: 'Register Hospital | Healthcare HMS',
-  description: 'Register a new hospital tenant on Healthcare HMS',
+  description: 'Create your hospital tenant and administrator account',
 };
 
 export default function RegisterHospitalPage() {
   return (
     <AuthShell
-      title="Register hospital"
-      description="Create your hospital tenant to begin onboarding administrators and clinical staff."
+      title="Create your account"
+      description="Set up your hospital in just a few steps."
       footer={
         <p>
           Already registered?{' '}
@@ -23,7 +23,7 @@ export default function RegisterHospitalPage() {
         </p>
       }
     >
-      <RegisterHospitalForm />
+      <MultiStepRegistrationForm />
     </AuthShell>
   );
 }

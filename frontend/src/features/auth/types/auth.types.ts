@@ -110,3 +110,42 @@ export type VerifyEmailPayload = {
 export type ResendVerificationPayload = {
   email: string;
 };
+
+// --- Multi-step registration (Phase 2) ---
+
+export type PreRegisterAdminPayload = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+};
+
+export type PreRegisterAdminResponse = {
+  registrationToken: string;
+  email: string;
+  expiresInMinutes: number;
+};
+
+export type CompleteRegistrationPayload = {
+  registrationToken: string;
+  hospitalName: string;
+  hospitalEmail: string;
+  hospitalPhone?: string;
+  hospitalAddress?: string;
+  subscriptionPlan?: SubscriptionPlan;
+};
+
+export type StepRegistrationState = {
+  token: string;
+  adminEmail: string;
+  adminFirstName: string;
+  adminLastName: string;
+  adminPassword: string;
+  adminPhone: string;
+  hospitalName: string;
+  hospitalEmail: string;
+  hospitalPhone: string;
+  hospitalAddress: string;
+  subscriptionPlan: SubscriptionPlan;
+};

@@ -10,6 +10,9 @@ import type {
   ResetPasswordPayload,
   UserProfile,
   VerifyEmailPayload,
+  PreRegisterAdminPayload,
+  PreRegisterAdminResponse,
+  CompleteRegistrationPayload,
 } from '@/features/auth/types/auth.types';
 import { clearAllClinicalDrafts } from '@/features/clinical/lib/draft-storage';
 import { authTokenStore } from '@/lib/auth-token';
@@ -24,6 +27,24 @@ export const authApi = {
   async registerHospital(payload: RegisterHospitalPayload): Promise<HospitalRegistrationResponse> {
     const { data } = await apiClient.post<ApiSuccessResponse<HospitalRegistrationResponse>>(
       '/hospitals/register',
+      payload,
+    );
+    return data.data;
+  },
+
+  async preRegisterAdmin(payload: PreRegisterAdminPayload): Promise<PreRegisterAdminResponse> {
+    const { data } = await apiClient.post<ApiSuccessResponse<PreRegisterAdminResponse>>(
+      '/auth/register-admin',
+      payload,
+    );
+    return data.data;
+  },
+
+  async completeRegistration(
+    payload: CompleteRegistrationPayload,
+  ): Promise<HospitalRegistrationResponse> {
+    const { data } = await apiClient.post<ApiSuccessResponse<HospitalRegistrationResponse>>(
+      '/hospitals/complete-registration',
       payload,
     );
     return data.data;
