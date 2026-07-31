@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 
-import { HeartPulse } from 'lucide-react';
 import Link from 'next/link';
 
+import { SiteHeader } from '@/components/layouts/site-header';
+import { SiteFooter } from '@/components/layouts/site-footer';
 import { buttonVariants } from '@/components/ui/button';
 import { PricingCard } from '@/features/pricing/components/pricing-card';
 import { PricingToggle } from '@/features/pricing/components/pricing-toggle';
@@ -18,42 +19,19 @@ export default function PricingPage() {
     <div className="relative min-h-screen bg-[linear-gradient(180deg,#f4f8fb_0%,#ffffff_42%,#eef6fa_100%)]">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(15,95,138,0.12),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(11,58,91,0.08),transparent_35%)]" />
 
-      <header className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
-            <HeartPulse className="size-4" aria-hidden />
-          </span>
-          <span className="text-sm font-semibold tracking-wide">Healthcare HMS</span>
-        </Link>
-        <nav className="flex items-center gap-3">
-          <Link href="/pricing" className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 px-3')}>
-            Pricing
-          </Link>
-          <Link href="/login" className={cn(buttonVariants({ variant: 'ghost' }), 'h-9 px-3')}>
-            Sign in
-          </Link>
-          <Link
-            href="/register/hospital"
-            className={cn(buttonVariants({ variant: 'default' }), 'h-9 px-3')}
-          >
-            Register hospital
-          </Link>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main className="relative mx-auto w-full max-w-6xl px-6 pb-20 pt-10 md:pt-16">
         {/* Hero */}
         <section className="mx-auto max-w-3xl text-center">
-          <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">
-            Pricing
-          </p>
+          <p className="text-primary text-xs font-semibold tracking-[0.18em] uppercase">Pricing</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance md:text-5xl">
             Simple, transparent pricing
           </h1>
           <p className="text-muted-foreground mx-auto mt-4 max-w-2xl text-base text-pretty md:text-lg">
             Choose the plan that fits your healthcare organization. All plans include a{' '}
-            <span className="font-medium text-foreground">14-day free trial</span> on paid tiers.
-            No credit card required.
+            <span className="font-medium text-foreground">14-day free trial</span> on paid tiers. No
+            credit card required.
           </p>
 
           <div className="mt-8 flex justify-center">
@@ -80,24 +58,27 @@ export default function PricingPage() {
           <div className="mt-6 flex justify-center gap-4">
             <Link
               href="/register/hospital?plan=ENTERPRISE"
-              className={cn(buttonVariants({ variant: 'default', size: 'lg' }), 'h-11 min-w-44 px-5')}
+              className={cn(
+                buttonVariants({ variant: 'default', size: 'lg' }),
+                'h-11 min-w-44 px-5',
+              )}
             >
               Contact sales
             </Link>
             <Link
               href="/register/hospital"
-              className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'h-11 min-w-44 px-5')}
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'lg' }),
+                'h-11 min-w-44 px-5',
+              )}
             >
               Start with Basic
             </Link>
           </div>
         </section>
-
-        {/* Footer */}
-        <footer className="mt-16 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Healthcare HMS. All rights reserved.</p>
-        </footer>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

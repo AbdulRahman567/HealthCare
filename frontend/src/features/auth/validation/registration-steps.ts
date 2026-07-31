@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import type { SubscriptionPlan } from '@/features/auth/types/auth.types';
 
 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$/;
 

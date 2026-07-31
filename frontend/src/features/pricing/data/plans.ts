@@ -1,5 +1,3 @@
-import { Banknote, Building2, Headset, ShieldCheck, Stethoscope, Syringe, Users, Calendar, ChartBar, type LucideIcon } from 'lucide-react';
-
 export type BillingInterval = 'monthly' | 'yearly';
 
 export type PlanFeature = {
@@ -8,7 +6,7 @@ export type PlanFeature = {
 };
 
 export type PlanPricing = {
-  monthly: number | null;  // null = custom pricing
+  monthly: number | null; // null = custom pricing
   yearly: number | null;
 };
 
@@ -153,7 +151,7 @@ export function getPlanById(id: string): Plan | undefined {
   return PLANS.find((p) => p.id === id);
 }
 
-export function formatPrice(price: number | null, interval: BillingInterval): string {
+export function formatPrice(price: number | null): string {
   if (price === null) return 'Custom';
   if (price === 0) return 'Free';
   return `$${price.toLocaleString()}`;

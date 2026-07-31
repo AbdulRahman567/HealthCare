@@ -49,13 +49,9 @@ export function PricingCard({ plan, interval }: PricingCardProps) {
             <span className="text-4xl font-bold tracking-tight">Custom</span>
           ) : (
             <>
-              <span className="text-4xl font-bold tracking-tight">
-                {formatPrice(price, interval)}
-              </span>
+              <span className="text-4xl font-bold tracking-tight">{formatPrice(price)}</span>
               {!isFree ? (
-                <span className="text-sm text-muted-foreground">
-                  {getIntervalLabel(interval)}
-                </span>
+                <span className="text-sm text-muted-foreground">{getIntervalLabel(interval)}</span>
               ) : null}
             </>
           )}
@@ -72,10 +68,7 @@ export function PricingCard({ plan, interval }: PricingCardProps) {
       <CardContent className="flex-1">
         <Link
           href={plan.cta.href}
-          className={cn(
-            buttonVariants({ variant: isPopular ? 'default' : 'outline' }),
-            'w-full',
-          )}
+          className={cn(buttonVariants({ variant: isPopular ? 'default' : 'outline' }), 'w-full')}
         >
           {plan.cta.label}
         </Link>
