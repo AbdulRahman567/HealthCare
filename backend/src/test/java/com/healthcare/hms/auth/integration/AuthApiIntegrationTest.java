@@ -341,10 +341,6 @@ class AuthApiIntegrationTest extends AbstractMySqlIntegrationTest {
         return objectMapper.readTree(result.getResponse().getContentAsString()).get("data");
     }
 
-    private UUID registerHospital(final String emailPrefix) throws Exception {
-        return registerUnverifiedAdmin(emailPrefix).tenantId();
-    }
-
     private AdminAccount registerUnverifiedAdmin(final String emailPrefix) throws Exception {
         final String hospitalEmail = uniqueEmail(emailPrefix + "-hospital");
         final String adminEmail = uniqueEmail(emailPrefix);

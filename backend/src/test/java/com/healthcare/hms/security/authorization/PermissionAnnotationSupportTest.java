@@ -59,6 +59,7 @@ class PermissionAnnotationSupportTest {
         }
     }
 
+    @SuppressWarnings("deprecation") // exercises the deprecated legacy annotation deliberately
     static class LegacyService {
         @RequiresPermission(PermissionConstants.HOSPITAL_READ)
         public void read() {

@@ -276,13 +276,15 @@ class PatientServiceImplTest {
 
     @Test
     @DisplayName("search uses repository Specification pagination (no in-memory filter)")
-    @SuppressWarnings("unchecked")
     void search_usesSpecifications() {
         final Patient patient = samplePatient(PatientStatus.ACTIVE);
         final Pageable pageable = PageRequest.of(0, 20);
         final Page<Patient> page = new PageImpl<>(List.of(patient), pageable, 1);
 
-        when(patientRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(patientRepository.findAll(
+                        org.mockito.ArgumentMatchers.<Specification<Patient>>any(),
+                        any(Pageable.class)))
+                .thenReturn(page);
         when(patientMapper.toResponse(patient)).thenReturn(sampleResponse(patient));
 
         final PatientSearchCriteria criteria = new PatientSearchCriteria(
@@ -309,7 +311,9 @@ class PatientServiceImplTest {
 
         assertThat(result.content()).hasSize(1);
         assertThat(result.totalElements()).isEqualTo(1);
-        verify(patientRepository).findAll(any(Specification.class), any(Pageable.class));
+        verify(patientRepository).findAll(
+                org.mockito.ArgumentMatchers.<Specification<Patient>>any(),
+                any(Pageable.class));
     }
 
     @Test
@@ -324,7 +328,9 @@ class PatientServiceImplTest {
         assertThatThrownBy(() -> service.search(criteria, PageRequest.of(0, 20)))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("ageMin");
-        verify(patientRepository, never()).findAll(any(Specification.class), any(Pageable.class));
+        verify(patientRepository, never()).findAll(
+                org.mockito.ArgumentMatchers.<Specification<Patient>>any(),
+                any(Pageable.class));
     }
 
     private Patient samplePatient(final PatientStatus status) {

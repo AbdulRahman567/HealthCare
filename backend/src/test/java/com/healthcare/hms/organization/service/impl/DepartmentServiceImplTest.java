@@ -1,4 +1,4 @@
-package com.healthcare.hms.organization.entity;
+package com.healthcare.hms.organization.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,7 +23,6 @@ import com.healthcare.hms.organization.enums.DepartmentStatus;
 import com.healthcare.hms.organization.enums.DepartmentType;
 import com.healthcare.hms.organization.mapper.DepartmentMapper;
 import com.healthcare.hms.organization.repository.DepartmentRepository;
-import com.healthcare.hms.organization.service.impl.DepartmentServiceImpl;
 import com.healthcare.hms.security.principal.AuthenticatedUser;
 import com.healthcare.hms.tenant.context.TenantContext;
 import com.healthcare.hms.tenant.context.TenantContextHolder;
@@ -193,7 +192,10 @@ class DepartmentServiceImplTest {
         final DepartmentResponse response = sampleResponse(department);
         final Page<Department> page = new PageImpl<>(List.of(department), PageRequest.of(0, 20), 1);
 
-        when(departmentRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(departmentRepository.findAll(
+                        org.mockito.ArgumentMatchers.<Specification<Department>>any(),
+                        any(Pageable.class)))
+                .thenReturn(page);
         when(departmentMapper.toResponse(department)).thenReturn(response);
 
         final PageResponse<DepartmentResponse> result = service.search(

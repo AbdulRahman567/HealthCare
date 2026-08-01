@@ -57,6 +57,7 @@ public class TenantHibernateFilterEnabler {
      *
      * @param reason short audit label explaining why cross-tenant visibility is required
      */
+    @SuppressWarnings("deprecation") // findAuthenticatedUser kept for AuthenticatedUser-typed call sites
     public <T> T executeWithoutTenantFilter(
             final EntityManager entityManager,
             final String reason,

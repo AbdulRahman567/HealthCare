@@ -29,7 +29,6 @@ import com.healthcare.hms.tenant.enums.TenantStatus;
 import com.healthcare.hms.tenant.repository.TenantRepository;
 import com.healthcare.hms.users.entity.Role;
 import com.healthcare.hms.users.entity.User;
-import com.healthcare.hms.users.enums.RoleType;
 import com.healthcare.hms.users.repository.UserRepository;
 import java.time.Instant;
 import java.util.List;

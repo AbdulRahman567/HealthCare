@@ -8,6 +8,7 @@ import com.healthcare.hms.security.annotation.RequirePermission;
 import com.healthcare.hms.users.constant.PermissionConstants;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,7 +56,9 @@ class AuthorizationOpenApiCustomizerTest {
                 (Map<String, Object>) operation.getExtensions().get(AuthorizationOpenApiCustomizer.EXT_AUTHZ);
         assertThat(ext.get("access")).isEqualTo("protected");
         assertThat(ext.get("jwt")).isEqualTo(true);
-        assertThat(ext.get("permissions")).asList().contains(PermissionConstants.HOSPITAL_READ);
+        @SuppressWarnings("unchecked")
+        final List<String> permissions = (List<String>) ext.get("permissions");
+        assertThat(permissions).contains(PermissionConstants.HOSPITAL_READ);
     }
 
     @Test

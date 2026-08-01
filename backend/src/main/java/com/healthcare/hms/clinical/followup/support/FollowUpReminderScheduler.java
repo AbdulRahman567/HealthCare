@@ -1,7 +1,6 @@
 package com.healthcare.hms.clinical.followup.support;
 
 import com.healthcare.hms.clinical.enums.FollowUpReminderStatus;
-import com.healthcare.hms.clinical.enums.FollowUpStatus;
 import com.healthcare.hms.clinical.entity.FollowUp;
 import java.time.Instant;
 import java.time.LocalDate;

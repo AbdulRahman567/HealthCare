@@ -88,6 +88,7 @@ public final class PermissionAnnotationSupport {
                 || findRoleRequirement(method, targetClass).isPresent();
     }
 
+    @SuppressWarnings("deprecation") // RequiresPermission is the deprecated legacy alias, kept for compat
     public static boolean hasAuthorizationAnnotation(final AnnotatedElement element) {
         return AnnotatedElementUtils.hasAnnotation(element, RequirePermission.class)
                 || AnnotatedElementUtils.hasAnnotation(element, RequiresPermission.class)
@@ -106,6 +107,7 @@ public final class PermissionAnnotationSupport {
             return new PermissionRequirement(annotation.value(), annotation.requireAll());
         }
 
+        @SuppressWarnings("deprecation") // legacy alias kept for backward compatibility
         public static PermissionRequirement from(final RequiresPermission annotation) {
             return new PermissionRequirement(annotation.value(), annotation.requireAll());
         }

@@ -1,7 +1,6 @@
 package com.healthcare.hms.users.service;
 
 import com.healthcare.hms.users.entity.UserInvitation;
-import com.healthcare.hms.users.enums.RoleType;
 
 /**
  * Abstraction for delivering user-invitation emails (Phase 4.5).

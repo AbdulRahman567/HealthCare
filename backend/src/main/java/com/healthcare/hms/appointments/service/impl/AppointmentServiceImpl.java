@@ -9,7 +9,6 @@ import com.healthcare.hms.appointments.dto.response.AppointmentResponse;
 import com.healthcare.hms.appointments.entity.Appointment;
 import com.healthcare.hms.appointments.enums.AppointmentStatus;
 import com.healthcare.hms.appointments.mapper.AppointmentMapper;
-import com.healthcare.hms.appointments.queue.entity.QueueEntry;
 import com.healthcare.hms.appointments.queue.repository.QueueEntryRepository;
 import com.healthcare.hms.appointments.reminder.service.AppointmentReminderLifecycle;
 import com.healthcare.hms.appointments.repository.AppointmentRepository;

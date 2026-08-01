@@ -147,7 +147,6 @@ public class JwtService {
         return UUID.fromString(raw);
     }
 
-    @SuppressWarnings("unchecked")
     private static Set<String> toStringSet(final Collection<?> values) {
         if (values == null) {
             return Set.of();

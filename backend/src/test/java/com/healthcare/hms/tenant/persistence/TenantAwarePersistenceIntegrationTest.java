@@ -2,7 +2,6 @@ package com.healthcare.hms.tenant.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.healthcare.hms.common.persistence.TenantPersistence;
 import com.healthcare.hms.support.AbstractMySqlIntegrationTest;
 import com.healthcare.hms.tenant.context.TenantContext;
 import com.healthcare.hms.tenant.context.TenantContextHolder;

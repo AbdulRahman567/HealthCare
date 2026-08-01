@@ -1,6 +1,5 @@
 package com.healthcare.hms.security.principal;
 
-import com.healthcare.hms.security.SecurityConstants;
 import com.healthcare.hms.security.util.AuthorityUtils;
 import java.util.Collection;
 import java.util.Set;
