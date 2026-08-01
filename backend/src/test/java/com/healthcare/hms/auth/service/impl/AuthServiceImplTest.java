@@ -227,6 +227,7 @@ class AuthServiceImplTest {
                 "+1-555-0100",
                 "123 Main St",
                 SubscriptionPlan.PREMIUM,
+                null,
                 AuthTestData.userId(),
                 "admin@hospital.test",
                 false,

@@ -110,6 +110,7 @@ class HospitalRegistrationServiceImplTest {
                 null,
                 null,
                 SubscriptionPlan.BASIC,
+                null,
                 savedAdmin.getId(),
                 savedAdmin.getEmail(),
                 false,

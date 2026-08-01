@@ -132,6 +132,7 @@ class AuthControllerTest {
                         null,
                         null,
                         SubscriptionPlan.BASIC,
+                        null,
                         UUID.randomUUID(),
                         "admin@t.com",
                         false,

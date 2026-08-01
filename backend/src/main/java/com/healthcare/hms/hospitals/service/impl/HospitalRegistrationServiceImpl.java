@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -234,26 +235,58 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
     }
 
     private void sendVerificationEmail(final User admin, final String ipAddress, final String userAgent) {
-        try {
-            final String rawToken = emailVerificationService.issueVerificationToken(admin, ipAddress, userAgent);
-            emailVerificationEmailService.sendVerificationLink(admin, rawToken);
-            auditLogService.record(
-                    admin.getTenantId(),
-                    admin.getId(),
-                    ENTITY_USER,
-                    admin.getId().toString(),
-                    AuditAction.EMAIL_VERIFICATION_REQUEST,
-                    null,
-                    "Verification email sent on hospital registration",
-                    ipAddress,
-                    userAgent
-            );
-        } catch (final EmailDeliveryException exception) {
-            log.error(
-                    "Verification email could not be delivered for adminUserId={}",
-                    admin.getId(),
-                    exception
-            );
+        // Concurrent hospital registrations issue verification tokens in separate,
+        // post-commit transactions. Those concurrent INSERTs into
+        // email_verification_tokens can deadlock in MySQL (error 1213) and surface as
+        // CannotAcquireLockException. Retrying the token-issuance transaction is the
+        // documented MySQL remedy — a fresh transaction is started on each attempt.
+        final int maxAttempts = 3;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                final String rawToken = emailVerificationService.issueVerificationToken(admin, ipAddress, userAgent);
+                emailVerificationEmailService.sendVerificationLink(admin, rawToken);
+                auditLogService.record(
+                        admin.getTenantId(),
+                        admin.getId(),
+                        ENTITY_USER,
+                        admin.getId().toString(),
+                        AuditAction.EMAIL_VERIFICATION_REQUEST,
+                        null,
+                        "Verification email sent on hospital registration",
+                        ipAddress,
+                        userAgent
+                );
+                return;
+            } catch (final CannotAcquireLockException deadlock) {
+                if (attempt >= maxAttempts) {
+                    log.error(
+                            "Verification email skipped after {} deadlock retries for adminUserId={}",
+                            attempt,
+                            admin.getId(),
+                            deadlock
+                    );
+                    return;
+                }
+                log.warn(
+                        "Verification token issuance deadlocked (attempt {}/{}), retrying for adminUserId={}",
+                        attempt,
+                        maxAttempts,
+                        admin.getId()
+                );
+                try {
+                    Thread.sleep(50L * attempt);
+                } catch (final InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            } catch (final EmailDeliveryException exception) {
+                log.error(
+                        "Verification email could not be delivered for adminUserId={}",
+                        admin.getId(),
+                        exception
+                );
+                return;
+            }
         }
     }
 

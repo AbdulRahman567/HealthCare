@@ -66,6 +66,7 @@ class HospitalRegistrationControllerTest {
                         null,
                         null,
                         SubscriptionPlan.BASIC,
+                        null,
                         UUID.randomUUID(),
                         "admin@city.test",
                         false,
