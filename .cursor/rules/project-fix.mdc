@@ -1,0 +1,14 @@
+---
+description: Model capability constraints for this project
+alwaysApply: true
+---
+
+This project may be run with a text-only model with no image/vision
+support. Never use the Read/view tool on .png/.jpg/.gif files under any
+circumstances, even to "verify" a screenshot. Verify UI changes only by
+checking rendered HTML/DOM via Playwright assertions (expected text,
+element counts, computed styles) and by confirming a screenshot file was
+written successfully (exists, non-zero size, via ls). If genuine visual
+verification is required (e.g. checking layout/spacing that can't be
+asserted via the DOM), stop and ask the user to switch to a vision-capable
+model — do not attempt to read the image yourself.
