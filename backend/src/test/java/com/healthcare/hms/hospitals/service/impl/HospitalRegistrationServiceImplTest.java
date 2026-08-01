@@ -41,6 +41,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("HospitalRegistrationServiceImpl")
@@ -67,6 +68,8 @@ class HospitalRegistrationServiceImplTest {
     private EmailVerificationService emailVerificationService;
     @Mock
     private EmailVerificationEmailService emailVerificationEmailService;
+    @Mock
+    private PlatformTransactionManager transactionManager;
 
     @InjectMocks
     private HospitalRegistrationServiceImpl service;
@@ -120,13 +123,13 @@ class HospitalRegistrationServiceImplTest {
         when(tenantRepository.existsByEmailIgnoreCase(request.hospitalEmail())).thenReturn(false);
         when(userRepository.existsByEmailIgnoreCase(request.adminEmail())).thenReturn(false);
         when(tenantRepository.existsBySlugIgnoreCase(anyString())).thenReturn(false);
-        when(tenantRepository.saveAndFlush(any(Tenant.class))).thenAnswer(invocation -> {
+        when(tenantRepository.save(any(Tenant.class))).thenAnswer(invocation -> {
             final Tenant tenant = invocation.getArgument(0);
             tenant.setId(savedTenant.getId());
             tenant.setCreatedAt(savedTenant.getCreatedAt());
             return tenant;
         });
-        when(hospitalRepository.saveAndFlush(any(Hospital.class))).thenAnswer(invocation -> {
+        when(hospitalRepository.save(any(Hospital.class))).thenAnswer(invocation -> {
             final Hospital hospital = invocation.getArgument(0);
             hospital.setId(savedHospital.getId());
             return hospital;
@@ -134,7 +137,7 @@ class HospitalRegistrationServiceImplTest {
         when(tenantRoleProvisioner.provisionDefaultRoles(savedTenant.getId()))
                 .thenReturn(List.of(adminRole));
         when(passwordEncoder.encode(request.adminPassword())).thenReturn("hash");
-        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             final User user = invocation.getArgument(0);
             user.setId(savedAdmin.getId());
             return user;
@@ -153,7 +156,7 @@ class HospitalRegistrationServiceImplTest {
                 .record(any(), any(), anyString(), anyString(), eq(AuditAction.CREATE), isNull(), anyString(), eq(IP), eq(UA));
 
         final ArgumentCaptor<Hospital> hospitalCaptor = ArgumentCaptor.forClass(Hospital.class);
-        verify(hospitalRepository).saveAndFlush(hospitalCaptor.capture());
+        verify(hospitalRepository).save(hospitalCaptor.capture());
         assertThat(hospitalCaptor.getValue().isDefaultHospital()).isTrue();
         assertThat(hospitalCaptor.getValue().getCode()).isEqualTo("DEFAULT");
     }
@@ -168,8 +171,8 @@ class HospitalRegistrationServiceImplTest {
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("Registration could not be completed");
 
-        verify(hospitalRepository, never()).saveAndFlush(any());
-        verify(userRepository, never()).saveAndFlush(any());
+        verify(hospitalRepository, never()).save(any());
+        verify(userRepository, never()).save(any());
     }
 
     @Test
@@ -183,7 +186,7 @@ class HospitalRegistrationServiceImplTest {
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("Registration could not be completed");
 
-        verify(tenantRepository, never()).saveAndFlush(any());
+        verify(tenantRepository, never()).save(any());
     }
 
     private static HospitalRegistrationRequest sampleRequest() {
