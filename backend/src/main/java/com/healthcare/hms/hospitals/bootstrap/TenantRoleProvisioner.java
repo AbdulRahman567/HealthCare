@@ -43,16 +43,18 @@ public class TenantRoleProvisioner {
         final Map<RoleType, Role> createdByType = new EnumMap<>(RoleType.class);
         final List<Role> created = new ArrayList<>(catalog.size());
 
+        // Batch the "do default roles already exist?" check into a single query instead of
+        // one exists() call per role type (N+1 during registration).
+        if (!roleRepository.findByTenantId(tenantId).isEmpty()) {
+            throw new BusinessException(
+                    "TENANT_ROLES_ALREADY_PROVISIONED",
+                    "Default roles already exist for this tenant"
+            );
+        }
+
         for (final Map.Entry<RoleType, RoleDefinition> entry : catalog.entrySet()) {
             final RoleType type = entry.getKey();
             final RoleDefinition definition = entry.getValue();
-
-            if (roleRepository.existsByTenantIdAndType(tenantId, type)) {
-                throw new BusinessException(
-                        "TENANT_ROLES_ALREADY_PROVISIONED",
-                        "Default roles already exist for this tenant"
-                );
-            }
 
             final Role role = new Role();
             role.setTenantId(tenantId);

@@ -11,7 +11,6 @@ export const allergyKeys = {
   list: (patientId: string, type?: AllergyType) =>
     [...allergyKeys.all(patientId), 'list', type ?? 'all'] as const,
   banner: (patientId: string) => [...allergyKeys.all(patientId), 'banner'] as const,
-  critical: (patientId: string) => [...allergyKeys.all(patientId), 'critical'] as const,
 };
 
 export function useAllergiesQuery(patientId: string, type?: AllergyType, enabled = true) {
@@ -26,14 +25,6 @@ export function useAllergyBannerQuery(patientId: string, enabled = true) {
   return useQuery({
     queryKey: allergyKeys.banner(patientId),
     queryFn: () => allergiesApi.banner(patientId),
-    enabled: enabled && Boolean(patientId),
-  });
-}
-
-export function useAllergyCriticalQuery(patientId: string, enabled = true) {
-  return useQuery({
-    queryKey: allergyKeys.critical(patientId),
-    queryFn: () => allergiesApi.critical(patientId),
     enabled: enabled && Boolean(patientId),
   });
 }

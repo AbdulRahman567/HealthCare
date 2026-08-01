@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiGet, apiPatch, apiPost } from '@/services/http/api';
 import type {
   CheckInQueuePayload,
   DoctorDayQueueResponse,
@@ -6,36 +6,24 @@ import type {
   QueueEntryResponse,
   QueueStatusUpdatePayload,
 } from '@/features/appointments/types/queue';
-import type { ApiSuccessResponse } from '@/types/api';
 
 export const queueApi = {
   async checkIn(payload: CheckInQueuePayload): Promise<QueueEntryResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<QueueEntryResponse>>(
-      '/queues/check-in',
-      payload,
-    );
-    return data.data;
+    return apiPost<QueueEntryResponse>('/queues/check-in', payload);
   },
 
   async getDoctorDayQueue(doctorId: string, date?: string): Promise<DoctorDayQueueResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<DoctorDayQueueResponse>>('/queues', {
+    return apiGet<DoctorDayQueueResponse>('/queues', {
       params: { doctorId, date },
     });
-    return data.data;
   },
 
   async getById(queueId: string): Promise<DoctorDayQueueResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<DoctorDayQueueResponse>>(
-      `/queues/${queueId}`,
-    );
-    return data.data;
+    return apiGet<DoctorDayQueueResponse>(`/queues/${queueId}`);
   },
 
   async getEntry(entryId: string): Promise<QueueEntryResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<QueueEntryResponse>>(
-      `/queue-entries/${entryId}`,
-    );
-    return data.data;
+    return apiGet<QueueEntryResponse>(`/queue-entries/${entryId}`);
   },
 
   async updateStatus(
@@ -43,10 +31,6 @@ export const queueApi = {
     action: QueueAction,
     payload: QueueStatusUpdatePayload = {},
   ): Promise<QueueEntryResponse> {
-    const { data } = await apiClient.patch<ApiSuccessResponse<QueueEntryResponse>>(
-      `/queue-entries/${entryId}/${action}`,
-      payload,
-    );
-    return data.data;
+    return apiPatch<QueueEntryResponse>(`/queue-entries/${entryId}/${action}`, payload);
   },
 };

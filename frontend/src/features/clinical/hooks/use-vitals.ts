@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { vitalsApi } from '@/features/clinical/api/vitals-api';
 import { consultationKeys } from '@/features/clinical/hooks/use-consultations';
 import type {
-  PatientVitalSignsQuery,
   RecordVitalSignsPayload,
   UpdateVitalSignsPayload,
 } from '@/features/clinical/types/vitals';
@@ -13,8 +12,6 @@ export const vitalsKeys = {
   all: (consultationId: string) =>
     [...consultationKeys.detail(consultationId), 'vital-signs'] as const,
   list: (consultationId: string) => [...vitalsKeys.all(consultationId), 'list'] as const,
-  patient: (patientId: string, query: PatientVitalSignsQuery) =>
-    ['patients', patientId, 'vital-signs', query] as const,
 };
 
 export function useConsultationVitalsQuery(consultationId: string, enabled = true) {
@@ -22,19 +19,6 @@ export function useConsultationVitalsQuery(consultationId: string, enabled = tru
     queryKey: vitalsKeys.list(consultationId),
     queryFn: () => vitalsApi.listForConsultation(consultationId),
     enabled: enabled && Boolean(consultationId),
-  });
-}
-
-export function usePatientVitalsQuery(
-  patientId: string,
-  query: PatientVitalSignsQuery = {},
-  enabled = true,
-) {
-  return useQuery({
-    queryKey: vitalsKeys.patient(patientId, query),
-    queryFn: () => vitalsApi.listForPatient(patientId, query),
-    enabled: enabled && Boolean(patientId),
-    placeholderData: (previous) => previous,
   });
 }
 

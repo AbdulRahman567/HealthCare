@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { AuthShell } from '@/components/layouts/auth-shell';
-import { MultiStepRegistrationForm } from '@/features/auth/components/multi-step-registration-form';
+import { SinglePageRegistrationForm } from '@/features/auth/components/single-page-registration-form';
 
 export const metadata: Metadata = {
   title: 'Register Hospital | Healthcare HMS',
@@ -16,12 +16,13 @@ type Props = {
 export default async function RegisterHospitalPage({ searchParams }: Props) {
   const { plan } = await searchParams;
   const validPlans = ['BASIC', 'STANDARD', 'PREMIUM', 'ENTERPRISE'];
-  const defaultPlan = plan && validPlans.includes(plan.toUpperCase()) ? plan.toUpperCase() : undefined;
+  const defaultPlan =
+    plan && validPlans.includes(plan.toUpperCase()) ? plan.toUpperCase() : undefined;
 
   return (
     <AuthShell
       title="Create your account"
-      description="Set up your hospital in just a few steps."
+      description="Choose a plan on the pricing page, then register in one step."
       footer={
         <p>
           Already registered?{' '}
@@ -31,7 +32,7 @@ export default async function RegisterHospitalPage({ searchParams }: Props) {
         </p>
       }
     >
-      <MultiStepRegistrationForm defaultPlan={defaultPlan} />
+      <SinglePageRegistrationForm defaultPlan={defaultPlan} />
     </AuthShell>
   );
 }

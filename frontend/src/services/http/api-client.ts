@@ -45,7 +45,9 @@ function shouldSkipRefresh(url?: string): boolean {
     url.includes('/auth/logout') ||
     url.includes('/auth/refresh-token') ||
     url.includes('/auth/register/') ||
-    url.includes('/hospitals/register') ||
+    url.includes('/register/resend-verification') ||
+    url.includes('/register') ||
+    url.includes('/verify-registration') ||
     url.includes('/auth/forgot-password') ||
     url.includes('/auth/reset-password') ||
     url.includes('/auth/verify-email') ||

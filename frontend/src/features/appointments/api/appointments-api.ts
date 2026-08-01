@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiGet, apiPatch, apiPost, apiPut } from '@/services/http/api';
 import type {
   AppointmentListQuery,
   AppointmentResponse,
@@ -8,63 +8,39 @@ import type {
   UpdateAppointmentPayload,
 } from '@/features/appointments/types/appointment';
 import { toPageParams } from '@/lib/page-query';
-import type { ApiSuccessResponse, PageResponse } from '@/types/api';
+import type { PageResponse } from '@/types/api';
 
 export const appointmentsApi = {
   async search(query: AppointmentListQuery = {}): Promise<PageResponse<AppointmentResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<AppointmentResponse>>>(
-      '/appointments',
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<AppointmentResponse>>('/appointments', {
+      params: toPageParams(query),
+    });
   },
 
   async getById(id: string): Promise<AppointmentResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<AppointmentResponse>>(
-      `/appointments/${id}`,
-    );
-    return data.data;
+    return apiGet<AppointmentResponse>(`/appointments/${id}`);
   },
 
   async create(payload: CreateAppointmentPayload): Promise<AppointmentResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<AppointmentResponse>>(
-      '/appointments',
-      payload,
-    );
-    return data.data;
+    return apiPost<AppointmentResponse>('/appointments', payload);
   },
 
   async update(id: string, payload: UpdateAppointmentPayload): Promise<AppointmentResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<AppointmentResponse>>(
-      `/appointments/${id}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<AppointmentResponse>(`/appointments/${id}`, payload);
   },
 
   async reschedule(
     id: string,
     payload: RescheduleAppointmentPayload,
   ): Promise<AppointmentResponse> {
-    const { data } = await apiClient.patch<ApiSuccessResponse<AppointmentResponse>>(
-      `/appointments/${id}/reschedule`,
-      payload,
-    );
-    return data.data;
+    return apiPatch<AppointmentResponse>(`/appointments/${id}/reschedule`, payload);
   },
 
   async cancel(id: string, payload: CancelAppointmentPayload = {}): Promise<AppointmentResponse> {
-    const { data } = await apiClient.patch<ApiSuccessResponse<AppointmentResponse>>(
-      `/appointments/${id}/cancel`,
-      payload,
-    );
-    return data.data;
+    return apiPatch<AppointmentResponse>(`/appointments/${id}/cancel`, payload);
   },
 
   async confirm(id: string): Promise<AppointmentResponse> {
-    const { data } = await apiClient.patch<ApiSuccessResponse<AppointmentResponse>>(
-      `/appointments/${id}/confirm`,
-    );
-    return data.data;
+    return apiPatch<AppointmentResponse>(`/appointments/${id}/confirm`);
   },
 };

@@ -1,6 +1,5 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiGet } from '@/services/http/api';
 import type { TimelinePageResponse, TimelineQuery } from '@/features/patients/types/timeline';
-import type { ApiSuccessResponse } from '@/types/api';
 
 export const timelineApi = {
   async list(patientId: string, query: TimelineQuery = {}): Promise<TimelinePageResponse> {
@@ -18,10 +17,8 @@ export const timelineApi = {
       params.types = query.types;
     }
 
-    const { data } = await apiClient.get<ApiSuccessResponse<TimelinePageResponse>>(
-      `/patients/${patientId}/timeline`,
-      { params },
-    );
-    return data.data;
+    return apiGet<TimelinePageResponse>(`/patients/${patientId}/timeline`, {
+      params,
+    });
   },
 };

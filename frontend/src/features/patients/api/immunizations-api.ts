@@ -1,46 +1,33 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiDelete, apiGet, apiPost, apiPut } from '@/services/http/api';
 import type {
   ImmunizationDueResponse,
   ImmunizationResponse,
   UpsertImmunizationPayload,
 } from '@/features/patients/types/immunization';
 import type { ImmunizationStatus } from '@/features/patients/types/enums';
-import type { ApiSuccessResponse } from '@/types/api';
 
 const base = (patientId: string) => `/patients/${patientId}/immunizations`;
 
 export const immunizationsApi = {
   async list(patientId: string, status?: ImmunizationStatus): Promise<ImmunizationResponse[]> {
-    const { data } = await apiClient.get<ApiSuccessResponse<ImmunizationResponse[]>>(
-      base(patientId),
-      { params: status ? { status } : undefined },
-    );
-    return data.data;
+    return apiGet<ImmunizationResponse[]>(base(patientId), {
+      params: status ? { status } : undefined,
+    });
   },
 
   async due(patientId: string): Promise<ImmunizationDueResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<ImmunizationDueResponse>>(
-      `${base(patientId)}/due`,
-    );
-    return data.data;
+    return apiGet<ImmunizationDueResponse>(`${base(patientId)}/due`);
   },
 
   async getById(patientId: string, immunizationId: string): Promise<ImmunizationResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<ImmunizationResponse>>(
-      `${base(patientId)}/${immunizationId}`,
-    );
-    return data.data;
+    return apiGet<ImmunizationResponse>(`${base(patientId)}/${immunizationId}`);
   },
 
   async create(
     patientId: string,
     payload: UpsertImmunizationPayload,
   ): Promise<ImmunizationResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<ImmunizationResponse>>(
-      base(patientId),
-      payload,
-    );
-    return data.data;
+    return apiPost<ImmunizationResponse>(base(patientId), payload);
   },
 
   async update(
@@ -48,14 +35,10 @@ export const immunizationsApi = {
     immunizationId: string,
     payload: UpsertImmunizationPayload,
   ): Promise<ImmunizationResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<ImmunizationResponse>>(
-      `${base(patientId)}/${immunizationId}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<ImmunizationResponse>(`${base(patientId)}/${immunizationId}`, payload);
   },
 
   async remove(patientId: string, immunizationId: string): Promise<void> {
-    await apiClient.delete(`${base(patientId)}/${immunizationId}`);
+    await apiDelete(`${base(patientId)}/${immunizationId}`);
   },
 };

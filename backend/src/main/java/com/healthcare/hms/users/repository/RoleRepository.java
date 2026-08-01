@@ -49,6 +49,4 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
             ORDER BY r.hierarchyLevel ASC
             """)
     List<Role> findByTenantIdWithPermissions(@Param("tenantId") UUID tenantId);
-
-    boolean existsByTenantIdAndType(UUID tenantId, RoleType type);
 }

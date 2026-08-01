@@ -1,3 +1,4 @@
+import { apiDelete, apiGet, apiPost, apiPut } from '@/services/http/api';
 import type {
   ClinicalNoteAttachmentResponse,
   ClinicalNoteResponse,
@@ -7,37 +8,32 @@ import type {
 } from '@/features/clinical/types/clinical-note';
 import type { ClinicalNoteType } from '@/features/clinical/types/enums';
 import { toPageParams } from '@/lib/page-query';
-import { apiClient } from '@/services/http/api-client';
-import type { ApiSuccessResponse, PageResponse } from '@/types/api';
+import type { PageResponse } from '@/types/api';
 
 export const clinicalNotesApi = {
   async listForConsultation(
     consultationId: string,
     noteType?: ClinicalNoteType,
   ): Promise<ClinicalNoteResponse[]> {
-    const { data } = await apiClient.get<ApiSuccessResponse<ClinicalNoteResponse[]>>(
-      `/consultations/${consultationId}/clinical-notes`,
-      { params: noteType ? { noteType } : undefined },
-    );
-    return data.data;
+    return apiGet<ClinicalNoteResponse[]>(`/consultations/${consultationId}/clinical-notes`, {
+      params: noteType ? { noteType } : undefined,
+    });
   },
 
   async getById(consultationId: string, noteId: string): Promise<ClinicalNoteResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<ClinicalNoteResponse>>(
+    return apiGet<ClinicalNoteResponse>(
       `/consultations/${consultationId}/clinical-notes/${noteId}`,
     );
-    return data.data;
   },
 
   async create(
     consultationId: string,
     payload: CreateClinicalNotePayload,
   ): Promise<ClinicalNoteResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<ClinicalNoteResponse>>(
+    return apiPost<ClinicalNoteResponse>(
       `/consultations/${consultationId}/clinical-notes`,
       payload,
     );
-    return data.data;
   },
 
   async update(
@@ -45,15 +41,14 @@ export const clinicalNotesApi = {
     noteId: string,
     payload: UpdateClinicalNotePayload,
   ): Promise<ClinicalNoteResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<ClinicalNoteResponse>>(
+    return apiPut<ClinicalNoteResponse>(
       `/consultations/${consultationId}/clinical-notes/${noteId}`,
       payload,
     );
-    return data.data;
   },
 
   async remove(consultationId: string, noteId: string): Promise<void> {
-    await apiClient.delete(`/consultations/${consultationId}/clinical-notes/${noteId}`);
+    await apiDelete(`/consultations/${consultationId}/clinical-notes/${noteId}`);
   },
 
   async uploadAttachment(
@@ -67,22 +62,20 @@ export const clinicalNotesApi = {
     if (description?.trim()) {
       formData.append('description', description.trim());
     }
-    const { data } = await apiClient.post<ApiSuccessResponse<ClinicalNoteAttachmentResponse>>(
+    return apiPost<ClinicalNoteAttachmentResponse>(
       `/consultations/${consultationId}/clinical-notes/${noteId}/attachments`,
       formData,
       { headers: { 'Content-Type': 'multipart/form-data' } },
     );
-    return data.data;
   },
 
   async listAttachments(
     consultationId: string,
     noteId: string,
   ): Promise<ClinicalNoteAttachmentResponse[]> {
-    const { data } = await apiClient.get<ApiSuccessResponse<ClinicalNoteAttachmentResponse[]>>(
+    return apiGet<ClinicalNoteAttachmentResponse[]>(
       `/consultations/${consultationId}/clinical-notes/${noteId}/attachments`,
     );
-    return data.data;
   },
 
   async removeAttachment(
@@ -90,7 +83,7 @@ export const clinicalNotesApi = {
     noteId: string,
     attachmentId: string,
   ): Promise<void> {
-    await apiClient.delete(
+    await apiDelete(
       `/consultations/${consultationId}/clinical-notes/${noteId}/attachments/${attachmentId}`,
     );
   },
@@ -99,10 +92,8 @@ export const clinicalNotesApi = {
     patientId: string,
     query: PatientClinicalNotesQuery = {},
   ): Promise<PageResponse<ClinicalNoteResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<ClinicalNoteResponse>>>(
-      `/patients/${patientId}/clinical-notes`,
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<ClinicalNoteResponse>>(`/patients/${patientId}/clinical-notes`, {
+      params: toPageParams(query),
+    });
   },
 };

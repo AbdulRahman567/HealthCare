@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiGet } from '@/services/http/api';
 import type {
   CalendarMonthQuery,
   CalendarMonthResponse,
@@ -6,7 +6,6 @@ import type {
   CalendarRangeResponse,
 } from '@/features/appointments/types/calendar';
 import { toPageParams } from '@/lib/page-query';
-import type { ApiSuccessResponse } from '@/types/api';
 
 type ScopeKind = 'doctors' | 'departments' | 'hospitals';
 
@@ -20,11 +19,9 @@ export const calendarApi = {
     scopeId: string,
     query: CalendarQuery = {},
   ): Promise<CalendarRangeResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<CalendarRangeResponse>>(
-      rangePath(scope, scopeId, 'daily'),
-      { params: toPageParams({ size: 50, ...query }) },
-    );
-    return data.data;
+    return apiGet<CalendarRangeResponse>(rangePath(scope, scopeId, 'daily'), {
+      params: toPageParams({ size: 50, ...query }),
+    });
   },
 
   async weekly(
@@ -32,11 +29,9 @@ export const calendarApi = {
     scopeId: string,
     query: CalendarQuery = {},
   ): Promise<CalendarRangeResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<CalendarRangeResponse>>(
-      rangePath(scope, scopeId, 'weekly'),
-      { params: toPageParams({ size: 100, ...query }) },
-    );
-    return data.data;
+    return apiGet<CalendarRangeResponse>(rangePath(scope, scopeId, 'weekly'), {
+      params: toPageParams({ size: 100, ...query }),
+    });
   },
 
   async monthly(
@@ -44,10 +39,8 @@ export const calendarApi = {
     scopeId: string,
     query: CalendarMonthQuery,
   ): Promise<CalendarMonthResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<CalendarMonthResponse>>(
-      `/calendars/${scope}/${scopeId}/monthly`,
-      { params: query },
-    );
-    return data.data;
+    return apiGet<CalendarMonthResponse>(`/calendars/${scope}/${scopeId}/monthly`, {
+      params: query,
+    });
   },
 };

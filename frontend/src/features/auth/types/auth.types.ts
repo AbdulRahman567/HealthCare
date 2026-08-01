@@ -46,11 +46,26 @@ export type AuthResponse = {
   user: UserProfile;
 };
 
-export type RefreshTokenPayload = {
-  refreshToken: string;
+export type SubscriptionPlan = 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE';
+
+/** Single-page registration payload (Phase 7). Only a pending record is created on submit. */
+export type RegistrationPayload = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+  hospitalName: string;
+  hospitalEmail: string;
+  hospitalPhone?: string;
+  hospitalAddress?: string;
+  subscriptionPlan: SubscriptionPlan;
 };
 
-export type SubscriptionPlan = 'BASIC' | 'STANDARD' | 'PREMIUM' | 'ENTERPRISE';
+export type PendingRegistrationResponse = {
+  email: string;
+  expiresInMinutes: number;
+};
 
 export type TenantStatus = 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'INACTIVE';
 
@@ -82,19 +97,6 @@ export type LoginPayload = {
   password: string;
 };
 
-export type RegisterHospitalPayload = {
-  hospitalName: string;
-  hospitalEmail: string;
-  hospitalPhone?: string;
-  hospitalAddress?: string;
-  subscriptionPlan?: SubscriptionPlan;
-  adminFirstName: string;
-  adminLastName: string;
-  adminEmail: string;
-  adminPassword: string;
-  adminPhone?: string;
-};
-
 export type ForgotPasswordPayload = {
   email: string;
 };
@@ -110,43 +112,4 @@ export type VerifyEmailPayload = {
 
 export type ResendVerificationPayload = {
   email: string;
-};
-
-// --- Multi-step registration (Phase 2) ---
-
-export type PreRegisterAdminPayload = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone?: string;
-};
-
-export type PreRegisterAdminResponse = {
-  registrationToken: string;
-  email: string;
-  expiresInMinutes: number;
-};
-
-export type CompleteRegistrationPayload = {
-  registrationToken: string;
-  hospitalName: string;
-  hospitalEmail: string;
-  hospitalPhone?: string;
-  hospitalAddress?: string;
-  subscriptionPlan?: SubscriptionPlan;
-};
-
-export type StepRegistrationState = {
-  token: string;
-  adminEmail: string;
-  adminFirstName: string;
-  adminLastName: string;
-  adminPassword: string;
-  adminPhone: string;
-  hospitalName: string;
-  hospitalEmail: string;
-  hospitalPhone: string;
-  hospitalAddress: string;
-  subscriptionPlan: SubscriptionPlan;
 };

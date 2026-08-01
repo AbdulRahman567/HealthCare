@@ -111,14 +111,3 @@ export function resolveRouteAccess(pathname: string): RouteAccessResolution {
 
   return { status: 'allow', requirement: {} };
 }
-
-/**
- * @deprecated Prefer {@link resolveRouteAccess}. Returns undefined for deny (legacy).
- */
-export function resolveRouteRequirement(pathname: string): AccessRequirement | undefined {
-  const resolved = resolveRouteAccess(pathname);
-  if (resolved.status === 'deny') {
-    return undefined;
-  }
-  return resolved.requirement;
-}

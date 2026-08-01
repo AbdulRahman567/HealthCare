@@ -45,48 +45,6 @@ describe('authApi', () => {
     expect(authTokenStore.setTokens).toHaveBeenCalledWith('a', 'r');
   });
 
-  it('registerHospital returns hospital payload', async () => {
-    const payload = {
-      tenantId: 't1',
-      tenantSlug: 'hospital',
-      tenantStatus: 'PENDING',
-      hospitalId: 'h1',
-      hospitalName: 'Hospital',
-      hospitalCode: 'HOSP',
-      hospitalStatus: 'PENDING',
-      defaultHospital: true,
-      hospitalEmail: 'h@t.com',
-      hospitalPhone: null,
-      hospitalAddress: null,
-      subscriptionPlan: 'BASIC',
-      adminUserId: 'u1',
-      adminEmail: 'admin@t.com',
-      adminEmailVerified: false,
-      provisionedRoles: ['HOSPITAL_ADMIN'],
-      createdAt: '2026-01-01T00:00:00Z',
-    };
-    (apiClient.post as jest.Mock).mockResolvedValue({
-      data: {
-        success: true,
-        message: 'created',
-        data: payload,
-        timestamp: '',
-      },
-    });
-    await expect(
-      authApi.registerHospital({
-        hospitalName: 'Hospital',
-        hospitalEmail: 'h@t.com',
-        subscriptionPlan: 'BASIC',
-        adminFirstName: 'Jane',
-        adminLastName: 'Admin',
-        adminEmail: 'admin@t.com',
-        adminPassword: 'StrongPass1!ab',
-      }),
-    ).resolves.toEqual(payload);
-    expect(apiClient.post).toHaveBeenCalledWith('/hospitals/register', expect.any(Object));
-  });
-
   it('forgotPassword returns message', async () => {
     (apiClient.post as jest.Mock).mockResolvedValue({
       data: { success: true, message: 'sent', data: null, timestamp: '' },

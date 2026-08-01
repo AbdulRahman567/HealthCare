@@ -4,7 +4,6 @@ import { diagnosesApi } from '@/features/clinical/api/diagnoses-api';
 import { consultationKeys } from '@/features/clinical/hooks/use-consultations';
 import type {
   CreateDiagnosisPayload,
-  PatientDiagnosisQuery,
   UpdateDiagnosisPayload,
 } from '@/features/clinical/types/diagnosis';
 import { timelineKeys } from '@/features/patients/hooks/use-timeline';
@@ -13,8 +12,6 @@ export const diagnosisKeys = {
   all: (consultationId: string) =>
     [...consultationKeys.detail(consultationId), 'diagnoses'] as const,
   list: (consultationId: string) => [...diagnosisKeys.all(consultationId), 'list'] as const,
-  patient: (patientId: string, query: PatientDiagnosisQuery) =>
-    ['patients', patientId, 'diagnoses', query] as const,
 };
 
 export function useConsultationDiagnosesQuery(consultationId: string, enabled = true) {
@@ -22,19 +19,6 @@ export function useConsultationDiagnosesQuery(consultationId: string, enabled = 
     queryKey: diagnosisKeys.list(consultationId),
     queryFn: () => diagnosesApi.listForConsultation(consultationId),
     enabled: enabled && Boolean(consultationId),
-  });
-}
-
-export function usePatientDiagnosesQuery(
-  patientId: string,
-  query: PatientDiagnosisQuery = {},
-  enabled = true,
-) {
-  return useQuery({
-    queryKey: diagnosisKeys.patient(patientId, query),
-    queryFn: () => diagnosesApi.listForPatient(patientId, query),
-    enabled: enabled && Boolean(patientId),
-    placeholderData: (previous) => previous,
   });
 }
 

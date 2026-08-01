@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiDelete, apiGet, apiPost, apiPut } from '@/services/http/api';
 import type {
   CreateDoctorPayload,
   CreateLaboratoryStaffPayload,
@@ -17,7 +17,7 @@ import type {
 import { STAFF_TYPE_TO_RESOURCE } from '@/features/hospital-admin/types/staff';
 import type { StaffType } from '@/features/hospital-admin/types/enums';
 import { toPageParams } from '@/lib/page-query';
-import type { ApiSuccessResponse, PageResponse } from '@/types/api';
+import type { PageResponse } from '@/types/api';
 
 type StaffWritePayload =
   | CreateDoctorPayload
@@ -35,26 +35,17 @@ export const staffApi = {
     staffType: StaffType,
     query: StaffListQuery = {},
   ): Promise<PageResponse<StaffProfile>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<StaffProfile>>>(
-      `/${resourcePath(staffType)}`,
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<StaffProfile>>(`/${resourcePath(staffType)}`, {
+      params: toPageParams(query),
+    });
   },
 
   async getById(staffType: StaffType, id: string): Promise<StaffProfile> {
-    const { data } = await apiClient.get<ApiSuccessResponse<StaffProfile>>(
-      `/${resourcePath(staffType)}/${id}`,
-    );
-    return data.data;
+    return apiGet<StaffProfile>(`/${resourcePath(staffType)}/${id}`);
   },
 
   async create(staffType: StaffType, payload: StaffWritePayload): Promise<StaffProfile> {
-    const { data } = await apiClient.post<ApiSuccessResponse<StaffProfile>>(
-      `/${resourcePath(staffType)}`,
-      payload,
-    );
-    return data.data;
+    return apiPost<StaffProfile>(`/${resourcePath(staffType)}`, payload);
   },
 
   async update(
@@ -62,15 +53,11 @@ export const staffApi = {
     id: string,
     payload: StaffWritePayload,
   ): Promise<StaffProfile> {
-    const { data } = await apiClient.put<ApiSuccessResponse<StaffProfile>>(
-      `/${resourcePath(staffType)}/${id}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<StaffProfile>(`/${resourcePath(staffType)}/${id}`, payload);
   },
 
   async remove(staffType: StaffType, id: string): Promise<void> {
-    await apiClient.delete(`/${resourcePath(staffType)}/${id}`);
+    await apiDelete(`/${resourcePath(staffType)}/${id}`);
   },
 };
 

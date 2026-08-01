@@ -15,6 +15,13 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Screenshots & audit artifacts (never track generated captures)
+**/audit-screenshots/
+**/screenshot-*.png
+screenshot-desktop.png
+screenshot-mobile.png
+/take-screenshots*.js
+
 # Environment files
 .env
 .env.*

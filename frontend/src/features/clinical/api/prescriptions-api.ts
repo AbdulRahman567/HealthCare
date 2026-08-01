@@ -1,3 +1,4 @@
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from '@/services/http/api';
 import type {
   CancelPrescriptionPayload,
   CreatePrescriptionPayload,
@@ -6,76 +7,50 @@ import type {
   UpdatePrescriptionPayload,
 } from '@/features/clinical/types/prescription';
 import { toPageParams } from '@/lib/page-query';
-import { apiClient } from '@/services/http/api-client';
-import type { ApiSuccessResponse, PageResponse } from '@/types/api';
+import type { PageResponse } from '@/types/api';
 
 export const prescriptionsApi = {
   async listForConsultation(consultationId: string): Promise<PrescriptionResponse[]> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PrescriptionResponse[]>>(
-      `/consultations/${consultationId}/prescriptions`,
-    );
-    return data.data;
+    return apiGet<PrescriptionResponse[]>(`/consultations/${consultationId}/prescriptions`);
   },
 
   async search(query: PrescriptionListQuery = {}): Promise<PageResponse<PrescriptionResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<PrescriptionResponse>>>(
-      '/prescriptions',
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<PrescriptionResponse>>('/prescriptions', {
+      params: toPageParams(query),
+    });
   },
 
   async getById(id: string): Promise<PrescriptionResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PrescriptionResponse>>(
-      `/prescriptions/${id}`,
-    );
-    return data.data;
+    return apiGet<PrescriptionResponse>(`/prescriptions/${id}`);
   },
 
   async create(payload: CreatePrescriptionPayload): Promise<PrescriptionResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<PrescriptionResponse>>(
-      '/prescriptions',
-      payload,
-    );
-    return data.data;
+    return apiPost<PrescriptionResponse>('/prescriptions', payload);
   },
 
   async update(id: string, payload: UpdatePrescriptionPayload): Promise<PrescriptionResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<PrescriptionResponse>>(
-      `/prescriptions/${id}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<PrescriptionResponse>(`/prescriptions/${id}`, payload);
   },
 
   async issue(id: string): Promise<PrescriptionResponse> {
-    const { data } = await apiClient.patch<ApiSuccessResponse<PrescriptionResponse>>(
-      `/prescriptions/${id}/issue`,
-    );
-    return data.data;
+    return apiPatch<PrescriptionResponse>(`/prescriptions/${id}/issue`);
   },
 
   async cancel(id: string, payload: CancelPrescriptionPayload = {}): Promise<PrescriptionResponse> {
-    const { data } = await apiClient.patch<ApiSuccessResponse<PrescriptionResponse>>(
-      `/prescriptions/${id}/cancel`,
-      payload,
-    );
-    return data.data;
+    return apiPatch<PrescriptionResponse>(`/prescriptions/${id}/cancel`, payload);
   },
 
   async remove(id: string): Promise<void> {
-    await apiClient.delete(`/prescriptions/${id}`);
+    await apiDelete(`/prescriptions/${id}`);
   },
 
   async listForPatient(
     patientId: string,
     query: PageQueryLike = {},
   ): Promise<PageResponse<PrescriptionResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<PrescriptionResponse>>>(
-      `/patients/${patientId}/prescriptions`,
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<PrescriptionResponse>>(`/patients/${patientId}/prescriptions`, {
+      params: toPageParams(query),
+    });
   },
 };
 

@@ -43,7 +43,7 @@ class TenantRoleProvisionerTest {
     @DisplayName("provisions every catalog role with matching permissions")
     void provisionDefaultRoles_success() {
         final UUID tenantId = UUID.randomUUID();
-        when(roleRepository.existsByTenantIdAndType(any(), any())).thenReturn(false);
+        when(roleRepository.findByTenantId(any())).thenReturn(List.of());
         when(permissionRepository.findByCodeIn(any())).thenAnswer(invocation -> {
             final Set<String> codes = invocation.getArgument(0);
             final List<Permission> permissions = new ArrayList<>();
@@ -86,7 +86,7 @@ class TenantRoleProvisionerTest {
     @DisplayName("fails when roles were already provisioned")
     void provisionDefaultRoles_alreadyExists() {
         final UUID tenantId = UUID.randomUUID();
-        when(roleRepository.existsByTenantIdAndType(any(), any())).thenReturn(true);
+        when(roleRepository.findByTenantId(any())).thenReturn(List.of(new Role()));
 
         assertThatThrownBy(() -> provisioner.provisionDefaultRoles(tenantId))
                 .isInstanceOf(BusinessException.class)

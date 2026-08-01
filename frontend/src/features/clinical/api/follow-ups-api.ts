@@ -1,3 +1,4 @@
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from '@/services/http/api';
 import type {
   CreateFollowUpPayload,
   FollowUpResponse,
@@ -7,30 +8,19 @@ import type {
   UpdateFollowUpStatusPayload,
 } from '@/features/clinical/types/follow-up';
 import { toPageParams } from '@/lib/page-query';
-import { apiClient } from '@/services/http/api-client';
-import type { ApiSuccessResponse, PageResponse } from '@/types/api';
+import type { PageResponse } from '@/types/api';
 
 export const followUpsApi = {
   async listForConsultation(consultationId: string): Promise<FollowUpResponse[]> {
-    const { data } = await apiClient.get<ApiSuccessResponse<FollowUpResponse[]>>(
-      `/consultations/${consultationId}/follow-ups`,
-    );
-    return data.data;
+    return apiGet<FollowUpResponse[]>(`/consultations/${consultationId}/follow-ups`);
   },
 
   async getById(consultationId: string, id: string): Promise<FollowUpResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<FollowUpResponse>>(
-      `/consultations/${consultationId}/follow-ups/${id}`,
-    );
-    return data.data;
+    return apiGet<FollowUpResponse>(`/consultations/${consultationId}/follow-ups/${id}`);
   },
 
   async create(consultationId: string, payload: CreateFollowUpPayload): Promise<FollowUpResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<FollowUpResponse>>(
-      `/consultations/${consultationId}/follow-ups`,
-      payload,
-    );
-    return data.data;
+    return apiPost<FollowUpResponse>(`/consultations/${consultationId}/follow-ups`, payload);
   },
 
   async update(
@@ -38,11 +28,7 @@ export const followUpsApi = {
     id: string,
     payload: UpdateFollowUpPayload,
   ): Promise<FollowUpResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<FollowUpResponse>>(
-      `/consultations/${consultationId}/follow-ups/${id}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<FollowUpResponse>(`/consultations/${consultationId}/follow-ups/${id}`, payload);
   },
 
   async updateStatus(
@@ -50,46 +36,38 @@ export const followUpsApi = {
     id: string,
     payload: UpdateFollowUpStatusPayload,
   ): Promise<FollowUpResponse> {
-    const { data } = await apiClient.patch<ApiSuccessResponse<FollowUpResponse>>(
+    return apiPatch<FollowUpResponse>(
       `/consultations/${consultationId}/follow-ups/${id}/status`,
       payload,
     );
-    return data.data;
   },
 
   async remove(consultationId: string, id: string): Promise<void> {
-    await apiClient.delete(`/consultations/${consultationId}/follow-ups/${id}`);
+    await apiDelete(`/consultations/${consultationId}/follow-ups/${id}`);
   },
 
   async search(query: FollowUpSearchQuery = {}): Promise<PageResponse<FollowUpResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<FollowUpResponse>>>(
-      '/follow-ups',
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<FollowUpResponse>>('/follow-ups', {
+      params: toPageParams(query),
+    });
   },
 
   async due(withinDays = 14): Promise<FollowUpResponse[]> {
-    const { data } = await apiClient.get<ApiSuccessResponse<FollowUpResponse[]>>(
-      '/follow-ups/due',
-      { params: { withinDays } },
-    );
-    return data.data;
+    return apiGet<FollowUpResponse[]>('/follow-ups/due', {
+      params: { withinDays },
+    });
   },
 
   async getGlobalById(id: string): Promise<FollowUpResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<FollowUpResponse>>(`/follow-ups/${id}`);
-    return data.data;
+    return apiGet<FollowUpResponse>(`/follow-ups/${id}`);
   },
 
   async listForPatient(
     patientId: string,
     query: PatientFollowUpQuery = {},
   ): Promise<PageResponse<FollowUpResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<FollowUpResponse>>>(
-      `/patients/${patientId}/follow-ups`,
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<FollowUpResponse>>(`/patients/${patientId}/follow-ups`, {
+      params: toPageParams(query),
+    });
   },
 };

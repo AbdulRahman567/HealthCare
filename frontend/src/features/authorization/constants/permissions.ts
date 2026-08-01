@@ -68,5 +68,3 @@ export const Permissions = {
   DASHBOARD_READ: 'DASHBOARD_READ',
   REPORT_READ: 'REPORT_READ',
 } as const;
-
-export type PermissionCode = (typeof Permissions)[keyof typeof Permissions];

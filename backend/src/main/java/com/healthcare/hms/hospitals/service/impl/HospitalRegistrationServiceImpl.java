@@ -104,6 +104,53 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
             final String ipAddress,
             final String userAgent
     ) {
+        final RegistrationContext ctx = provisionHospital(request, ipAddress, userAgent, null);
+
+        // At this point the transaction has committed — all DB locks released.
+        // Send verification email in its own transaction context.
+        sendVerificationEmail(ctx.admin, ipAddress, userAgent);
+
+        return buildResponse(ctx);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public HospitalRegistrationResponse registerVerified(
+            final HospitalRegistrationRequest request,
+            final String preHashedPassword,
+            final String ipAddress,
+            final String userAgent
+    ) {
+        // Runs at verification-link time: records are created now, so trialEndsAt is
+        // computed from the verification moment (provisionHospital -> createTenant).
+        // The administrator's email is already confirmed, so no verification email is sent.
+        final RegistrationContext ctx = provisionHospital(request, ipAddress, userAgent, preHashedPassword);
+        final User admin = ctx.admin;
+        admin.setEmailVerified(true);
+        admin.setEmailVerifiedAt(Instant.now());
+        userRepository.save(admin);
+
+        auditLogService.record(
+                admin.getTenantId(),
+                admin.getId(),
+                ENTITY_USER,
+                admin.getId().toString(),
+                AuditAction.EMAIL_VERIFIED,
+                null,
+                "Registration completed via email verification",
+                ipAddress,
+                userAgent
+        );
+
+        return buildResponse(ctx);
+    }
+
+    private RegistrationContext provisionHospital(
+            final HospitalRegistrationRequest request,
+            final String ipAddress,
+            final String userAgent,
+            final String passwordHashOverride
+    ) {
         final String hospitalEmail = normalizeEmail(request.hospitalEmail());
         final String adminEmail = normalizeEmail(request.adminEmail());
 
@@ -126,7 +173,7 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
                     .filter(role -> role.getType() == RoleType.HOSPITAL_ADMIN)
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("Hospital Admin role was not provisioned"));
-            final User admin = createInitialAdmin(tenant, request, adminEmail, hospitalAdminRole);
+            final User admin = createInitialAdmin(tenant, request, adminEmail, hospitalAdminRole, passwordHashOverride);
 
             auditLogService.record(
                     tenant.getId(), admin.getId(),
@@ -153,10 +200,17 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
             return new RegistrationContext(tenant, hospital, admin, roles);
         });
 
-        // At this point the transaction has committed — all DB locks released.
-        // Send verification email in its own transaction context.
-        sendVerificationEmail(ctx.admin, ipAddress, userAgent);
+        log.info(
+                "Hospital registration provisioned tenantId={} hospitalId={} adminUserId={}",
+                ctx.tenant.getId(),
+                ctx.hospital.getId(),
+                ctx.admin.getId()
+        );
 
+        return ctx;
+    }
+
+    private HospitalRegistrationResponse buildResponse(final RegistrationContext ctx) {
         final List<String> provisionedRoleNames = ctx.roles.stream()
                 .map(role -> role.getType().name())
                 .toList();
@@ -219,14 +273,19 @@ public class HospitalRegistrationServiceImpl implements HospitalRegistrationServ
             final Tenant tenant,
             final HospitalRegistrationRequest request,
             final String adminEmail,
-            final Role hospitalAdminRole
+            final Role hospitalAdminRole,
+            final String passwordHashOverride
     ) {
         final User admin = new User();
         admin.setTenantId(tenant.getId());
         admin.setFirstName(request.adminFirstName().trim());
         admin.setLastName(request.adminLastName().trim());
         admin.setEmail(adminEmail);
-        admin.setPasswordHash(passwordEncoder.encode(request.adminPassword()));
+        admin.setPasswordHash(
+                passwordHashOverride != null
+                        ? passwordHashOverride
+                        : passwordEncoder.encode(request.adminPassword())
+        );
         admin.setPhone(trimToNull(request.adminPhone()));
         admin.setStatus(UserStatus.ACTIVE);
         admin.setEmailVerified(false);

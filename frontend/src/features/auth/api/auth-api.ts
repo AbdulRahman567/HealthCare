@@ -5,14 +5,12 @@ import type {
   ForgotPasswordPayload,
   HospitalRegistrationResponse,
   LoginPayload,
-  RegisterHospitalPayload,
   ResendVerificationPayload,
   ResetPasswordPayload,
   UserProfile,
   VerifyEmailPayload,
-  PreRegisterAdminPayload,
-  PreRegisterAdminResponse,
-  CompleteRegistrationPayload,
+  RegistrationPayload,
+  PendingRegistrationResponse,
 } from '@/features/auth/types/auth.types';
 import { clearAllClinicalDrafts } from '@/features/clinical/lib/draft-storage';
 import { authTokenStore } from '@/lib/auth-token';
@@ -24,28 +22,26 @@ export const authApi = {
     return data.data;
   },
 
-  async registerHospital(payload: RegisterHospitalPayload): Promise<HospitalRegistrationResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<HospitalRegistrationResponse>>(
-      '/hospitals/register',
+  async submitRegistration(payload: RegistrationPayload): Promise<PendingRegistrationResponse> {
+    const { data } = await apiClient.post<ApiSuccessResponse<PendingRegistrationResponse>>(
+      '/register',
       payload,
     );
     return data.data;
   },
 
-  async preRegisterAdmin(payload: PreRegisterAdminPayload): Promise<PreRegisterAdminResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<PreRegisterAdminResponse>>(
-      '/auth/register-admin',
-      payload,
+  async resendRegistrationVerification(email: string): Promise<PendingRegistrationResponse> {
+    const { data } = await apiClient.post<ApiSuccessResponse<PendingRegistrationResponse>>(
+      '/register/resend-verification',
+      { email },
     );
     return data.data;
   },
 
-  async completeRegistration(
-    payload: CompleteRegistrationPayload,
-  ): Promise<HospitalRegistrationResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<HospitalRegistrationResponse>>(
-      '/hospitals/complete-registration',
-      payload,
+  async verifyRegistration(token: string): Promise<HospitalRegistrationResponse> {
+    const { data } = await apiClient.get<ApiSuccessResponse<HospitalRegistrationResponse>>(
+      '/verify-registration',
+      { params: { token } },
     );
     return data.data;
   },

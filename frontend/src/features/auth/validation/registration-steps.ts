@@ -51,7 +51,3 @@ export const hospitalDetailsSchema = z.object({
 });
 
 export type HospitalDetailsValues = z.infer<typeof hospitalDetailsSchema>;
-
-/** Valid subscription plan values — kept here for reuse across the app */
-export const SUBSCRIPTION_PLANS = ['BASIC', 'STANDARD', 'PREMIUM', 'ENTERPRISE'] as const;
-export type SubscriptionPlanValue = (typeof SUBSCRIPTION_PLANS)[number];

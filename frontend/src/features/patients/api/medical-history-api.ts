@@ -1,4 +1,4 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiDelete, apiGet, apiPost, apiPut } from '@/services/http/api';
 import type {
   MedicalHistoryResponse,
   PastDiseaseResponse,
@@ -10,27 +10,19 @@ import type {
   UpsertChronicConditionPayload,
   UpsertFamilyHistoryPayload,
 } from '@/features/patients/types/medical-history';
-import type { ApiSuccessResponse } from '@/types/api';
 
 const base = (patientId: string) => `/patients/${patientId}/medical-history`;
 
 export const medicalHistoryApi = {
   async get(patientId: string): Promise<MedicalHistoryResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<MedicalHistoryResponse>>(
-      base(patientId),
-    );
-    return data.data;
+    return apiGet<MedicalHistoryResponse>(base(patientId));
   },
 
   async createPastDisease(
     patientId: string,
     payload: UpsertPastDiseasePayload,
   ): Promise<PastDiseaseResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<PastDiseaseResponse>>(
-      `${base(patientId)}/past-diseases`,
-      payload,
-    );
-    return data.data;
+    return apiPost<PastDiseaseResponse>(`${base(patientId)}/past-diseases`, payload);
   },
 
   async updatePastDisease(
@@ -38,26 +30,18 @@ export const medicalHistoryApi = {
     entryId: string,
     payload: UpsertPastDiseasePayload,
   ): Promise<PastDiseaseResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<PastDiseaseResponse>>(
-      `${base(patientId)}/past-diseases/${entryId}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<PastDiseaseResponse>(`${base(patientId)}/past-diseases/${entryId}`, payload);
   },
 
   async deletePastDisease(patientId: string, entryId: string): Promise<void> {
-    await apiClient.delete(`${base(patientId)}/past-diseases/${entryId}`);
+    await apiDelete(`${base(patientId)}/past-diseases/${entryId}`);
   },
 
   async createSurgery(
     patientId: string,
     payload: UpsertSurgeryHistoryPayload,
   ): Promise<SurgeryHistoryResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<SurgeryHistoryResponse>>(
-      `${base(patientId)}/surgeries`,
-      payload,
-    );
-    return data.data;
+    return apiPost<SurgeryHistoryResponse>(`${base(patientId)}/surgeries`, payload);
   },
 
   async updateSurgery(
@@ -65,26 +49,18 @@ export const medicalHistoryApi = {
     entryId: string,
     payload: UpsertSurgeryHistoryPayload,
   ): Promise<SurgeryHistoryResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<SurgeryHistoryResponse>>(
-      `${base(patientId)}/surgeries/${entryId}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<SurgeryHistoryResponse>(`${base(patientId)}/surgeries/${entryId}`, payload);
   },
 
   async deleteSurgery(patientId: string, entryId: string): Promise<void> {
-    await apiClient.delete(`${base(patientId)}/surgeries/${entryId}`);
+    await apiDelete(`${base(patientId)}/surgeries/${entryId}`);
   },
 
   async createChronicCondition(
     patientId: string,
     payload: UpsertChronicConditionPayload,
   ): Promise<ChronicConditionResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<ChronicConditionResponse>>(
-      `${base(patientId)}/chronic-conditions`,
-      payload,
-    );
-    return data.data;
+    return apiPost<ChronicConditionResponse>(`${base(patientId)}/chronic-conditions`, payload);
   },
 
   async updateChronicCondition(
@@ -92,26 +68,21 @@ export const medicalHistoryApi = {
     entryId: string,
     payload: UpsertChronicConditionPayload,
   ): Promise<ChronicConditionResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<ChronicConditionResponse>>(
+    return apiPut<ChronicConditionResponse>(
       `${base(patientId)}/chronic-conditions/${entryId}`,
       payload,
     );
-    return data.data;
   },
 
   async deleteChronicCondition(patientId: string, entryId: string): Promise<void> {
-    await apiClient.delete(`${base(patientId)}/chronic-conditions/${entryId}`);
+    await apiDelete(`${base(patientId)}/chronic-conditions/${entryId}`);
   },
 
   async createFamilyHistory(
     patientId: string,
     payload: UpsertFamilyHistoryPayload,
   ): Promise<FamilyHistoryResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<FamilyHistoryResponse>>(
-      `${base(patientId)}/family-histories`,
-      payload,
-    );
-    return data.data;
+    return apiPost<FamilyHistoryResponse>(`${base(patientId)}/family-histories`, payload);
   },
 
   async updateFamilyHistory(
@@ -119,14 +90,10 @@ export const medicalHistoryApi = {
     entryId: string,
     payload: UpsertFamilyHistoryPayload,
   ): Promise<FamilyHistoryResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<FamilyHistoryResponse>>(
-      `${base(patientId)}/family-histories/${entryId}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<FamilyHistoryResponse>(`${base(patientId)}/family-histories/${entryId}`, payload);
   },
 
   async deleteFamilyHistory(patientId: string, entryId: string): Promise<void> {
-    await apiClient.delete(`${base(patientId)}/family-histories/${entryId}`);
+    await apiDelete(`${base(patientId)}/family-histories/${entryId}`);
   },
 };

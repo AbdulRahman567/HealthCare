@@ -1,45 +1,32 @@
-import { apiClient } from '@/services/http/api-client';
+import { apiDelete, apiGet, apiPost, apiPut } from '@/services/http/api';
 import type {
   DepartmentListQuery,
   DepartmentResponse,
   DepartmentWritePayload,
 } from '@/features/hospital-admin/types/department';
 import { toPageParams } from '@/lib/page-query';
-import type { ApiSuccessResponse, PageResponse } from '@/types/api';
+import type { PageResponse } from '@/types/api';
 
 export const departmentsApi = {
   async list(query: DepartmentListQuery = {}): Promise<PageResponse<DepartmentResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<DepartmentResponse>>>(
-      '/departments',
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<DepartmentResponse>>('/departments', {
+      params: toPageParams(query),
+    });
   },
 
   async getById(id: string): Promise<DepartmentResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<DepartmentResponse>>(
-      `/departments/${id}`,
-    );
-    return data.data;
+    return apiGet<DepartmentResponse>(`/departments/${id}`);
   },
 
   async create(payload: DepartmentWritePayload): Promise<DepartmentResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<DepartmentResponse>>(
-      '/departments',
-      payload,
-    );
-    return data.data;
+    return apiPost<DepartmentResponse>('/departments', payload);
   },
 
   async update(id: string, payload: DepartmentWritePayload): Promise<DepartmentResponse> {
-    const { data } = await apiClient.put<ApiSuccessResponse<DepartmentResponse>>(
-      `/departments/${id}`,
-      payload,
-    );
-    return data.data;
+    return apiPut<DepartmentResponse>(`/departments/${id}`, payload);
   },
 
   async remove(id: string): Promise<void> {
-    await apiClient.delete(`/departments/${id}`);
+    await apiDelete(`/departments/${id}`);
   },
 };

@@ -12,5 +12,3 @@ export const Roles = {
   ACCOUNTANT: 'ACCOUNTANT',
   PATIENT: 'PATIENT',
 } as const;
-
-export type RoleCode = (typeof Roles)[keyof typeof Roles];

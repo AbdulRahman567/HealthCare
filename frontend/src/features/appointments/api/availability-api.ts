@@ -1,5 +1,4 @@
-import { apiClient } from '@/services/http/api-client';
-import type { ApiSuccessResponse } from '@/types/api';
+import { apiGet, apiPost } from '@/services/http/api';
 
 export type ScheduleWindow = {
   dayOfWeek: string;
@@ -35,20 +34,13 @@ export type UpsertDoctorSchedulePayload = {
 
 export const availabilityApi = {
   async listSchedules(doctorId: string): Promise<DoctorScheduleResponse[]> {
-    const { data } = await apiClient.get<ApiSuccessResponse<DoctorScheduleResponse[]>>(
-      `/doctors/${doctorId}/schedules`,
-    );
-    return data.data;
+    return apiGet<DoctorScheduleResponse[]>(`/doctors/${doctorId}/schedules`);
   },
 
   async createSchedule(
     doctorId: string,
     payload: UpsertDoctorSchedulePayload,
   ): Promise<DoctorScheduleResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<DoctorScheduleResponse>>(
-      `/doctors/${doctorId}/schedules`,
-      payload,
-    );
-    return data.data;
+    return apiPost<DoctorScheduleResponse>(`/doctors/${doctorId}/schedules`, payload);
   },
 };

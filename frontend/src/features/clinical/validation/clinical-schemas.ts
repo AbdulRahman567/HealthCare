@@ -56,17 +56,6 @@ export const documentationSchema = z.object({
 
 export type DocumentationFormValues = z.infer<typeof documentationSchema>;
 
-export function emptyDocumentationForm(): DocumentationFormValues {
-  return {
-    chiefComplaint: '',
-    historyOfPresentIllness: '',
-    physicalExamination: '',
-    doctorNotes: '',
-    summary: '',
-    advice: '',
-  };
-}
-
 export const vitalsFormSchema = z
   .object({
     temperatureCelsius: optionalNumericString,
@@ -325,5 +314,3 @@ export const completeConsultationSchema = z.object({
   summary: optionalText(2000),
   advice: optionalText(2000),
 });
-
-export type CompleteConsultationFormValues = z.infer<typeof completeConsultationSchema>;

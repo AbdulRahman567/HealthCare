@@ -1,3 +1,4 @@
+import { apiGet, apiPost } from '@/services/http/api';
 import type { InvitationStatus, RoleType } from '@/features/hospital-admin/types/enums';
 import type {
   CreateInvitationPayload,
@@ -5,8 +6,7 @@ import type {
   UserInvitationResponse,
 } from '@/features/hospital-admin/types/invitation';
 import { toPageParams } from '@/lib/page-query';
-import { apiClient } from '@/services/http/api-client';
-import type { ApiSuccessResponse, PageResponse } from '@/types/api';
+import type { PageResponse } from '@/types/api';
 
 export type InvitationPreviewResponse = {
   email: string;
@@ -42,64 +42,37 @@ export type RejectInvitationPayload = {
 
 export const invitationsApi = {
   async list(query: InvitationListQuery = {}): Promise<PageResponse<UserInvitationResponse>> {
-    const { data } = await apiClient.get<ApiSuccessResponse<PageResponse<UserInvitationResponse>>>(
-      '/invitations',
-      { params: toPageParams(query) },
-    );
-    return data.data;
+    return apiGet<PageResponse<UserInvitationResponse>>('/invitations', {
+      params: toPageParams(query),
+    });
   },
 
   async getById(id: string): Promise<UserInvitationResponse> {
-    const { data } = await apiClient.get<ApiSuccessResponse<UserInvitationResponse>>(
-      `/invitations/${id}`,
-    );
-    return data.data;
+    return apiGet<UserInvitationResponse>(`/invitations/${id}`);
   },
 
   async create(payload: CreateInvitationPayload): Promise<UserInvitationResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<UserInvitationResponse>>(
-      '/invitations',
-      payload,
-    );
-    return data.data;
+    return apiPost<UserInvitationResponse>('/invitations', payload);
   },
 
   async resend(id: string): Promise<UserInvitationResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<UserInvitationResponse>>(
-      `/invitations/${id}/resend`,
-    );
-    return data.data;
+    return apiPost<UserInvitationResponse>(`/invitations/${id}/resend`);
   },
 
   async cancel(id: string): Promise<UserInvitationResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<UserInvitationResponse>>(
-      `/invitations/${id}/cancel`,
-    );
-    return data.data;
+    return apiPost<UserInvitationResponse>(`/invitations/${id}/cancel`);
   },
 
   async preview(token: string): Promise<InvitationPreviewResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<InvitationPreviewResponse>>(
-      '/invitations/preview',
-      { token },
-    );
-    return data.data;
+    return apiPost<InvitationPreviewResponse>('/invitations/preview', { token });
   },
 
   async accept(payload: AcceptInvitationPayload): Promise<AcceptInvitationResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<AcceptInvitationResponse>>(
-      '/invitations/accept',
-      payload,
-    );
-    return data.data;
+    return apiPost<AcceptInvitationResponse>('/invitations/accept', payload);
   },
 
   async reject(payload: RejectInvitationPayload): Promise<InvitationPreviewResponse> {
-    const { data } = await apiClient.post<ApiSuccessResponse<InvitationPreviewResponse>>(
-      '/invitations/reject',
-      payload,
-    );
-    return data.data;
+    return apiPost<InvitationPreviewResponse>('/invitations/reject', payload);
   },
 };
 
